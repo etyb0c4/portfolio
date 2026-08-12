@@ -4,6 +4,7 @@ import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 import Hero from './components/Hero';
+// import AboutMe from './components/AboutMe';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -11,7 +12,7 @@ function App() {
   return (
     <>
       <Hero />
-
+{/* 
       <div className="ticks"></div>
 
       <section id="next-steps">
@@ -96,7 +97,7 @@ function App() {
       </section>
 
       <div className="ticks"></div>
-      <section id="spacer"></section>
+      <section id="spacer"></section> */}
     </>
   )
 }

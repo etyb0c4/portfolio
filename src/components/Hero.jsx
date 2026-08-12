@@ -4,6 +4,8 @@ import LightRays from './LightRays';
 import SpecularButton from './SpecularButton';
 import SplitText from './SplitText';
 import DepthText from './DepthText';
+import TextType from './TextType';
+import ShinyText from './ShinyText';
 
 const handleAnimationComplete = () => {
     console.log('All leters have animated!');
@@ -59,9 +61,54 @@ const Hero = () => {
                 onLetterAnimationComplete={handleAnimationComplete}
                 showCallback
                 />*/}
-                <div className='name'>
-                <h1><span className='left-bra'>{'<'}</span>Rayan &nbsp;&nbsp;SAMA<span className='right-bra'>{'/>'}</span></h1>
-                </div>
+                <ShinyText
+                text="Rayan SAMA"
+                speed={2}
+                delay={0}
+                color="#b5b5b5"
+                shineColor="#ffffff"
+                spread={120}
+                direction="left"
+                yoyo className='first-name'
+                pauseOnHover={false}
+                disabled={false}
+                />
+                <ShinyText
+                text="SAMA"
+                speed={2}
+                delay={0}
+                color="#b5b5b5"
+                shineColor="#ffffff"
+                spread={120}
+                direction="left"
+                yoyo
+                pauseOnHover={false}
+                disabled={false}
+                />
+                {/* <div className='name'>
+                    <h1>
+                        <span className='left-bra'>
+                            {'<'}
+                        </span>
+                        Rayan &nbsp;&nbsp;SAMA
+                        <span className='right-bra'>
+                            {'/>'}
+                        </span>
+                    </h1>
+                </div> */}
+                <TextType
+                text={["The journey of a thousand miles begins whith a single step"]}
+                typingSpeed={80}
+                pauseDuration={3500}
+                showCursor
+                cursorCharacter="_"
+                // texts={["Welcome to React Bits! Good to see you!","Build some amazing experiences!"]}
+                deletingSpeed={10}
+                variableSpeedEnabled={false}
+                variableSpeedMin={60}
+                variableSpeedMax={120}
+                cursorBlinkDuration={0.5}
+                />
                 {/* <div className='infos'>
                     <SpecularButton
                     size="lg"

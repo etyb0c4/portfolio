@@ -11,7 +11,7 @@
 
 .name h1 {
     font-size: 145px;
-    color: white;
+    color: goldenrod;
     font-weight: bolder;
     line-height: 1.1;
 } 
@@ -41,11 +41,11 @@
 }
 */
 .left-bra {
-    color: #0000ff;
+    color: white
 }
 
 .right-bra {
-    color: blue;
+    color: white
 }
 /* 
 .infos h1 {
