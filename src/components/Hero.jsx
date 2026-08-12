@@ -44,8 +44,8 @@ const Hero = () => {
                 fontWeight={900}
                 shadow
                 /> */}
-                {/* <SplitText
-                text="Hello, you!!"
+                {/*<SplitText
+                text="<Rayan SAMA/>"
                 className="text-2xl font-semibold text-center"
                 delay={50}
                 duration={1.25}
@@ -58,9 +58,9 @@ const Hero = () => {
                 textAlign="center"
                 onLetterAnimationComplete={handleAnimationComplete}
                 showCallback
-                /> */}
+                />*/}
                 <div className='name'>
-                    <h1><span className='left-bra'>{'<'}</span>Rayan<br />&nbsp;&nbsp;SAMA<span className='right-bra'>{'/>'}</span></h1>
+                <h1><span className='left-bra'>{'<'}</span>Rayan &nbsp;&nbsp;SAMA<span className='right-bra'>{'/>'}</span></h1>
                 </div>
                 {/* <div className='infos'>
                     <SpecularButton

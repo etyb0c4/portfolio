@@ -25,7 +25,21 @@
     font-weight: bolder;
 
 }
-
+/*
+.split-parent {
+    display: inline-block;
+    overflow: hidden;
+    white-space: normal;
+    word-wrap: break-word;
+    will-change: transform, opacity;
+    color: white !important;
+    font-size: 50px !important;
+    font-weight: 900 !important;
+    top: 10% !important;
+    left: 50% !important;
+    transform: translate(-50%, 0) !important;
+}
+*/
 .left-bra {
     color: #0000ff;
 }
