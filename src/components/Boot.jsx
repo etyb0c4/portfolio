@@ -4,12 +4,12 @@ import sound from '../audio/sound'
 import './Boot.css'
 
 const LINES = [
-  { t: 'guest@node-0:~$ ', c: 'ssh rayan@rayan.dev', typed: true },
-  { t: '', c: 'The authenticity of host \'rayan.dev\' cannot be established.' },
-  { t: '', c: 'ED25519 key fingerprint is SHA256:9f2a…c41e.' },
+  { t: 'guest@node-0:~$ ', c: 'ssh root@etyb0c4.core', typed: true },
+  { t: '', c: 'connecting to etyb0c4.core [10.0.0.1:22] …' },
+  { t: '', c: 'ED25519 fingerprint SHA256:9f2a…c41e — trusted.' },
   { t: '', c: 'Establishing secure channel', dots: true },
-  { t: '', c: '[  OK  ] handshake complete · aes-256-gcm', ok: true },
-  { t: '', c: 'PERMISSION DENIED — biometric breach required.', deny: true },
+  { t: '', c: '[  OK  ] channel secured · aes-256-gcm', ok: true },
+  { t: '', c: '[ERROR] ACCESS DENIED: root privileges required for etyb0c4.core', deny: true },
 ]
 
 export default function Boot({ onEnter }) {
@@ -77,8 +77,8 @@ export default function Boot({ onEnter }) {
         {ready && (
           <button className="breach" onPointerDown={startHold} onPointerUp={endHold} onPointerLeave={endHold} data-cursor>
             <span className="breach__bar" style={{ '--p': breaching }} />
-            <span className="breach__label">{breaching > 0 ? 'BREACHING…' : 'HOLD TO BREACH'}</span>
-            <span className="breach__hint mono">[ inject payload ]</span>
+            <span className="breach__label">{breaching > 0 ? 'OVERRIDING…' : 'HOLD TO OVERRIDE SECURITY PROTOCOLS'}</span>
+            <span className="breach__hint mono">[ sudo override ]</span>
           </button>
         )}
       </div>
