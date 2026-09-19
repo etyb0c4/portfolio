@@ -1,0 +1,61 @@
+export const PROJECTS = [
+  {
+    id: 'b2r-kit',
+    index: '01',
+    name: 'b2r-kit',
+    role: 'Boot2root accelerator',
+    year: '2026',
+    blurb: 'A CLI that kills the two time-sinks when an LLM agent solves a machine: round-trip recon and verbose tool output eating context. One command scans, enumerates every service in parallel, and writes a state file the agent reads.',
+    stack: ['Bash', 'nmap', 'ffuf', 'netexec', 'impacket'],
+    tags: ['offensive', 'tooling', 'agents'],
+    accent: '#e5514a',
+    metric: '1 cmd → full recon',
+  },
+  {
+    id: 'chess3d',
+    index: '02',
+    name: 'chess3d',
+    role: 'Three.js chess engine',
+    year: '2025',
+    blurb: 'A full 3D chess game in the browser: legal-move validation with castling, promotion and en-passant, a minimax + alpha-beta AI, and a cinematic render pipeline — UnrealBloom, afterimage trails and an orbit camera.',
+    stack: ['Three.js', 'EffectComposer', 'minimax', 'WebGL'],
+    tags: ['graphics', 'ai', 'game'],
+    accent: '#e5514a',
+    metric: 'minimax depth 3 · bloom',
+  },
+  {
+    id: 'jarvis-hud',
+    index: '03',
+    name: 'Jarvis HUD',
+    role: 'Reactive interface',
+    year: '2026',
+    blurb: 'A voice-assistant HUD built on React-Three-Fiber and drei — a reactive core that breathes with audio input, wrapped in framer-motion transitions. An experiment in making an interface feel alive.',
+    stack: ['React', 'R3F', 'drei', 'framer-motion'],
+    tags: ['graphics', 'ui', 'r3f'],
+    accent: '#e5514a',
+    metric: 'audio-reactive core',
+  },
+  {
+    id: 'ctf',
+    index: '04',
+    name: 'CTF field notes',
+    role: 'HTB · Root-Me',
+    year: 'ongoing',
+    blurb: 'Machines rooted and flags captured across HackTheBox and Root-Me — web exploitation, binary pwn, reverse engineering, forensics. Every solve becomes a reusable playbook in the arsenal.',
+    stack: ['pwntools', 'Ghidra', 'Burp', 'sqlmap'],
+    tags: ['offensive', 'pwn', 'reversing'],
+    accent: '#ff6a5a',
+    metric: 'flags captured',
+  },
+]
+
+export const ARSENAL = {
+  'recon':      ['nmap', 'ffuf', 'gobuster', 'feroxbuster', 'BBOT', 'recon-ng', 'nuclei'],
+  'web':        ['Burp Suite', 'sqlmap', 'OWASP ZAP'],
+  'rev / pwn':  ['Ghidra', 'jadx', 'GDB', 'pwntools', 'Metasploit'],
+  'network':    ['Wireshark', 'tcpdump', 'aircrack-ng'],
+  'cracking':   ['Hydra', 'John', 'Hashcat'],
+  'forensics':  ['Volatility', 'binwalk', 'steghide', 'ExifTool'],
+}
+
+export const STACK = ['C', 'Python', 'JavaScript', 'Rust', 'React', 'Three.js', 'Vite', 'Docker', 'Linux', 'Git']
