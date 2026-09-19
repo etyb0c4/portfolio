@@ -1,0 +1,12 @@
+.arsenal { gap: 6vh; }
+.arsenal__title { font-size: clamp(32px, 5vw, 78px); font-weight: 300; letter-spacing: -0.03em; margin-top: 12px; }
+.arsenal__cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3vw, 48px); }
+@media (max-width: 900px){ .arsenal__cols { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px){ .arsenal__cols { grid-template-columns: 1fr; } }
+.arsenal__cat { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--blood-hi); padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line-2); }
+.arsenal__col ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.arsenal__tool { display: flex; align-items: center; gap: 10px; color: var(--ash); font-size: 15px;
+  opacity: 0; transform: translateX(-8px); transition: opacity 0.5s var(--easing), transform 0.5s var(--easing), color 0.2s; }
+.arsenal__tool.on { opacity: 1; transform: none; }
+.arsenal__tool:hover { color: var(--bone); }
+.arsenal__tick { color: var(--blood); font-size: 11px; }
