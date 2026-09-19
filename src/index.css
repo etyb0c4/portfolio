@@ -64,7 +64,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; color: var(--bone); li
 .serif { font-family: var(--serif); }
 
 /* fixed WebGL canvas */
-#bg-canvas {
+#bg-canvas, #fg-canvas {
   position: fixed; inset: 0; width: 100vw; height: 100vh;
   z-index: 0; pointer-events: none; display: block;
 }

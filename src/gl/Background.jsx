@@ -85,7 +85,7 @@ const FRAG = /* glsl */`
     col*=vig;
     col+=(hash(gl_FragCoord.xy+uTime)-0.5)*0.02;
 
-    float expo=mix(0.5,1.18,clamp(heat,0.0,1.0));
+    float expo=mix(0.28,0.62,clamp(heat,0.0,1.0));
   col*=expo;
   // scrim gauche pour lisibilite du texte
   float readX=smoothstep(-0.15,0.6,uv.x);

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis'
 import Background from './gl/Background'
+import Scene from './gl/Scene'
 import Cursor from './components/Cursor'
 import HUD from './components/HUD'
 import Boot from './components/Boot'
@@ -41,9 +42,12 @@ export default function App() {
     else { l.stop() }
   }, [entered])
 
+  useEffect(() => { if (typeof window!=='undefined'){ if(!window.__gl) window.__gl={progress:0,heat:0}; window.__gl.entered = entered } }, [entered])
+
   return (
     <>
       <Background />
+      <Scene />
       <Cursor />
       <div className="fx-scanlines" />
       <div className="fx-vignette" />
