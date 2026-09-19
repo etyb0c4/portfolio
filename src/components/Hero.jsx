@@ -1,140 +1,55 @@
-import React from 'react';
-import './Hero.css';
-import LightRays from './LightRays';
-import SpecularButton from './SpecularButton';
-import SplitText from './SplitText';
-import DepthText from './DepthText';
-import TextType from './TextType';
-import ShinyText from './ShinyText';
+import { useEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+gsap.registerPlugin(ScrollTrigger)
+import { useScramble } from '../hooks/useScramble'
+import './Hero.css'
 
-const handleAnimationComplete = () => {
-    console.log('All leters have animated!');
-};
+export default function Hero({ entered }) {
+  const [run, setRun] = useState(false)
+  useEffect(() => { if (entered) { const t = setTimeout(() => setRun(true), 300); return () => clearTimeout(t) } }, [entered])
+  const first = useScramble('RAYAN', run, { speed: 0.9 })
+  const last  = useScramble('SAMA', run, { speed: 0.9, delay: 260 })
+  const roleRef = useRef(null)
+  const secRef = useRef(null)
+  useEffect(() => {
+    if (!entered) return
+    const ctx = gsap.context(() => {
+      gsap.to('.hero__name', { yPercent: -18, opacity: 0.15, ease: 'none',
+        scrollTrigger: { trigger: secRef.current, start: 'top top', end: 'bottom top', scrub: 0.6 } })
+      gsap.to('.hero__meta, .hero__tag', { yPercent: -40, opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: secRef.current, start: 'top top', end: 'bottom top', scrub: 0.6 } })
+    }, secRef)
+    return () => ctx.revert()
+  }, [entered])
 
-const Hero = () => {
-    return (
-        <section className='hero'>
-            <div className='hero-div'>
-                <LightRays
-                raysOrigin="top-center"
-                raysColor="#ffffff"
-                raysSpeed={1.5}
-                lightSpread={1}
-                rayLength={10}
-                followMouse={true}
-                mouseInfluence={0.1}
-                noiseAmount={0}
-                distortion={0}
-                className="custom-rays"
-                pulsating={false}
-                fadeDistance={1}
-                saturation={2}
-                />
-                {/* <DepthText
-                text="<Rayan SAMA/>"
-                layers={34}
-                depth={2.4}
-                faceColor="#f8fafc"
-                depthColor="#0000ff"
-                tilt={7.5}
-                pointerTracking
-                smoothing={0.14}
-                perspective={900}
-                autoOrbit
-                orbitSpeed={0.35}
-                fontSize="clamp(3rem, 12vw, 7rem)"
-                fontWeight={900}
-                shadow
-                /> */}
-                {/*<SplitText
-                text="<Rayan SAMA/>"
-                className="text-2xl font-semibold text-center"
-                delay={50}
-                duration={1.25}
-                ease="power3.out"
-                splitType="words"
-                from={{ opacity: 0, y: 40 }}
-                to={{ opacity: 1, y: 0 }}
-                threshold={0.1}
-                rootMargin="-100px"
-                textAlign="center"
-                onLetterAnimationComplete={handleAnimationComplete}
-                showCallback
-                />*/}
-                <ShinyText
-                text="Rayan SAMA"
-                speed={2}
-                delay={0}
-                color="#b5b5b5"
-                shineColor="#ffffff"
-                spread={120}
-                direction="left"
-                yoyo className='first-name'
-                pauseOnHover={false}
-                disabled={false}
-                />
-                <ShinyText
-                text="SAMA"
-                speed={2}
-                delay={0}
-                color="#b5b5b5"
-                shineColor="#ffffff"
-                spread={120}
-                direction="left"
-                yoyo
-                pauseOnHover={false}
-                disabled={false}
-                />
-                {/* <div className='name'>
-                    <h1>
-                        <span className='left-bra'>
-                            {'<'}
-                        </span>
-                        Rayan &nbsp;&nbsp;SAMA
-                        <span className='right-bra'>
-                            {'/>'}
-                        </span>
-                    </h1>
-                </div> */}
-                <TextType
-                text={["The journey of a thousand miles begins whith a single step"]}
-                typingSpeed={80}
-                pauseDuration={3500}
-                showCursor
-                cursorCharacter="_"
-                // texts={["Welcome to React Bits! Good to see you!","Build some amazing experiences!"]}
-                deletingSpeed={10}
-                variableSpeedEnabled={false}
-                variableSpeedMin={60}
-                variableSpeedMax={120}
-                cursorBlinkDuration={0.5}
-                />
-                {/* <div className='infos'>
-                    <SpecularButton
-                    size="lg"
-                    radius={18}
-                    tint="#ffffff"
-                    tintOpacity={0}
-                    blur={0}
-                    textColor="#f5f5f5"
-                    lineColor="#0000ff"
-                    baseColor="#ffffff"
-                    intensity={1}
-                    shineSize={23}
-                    shineFade={51}
-                    thickness={1}
-                    speed={0.35}
-                    followMouse
-                    proximity={250}
-                    autoAnimate
-                    onClick={() => console.log('clicked')}
-                    >
-                        Get Started
-                    </SpecularButton>
-                </div> */}
-            </div>
-        </section>
-    );
+  return (
+    <section className="section hero" id="top" ref={secRef}>
+      <div className="hero__meta mono">
+        <span>N 6.37° · E 2.42°</span>
+        <span>COTONOU / BENIN</span>
+        <span>EPITECH · CLASS OF 2029</span>
+      </div>
+
+      <h1 className="hero__name">
+        <span className="hero__line">{run ? first : ''}</span>
+        <span className="hero__line hero__line--last">{run ? last : ''}</span>
+      </h1>
+
+      <div className="hero__role" ref={roleRef}>
+        <span className="kicker">full-stack developer</span>
+        <span className="hero__amp">&</span>
+        <span className="kicker">security researcher</span>
+      </div>
+
+      <p className="hero__tag serif">
+        I build systems <em>before</em> I break them.
+      </p>
+
+      <a href="#manifesto" className="hero__scroll mono" data-cursor>
+        <span>scroll to descend</span>
+        <svg width="12" height="34" viewBox="0 0 12 34"><path d="M6 0v28M1 23l5 6 5-6" stroke="currentColor" fill="none"/></svg>
+      </a>
+    </section>
+  )
 }
-
-export default Hero;
