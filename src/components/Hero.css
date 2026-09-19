@@ -1,12 +1,16 @@
-.hero { align-items: flex-start; gap: 6px; }
-.hero__meta { display: flex; gap: 22px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.28em; color: var(--ash-dim); text-transform: uppercase; margin-bottom: 6vh; }
-.hero__name { font-size: clamp(64px, 15vw, 260px); font-weight: 300; letter-spacing: -0.04em; line-height: 0.82; }
-.hero__line { display: block; }
-.hero__line--last { color: transparent; -webkit-text-stroke: 1px var(--blood-hi); margin-left: 0.1em; }
-.hero__role { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 4vh; }
+.hero { align-items: stretch; justify-content: space-between; padding-top: 12vh; padding-bottom: 6vh; }
+.hero__meta { display: flex; gap: 22px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.28em; color: var(--ash-dim); text-transform: uppercase; }
+
+/* the actual name is 3D particles; this invisible wordmark reserves rhythm + a11y hook */
+.hero__wordmark { flex: 1; opacity: 0; pointer-events: none; font-size: 1px; }
+
+.hero__foot { display: flex; flex-direction: column; gap: 3vh; }
+.hero__role { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 .hero__amp { font-family: var(--serif); font-style: italic; font-size: 26px; color: var(--blood); }
-.hero__tag { font-size: clamp(22px, 3.4vw, 46px); color: var(--bone); font-weight: 300; margin-top: 5vh; max-width: 18ch; }
+.hero__tag { font-size: clamp(22px, 3.4vw, 46px); color: var(--bone); font-weight: 300; max-width: 18ch; }
 .hero__tag em { color: var(--blood-hi); font-style: italic; }
-.hero__scroll { position: absolute; bottom: 40px; left: clamp(24px,6vw,120px); display: flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ash); }
+.hero__scroll { display: inline-flex; align-items: center; gap: 14px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ash); }
 .hero__scroll svg { overflow: visible; animation: bob 1.8s var(--easing) infinite; }
 @keyframes bob { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(6px); } }
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
