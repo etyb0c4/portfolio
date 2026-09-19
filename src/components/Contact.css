@@ -1,0 +1,22 @@
+.contact { justify-content: center; align-items: center; text-align: center; gap: 3vh; min-height: 100svh; }
+.contact__shell { max-width: 760px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.contact__prompt { font-size: 13px; color: var(--ash); letter-spacing: 0.02em; }
+.contact__ps1 { color: var(--blood-hi); }
+.contact__path { color: var(--ember); }
+.contact__whoami { font-size: clamp(72px, 16vw, 220px); font-weight: 300; letter-spacing: -0.04em; color: var(--ember); line-height: 0.9;
+  text-shadow: 0 0 60px rgba(255,106,90,0.4); display: flex; align-items: center; }
+.contact__cursor { width: 0.5ch; height: 0.8em; background: var(--ember); margin-left: 0.1em; animation: blink 1s steps(1) infinite; }
+.contact__line { font-size: clamp(24px, 4vw, 44px); color: var(--bone); font-weight: 300; }
+.contact__line em { color: var(--blood-hi); font-style: italic; }
+.contact__sub { color: var(--ash); max-width: 40ch; }
+.contact__links { display: flex; flex-direction: column; width: min(560px, 90vw); margin-top: 3vh; }
+.clink { display: flex; align-items: center; gap: 16px; padding: 20px 6px; border-top: 1px solid var(--line-2); transition: padding 0.35s var(--easing), background 0.35s; position: relative; }
+.clink:last-child { border-bottom: 1px solid var(--line-2); }
+.clink:hover { padding-left: 22px; background: linear-gradient(90deg, rgba(180,52,43,0.12), transparent); }
+.clink__label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blood-hi); width: 90px; text-align: left; }
+.clink__handle { color: var(--bone); font-size: 18px; }
+.clink__arrow { margin-left: auto; color: var(--ash); transition: transform 0.35s var(--easing), color 0.35s; }
+.clink:hover .clink__arrow { transform: translate(4px,-4px); color: var(--ember); }
+.contact__footer { position: absolute; bottom: 24px; left: 0; right: 0; padding: 0 clamp(24px,6vw,120px);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 10px; letter-spacing: 0.12em; color: var(--ash-dim); text-transform: uppercase; }
+.contact__hint kbd { font-family: var(--mono); border: 1px solid var(--line-2); padding: 1px 6px; color: var(--ash); }
