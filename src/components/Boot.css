@@ -1,0 +1,41 @@
+.boot {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(120% 120% at 50% 30%, #100a0b 0%, var(--void) 70%);
+  display: grid; place-items: center;
+  transition: opacity 0.7s var(--easing), filter 0.7s var(--easing);
+}
+.boot--gone { opacity: 0; filter: blur(14px) brightness(2); pointer-events: none; }
+.boot__crt {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.35) 3px 4px);
+  opacity: 0.35; mix-blend-mode: multiply;
+}
+.boot__inner { width: min(760px, 90vw); font-family: var(--mono); }
+.boot__ascii {
+  font-family: var(--mono); font-size: clamp(6px, 1.15vw, 11px); line-height: 1.05;
+  color: var(--blood); text-shadow: 0 0 18px rgba(180,52,43,0.6); white-space: pre; margin-bottom: 22px;
+  filter: drop-shadow(0 0 6px rgba(180,52,43,0.4));
+}
+.boot__log { font-size: 13px; color: var(--ash); min-height: 168px; }
+.boot__line { padding: 2px 0; letter-spacing: 0.02em; opacity: 0; animation: bootline 0.28s var(--easing) forwards; }
+@keyframes bootline { from { opacity: 0; transform: translateY(4px); } to { opacity: 0.92; transform: none; } }
+.boot__prompt { color: var(--blood-hi); }
+.boot__line.is-ok span:last-child { color: #7ee081; }
+.boot__line.is-deny span:last-child { color: var(--ember); font-weight: 700; letter-spacing: 0.08em; }
+.boot__caret { display:inline-block; width:8px; height:15px; margin-left:2px; background:var(--ember); vertical-align:-2px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.breach {
+  margin-top: 30px; position: relative; width: 100%; height: 62px;
+  border: 1px solid var(--line-2); overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
+  background: rgba(180,52,43,0.05); transition: border-color 0.3s;
+}
+.breach:hover { border-color: var(--blood); }
+.breach__bar {
+  position: absolute; inset: 0; transform-origin: left;
+  transform: scaleX(var(--p)); background: linear-gradient(90deg, var(--blood), var(--ember));
+  opacity: 0.85; transition: transform 0.06s linear;
+}
+.breach__label { position: relative; font-family: var(--mono); font-weight: 700; letter-spacing: 0.3em; font-size: 13px; color: var(--bone); }
+.breach__hint { position: relative; font-size: 11px; color: rgba(239,231,226,0.7); letter-spacing: 0.15em; }
