@@ -1,0 +1,12 @@
+.sndtog { position: fixed; bottom: 18px; right: 20px; z-index: 70; display: flex; align-items: center; gap: 8px;
+  font-size: 10px; letter-spacing: 0.15em; color: var(--ash); padding: 7px 11px; border: 1px solid var(--line-2);
+  background: rgba(12,8,9,0.5); backdrop-filter: blur(6px); transition: color 0.2s, border-color 0.2s; text-transform: uppercase; }
+.sndtog:hover { color: var(--bone); border-color: var(--blood); }
+.sndtog__bars { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+.sndtog__bars i { width: 2px; background: var(--blood-hi); animation: eq 0.8s ease-in-out infinite; }
+.sndtog__bars i:nth-child(1){ height: 40%; animation-delay: 0s; }
+.sndtog__bars i:nth-child(2){ height: 90%; animation-delay: 0.15s; }
+.sndtog__bars i:nth-child(3){ height: 60%; animation-delay: 0.3s; }
+.sndtog__bars i:nth-child(4){ height: 100%; animation-delay: 0.45s; }
+.sndtog__bars[data-muted="true"] i { animation: none; height: 30% !important; background: var(--ash-dim); }
+@keyframes eq { 0%,100%{ transform: scaleY(0.4); } 50%{ transform: scaleY(1); } }

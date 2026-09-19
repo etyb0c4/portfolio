@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { STAGES, flash } from '../lib/store'
+import sound from '../audio/sound'
 import './HUD.css'
 
 export default function HUD({ active }) {
@@ -17,7 +18,7 @@ export default function HUD({ active }) {
   const prev = useRef(0)
   useEffect(() => {
     if (idx > prev.current) {
-      flash(1.0)
+      flash(1.0); sound.escalate()
       document.body.classList.add('glitch')
       const t = setTimeout(() => document.body.classList.remove('glitch'), 620)
       prev.current = idx

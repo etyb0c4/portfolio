@@ -12,6 +12,8 @@ import Arsenal from './components/Arsenal'
 import Contact from './components/Contact'
 import Terminal from './components/Terminal'
 import { setProgress } from './lib/store'
+import sound from './audio/sound'
+import SoundToggle from './components/SoundToggle'
 
 export default function App() {
   const [entered, setEntered] = useState(typeof location!=='undefined' && location.search.includes('enter'))
@@ -19,7 +21,7 @@ export default function App() {
 
   const STILL = typeof location!=='undefined' && location.search.includes('still')
   useEffect(() => {
-    if (STILL) { const on=()=>{const m=document.documentElement.scrollHeight-innerHeight; setProgress(m>0?scrollY/m:0)}; addEventListener('scroll',on,{passive:true}); on(); return ()=>removeEventListener('scroll',on) }
+    if (STILL) { const on=()=>{const m=document.documentElement.scrollHeight-innerHeight; const pr=m>0?scrollY/m:0; setProgress(pr); sound.setProgress(pr)}; addEventListener('scroll',on,{passive:true}); on(); return ()=>removeEventListener('scroll',on) }
     const lenis = new Lenis({ duration: 1.15, smoothWheel: true, wheelMultiplier: 0.9,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
     lenisRef.current = lenis
@@ -29,7 +31,7 @@ export default function App() {
     raf = requestAnimationFrame(loop)
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - innerHeight
-      setProgress(max > 0 ? scrollY / max : 0)
+      const pr = max > 0 ? scrollY / max : 0; setProgress(pr); sound.setProgress(pr)
     }
     lenis.on('scroll', onScroll); onScroll()
     return () => { cancelAnimationFrame(raf); lenis.destroy() }
@@ -61,6 +63,7 @@ export default function App() {
         <Contact />
       </main>
       <Terminal />
+      {entered && <SoundToggle />}
     </>
   )
 }

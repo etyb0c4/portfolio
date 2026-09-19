@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { flash } from '../lib/store'
+import sound from '../audio/sound'
 import './Boot.css'
 
 const LINES = [
@@ -26,7 +27,7 @@ export default function Boot({ onEnter }) {
     if (line.typed) {
       let i = 0
       const iv = setInterval(() => {
-        i++; setTyped(line.c.slice(0, i))
+        i++; setTyped(line.c.slice(0, i)); sound.tick()
         if (i >= line.c.length) { clearInterval(iv); setTimeout(() => { setStep(s => s+1); setTyped('') }, 320) }
       }, 55)
       return () => clearInterval(iv)
@@ -38,7 +39,7 @@ export default function Boot({ onEnter }) {
 
   // hold to breach
   const startHold = () => {
-    flash(0.5)
+    sound.init(); sound.breach(); flash(0.5)
     const t0 = performance.now()
     const loop = () => {
       const p = Math.min(1, (performance.now() - t0) / 1400)
