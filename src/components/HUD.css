@@ -1,0 +1,20 @@
+.hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+  display: flex; align-items: center; gap: 18px;
+  padding: 16px clamp(18px, 4vw, 40px);
+  font-size: 12px; pointer-events: none;
+  mix-blend-mode: difference;
+}
+.hud__id { color: var(--bone); letter-spacing: 0.04em; display: flex; align-items: center; gap: 8px; }
+.hud__dot { width: 8px; height: 8px; border-radius: 50%; }
+.hud__esc { display: flex; gap: 6px; margin-left: auto; }
+.hud__pip {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--ash-dim); padding: 2px 8px; border: 1px solid var(--line);
+  transition: all 0.4s var(--easing);
+}
+.hud__pip.on { color: var(--bone); border-color: var(--blood); background: rgba(180,52,43,0.12); }
+.hud__bar { width: 120px; height: 2px; background: var(--line-2); overflow: hidden; }
+.hud__bar span { display: block; height: 100%; background: linear-gradient(90deg,var(--blood),var(--ember)); transform-origin: left; transform: scaleX(0); transition: transform 0.1s linear; }
+.hud__pct { color: var(--ash); letter-spacing: 0.1em; }
+@media (max-width: 720px){ .hud__esc { display: none; } }
