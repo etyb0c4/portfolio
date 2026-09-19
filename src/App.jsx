@@ -1,50 +1,32 @@
-import { useEffect, useRef, useState } from 'react'
-import Lenis from 'lenis'
+import { useEffect, useState } from 'react'
 import Background from './gl/Background'
 import Scene from './gl/Scene'
 import Cursor from './components/Cursor'
-import HUD from './components/HUD'
 import Boot from './components/Boot'
-import Hero from './components/Hero'
-import Manifesto from './components/Manifesto'
-import Projects from './components/Projects'
-import Arsenal from './components/Arsenal'
-import Contact from './components/Contact'
-import Terminal from './components/Terminal'
-import { setProgress } from './lib/store'
-import sound from './audio/sound'
+import Desktop from './components/desktop/Desktop'
 import SoundToggle from './components/SoundToggle'
+import sound from './audio/sound'
+import './components/desktop/portal.css'
 
 export default function App() {
-  const [entered, setEntered] = useState(typeof location!=='undefined' && location.search.includes('enter'))
-  const lenisRef = useRef(null)
+  // phases: boot -> portal -> desktop
+  const initial = typeof location !== 'undefined' && location.search.includes('desktop') ? 'desktop' : 'boot'
+  const [phase, setPhase] = useState(initial)
+  const [deskIn, setDeskIn] = useState(initial === 'desktop')
 
-  const STILL = typeof location!=='undefined' && location.search.includes('still')
   useEffect(() => {
-    if (STILL) { const on=()=>{const m=document.documentElement.scrollHeight-innerHeight; const pr=m>0?scrollY/m:0; setProgress(pr); sound.setProgress(pr)}; addEventListener('scroll',on,{passive:true}); on(); return ()=>removeEventListener('scroll',on) }
-    const lenis = new Lenis({ duration: 1.15, smoothWheel: true, wheelMultiplier: 0.9,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
-    lenisRef.current = lenis
-    if (typeof window!=='undefined') window.__lenis = lenis
-    let raf
-    const loop = (t) => { lenis.raf(t); raf = requestAnimationFrame(loop) }
-    raf = requestAnimationFrame(loop)
-    const onScroll = () => {
-      const max = document.documentElement.scrollHeight - innerHeight
-      const pr = max > 0 ? scrollY / max : 0; setProgress(pr); sound.setProgress(pr)
+    if (phase === 'desktop') {
+      if (window.__gl) window.__gl.progress = 0.4          // ambient particle heat
+      sound.setProgress(0.4)
+      const t = setTimeout(() => setDeskIn(true), 60)
+      return () => clearTimeout(t)
     }
-    lenis.on('scroll', onScroll); onScroll()
-    return () => { cancelAnimationFrame(raf); lenis.destroy() }
-  }, [])
+  }, [phase])
 
-  // lock scroll until breached
-  useEffect(() => {
-    const l = lenisRef.current; if (!l) return
-    if (entered) { l.start(); document.documentElement.classList.remove('lenis-stopped') }
-    else { l.stop() }
-  }, [entered])
-
-  useEffect(() => { if (typeof window!=='undefined'){ if(!window.__gl) window.__gl={progress:0,heat:0}; window.__gl.entered = entered } }, [entered])
+  const onBreached = () => {
+    setPhase('portal')
+    setTimeout(() => setPhase('desktop'), 1150) // portal reveal duration
+  }
 
   return (
     <>
@@ -53,17 +35,22 @@ export default function App() {
       <Cursor />
       <div className="fx-scanlines" />
       <div className="fx-vignette" />
-      <HUD active={entered} />
-      {!entered && <Boot onEnter={() => setEntered(true)} />}
-      <main id="app" style={{ opacity: entered ? 1 : 0, transition: 'opacity 1s ease 0.2s' }}>
-        <Hero entered={entered} />
-        <Manifesto />
-        <Projects />
-        <Arsenal />
-        <Contact />
-      </main>
-      <Terminal />
-      {entered && <SoundToggle />}
+
+      {phase === 'boot' && <Boot onEnter={onBreached} />}
+      {phase === 'portal' && (
+        <div className="portal">
+          <div className="portal__line" />
+          <div className="portal__flash" />
+          <div className="portal__code mono">
+            <span>reassembling filesystem…</span>
+            <span>spawning window manager…</span>
+            <span>mounting /home/rayan…</span>
+          </div>
+        </div>
+      )}
+      {phase === 'desktop' && <Desktop appeared={deskIn} />}
+
+      {phase === 'desktop' && <SoundToggle />}
     </>
   )
 }
