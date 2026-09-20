@@ -7,6 +7,7 @@ import ProjectWindow from '../desktop/ProjectWindow'
 import CommandBar from '../desktop/CommandBar'
 import { PROJECTS } from '../../data/projects'
 import { setProgress } from '../../lib/store'
+import { applyCSS } from '../../lib/palette'
 import sound from '../../audio/sound'
 import '../desktop/Desktop.css'
 import './experience.css'
@@ -78,11 +79,11 @@ export default function Experience() {
   useEffect(() => {
     const lenis = new Lenis({ duration: 1.2, wheelMultiplier: 0.95, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
     if (typeof window !== 'undefined') window.__lenis = lenis
-    setProgress(0); sound.setProgress(0)
+    setProgress(0); sound.setProgress(0); applyCSS(0)
     lenis.on('scroll', ({ scroll }) => {
       const max = document.documentElement.scrollHeight - innerHeight
       const p = max > 0 ? scroll / max : 0
-      setProgress(p); sound.setProgress(p); setStage(Math.round(p * 4))
+      setProgress(p); sound.setProgress(p); applyCSS(p); setStage(Math.round(p * 4))
       ScrollTrigger.update()
     })
     const tick = (t) => lenis.raf(t * 1000)

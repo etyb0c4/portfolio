@@ -19,6 +19,8 @@ const FRAG = /* glsl */`
   uniform float uProgress;
   uniform float uHeat;
   uniform vec2  uMouse;
+  uniform vec3  uColA;
+  uniform vec3  uColB;
 
   float hash(vec2 p){ p=fract(p*vec2(233.34,851.73)); p+=dot(p,p+23.45); return fract(p.x*p.y); }
   float noise(vec2 p){
@@ -62,9 +64,9 @@ const FRAG = /* glsl */`
 
     // palette
     vec3 cVoid =vec3(0.031,0.021,0.025);
-    vec3 cInk  =vec3(0.075,0.030,0.037);
-    vec3 cBlood=vec3(0.706,0.204,0.169);
-    vec3 cEmber=vec3(1.0,0.45,0.36);
+    vec3 cInk  =uColA*0.10;
+    vec3 cBlood=uColA;
+    vec3 cEmber=uColB;
 
     vec3 col=cVoid;
     col=mix(col,cInk, smoothstep(0.2,0.9,neb)*0.9);
@@ -111,6 +113,8 @@ export default function Background(){
       uProgress: { value: 0 },
       uHeat:     { value: 0 },
       uMouse:    { value: new THREE.Vector2(0,0) },
+      uColA:     { value: new THREE.Vector3(0.706,0.204,0.169) },
+      uColB:     { value: new THREE.Vector3(1.0,0.42,0.35) },
     }
     const mat = new THREE.RawShaderMaterial({ vertexShader:VERT, fragmentShader:FRAG, uniforms })
     scene.add(new THREE.Mesh(geo, mat))
@@ -136,6 +140,7 @@ export default function Background(){
       uniforms.uProgress.value += (p - uniforms.uProgress.value) * 0.05
       uniforms.uHeat.value     += (h - uniforms.uHeat.value) * 0.08
       if (window.__gl) window.__gl.heat *= 0.94
+      if (window.__gl && window.__gl.colA) { uniforms.uColA.value.set(window.__gl.colA[0],window.__gl.colA[1],window.__gl.colA[2]); uniforms.uColB.value.set(window.__gl.colB[0],window.__gl.colB[1],window.__gl.colB[2]) }
       mouse.lerp(target, 0.06); uniforms.uMouse.value.copy(mouse)
       renderer.render(scene, cam)
       raf = requestAnimationFrame(tick)

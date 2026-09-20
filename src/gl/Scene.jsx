@@ -188,10 +188,11 @@ export default function Scene() {
           pos[ix+2] += (tz*br - pos[ix+2]) * k
         }
         geo.attributes.position.needsUpdate = true
-        points.rotation.y = mouse.x * 0.18 + time * 0.02
-        points.rotation.x = mouse.y * 0.10
+        points.rotation.y = mouse.x * 0.16
+        points.rotation.x = mouse.y * 0.08
       }
 
+      if (window.__gl && window.__gl.colA) { uniforms.uBlood.value.setRGB(window.__gl.colA[0], window.__gl.colA[1], window.__gl.colA[2]); uniforms.uEmber.value.setRGB(window.__gl.colB[0], window.__gl.colB[1], window.__gl.colB[2]) }
       mouse.lerp(target, 0.05)
       // camera: push in with progress + mouse parallax
       const camZ = 48 - p * 12
