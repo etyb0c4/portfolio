@@ -1,0 +1,67 @@
+.xp { position: relative; z-index: 5; }
+
+/* persistent waybar */
+.xbar { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; align-items: center; gap: 16px;
+  height: 36px; padding: 0 16px; font-size: 11px; color: var(--ash);
+  background: rgba(10,7,8,0.5); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); mix-blend-mode: normal; }
+.xbar__ws { display: flex; gap: 6px; }
+.xbar__ws .ws { padding: 2px 8px; border: 1px solid var(--line); color: var(--ash-dim); letter-spacing: 0.06em; transition: all 0.3s var(--easing); }
+.xbar__ws .ws--on { color: var(--ember); border-color: var(--blood); background: rgba(180,52,43,0.14); }
+.xbar__center { margin: 0 auto; color: var(--blood-hi); letter-spacing: 0.08em; }
+.xbar__right { display: flex; gap: 14px; }
+.xbar__right span:first-child { color: var(--ember); }
+.xbar__right .topbar__clock { color: var(--bone); }
+
+/* sections */
+.xsection { position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: 4vh; padding: 14vh clamp(20px, 6vw, 120px) 10vh; }
+.xhead { text-align: center; max-width: 20ch; }
+.xhead h2, h2.xhead { font-size: clamp(34px, 6.5vw, 104px); font-weight: 300; letter-spacing: -0.03em; color: var(--bone); line-height: 1.03; }
+.xhead .kicker { display: inline-flex; margin-bottom: 16px; }
+.xhead em { font-style: italic; color: var(--ash); }
+.xhead .ac { font-style: italic; color: var(--blood-hi); }
+
+/* window chrome */
+.xwin { width: min(720px, 92vw); background: rgba(14,10,11,0.72); backdrop-filter: blur(10px);
+  border: 1px solid var(--line-2); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+.xwin--wide { width: min(1000px, 94vw); }
+.xwin--tall .xwin__body { max-height: 60vh; }
+.xwin__bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--ash); background: rgba(0,0,0,0.25); }
+.xwin__name { color: var(--blood-hi); letter-spacing: 0.06em; }
+.xwin__ctl { margin-left: auto; color: var(--ash-dim); letter-spacing: 0.15em; }
+.xwin__body { padding: 18px; overflow: auto; }
+
+/* hero */
+.xsection--hero { justify-content: flex-end; gap: 3vh; padding-bottom: 7vh; }
+.xhero__meta { position: absolute; top: 8vh; left: 50%; transform: translateX(-50%); display: flex; gap: 22px; flex-wrap: wrap; font-size: 11px; letter-spacing: 0.26em; color: var(--ash-dim); text-transform: uppercase; }
+.xhero__space { flex: 0 0 40vh; }  /* particle name renders here */
+.xhero__id { width: min(460px, 92vw); }
+.xhero__tag { font-size: clamp(20px, 3vw, 40px); color: var(--bone); font-weight: 300; text-align: center; }
+.xhero__tag em { color: var(--blood-hi); font-style: italic; }
+.xhero__scroll { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ash); }
+
+/* projects hint */
+.xhint { font-size: 12px; color: var(--ash-dim); letter-spacing: 0.04em; }
+.xhint kbd { font-family: var(--mono); border: 1px solid var(--line-2); padding: 1px 6px; color: var(--ash); }
+.plist-wrap { position: relative; }
+
+/* contact */
+.xcontact__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: center; }
+@media (max-width: 760px){ .xcontact__grid { grid-template-columns: 1fr; } }
+.xcontact__radar { position: relative; aspect-ratio: 1; min-height: 240px; }
+.radar { width: 100%; height: 100%; display: block; }
+.xcontact__status { position: absolute; bottom: 6px; left: 8px; font-size: 10px; color: #7ee081; letter-spacing: 0.08em; }
+.xcontact__links { display: flex; flex-direction: column; }
+.clink { display: flex; align-items: center; gap: 14px; padding: 16px 6px; border-top: 1px solid var(--line-2); transition: padding 0.3s var(--easing), background 0.3s; }
+.clink:last-child { border-bottom: 1px solid var(--line-2); }
+.clink:hover { padding-left: 16px; background: linear-gradient(90deg, rgba(180,52,43,0.14), transparent); }
+.clink__label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blood-hi); width: 78px; }
+.clink__handle { color: var(--bone); font-size: 16px; }
+.clink__arrow { margin-left: auto; color: var(--ash); transition: transform 0.3s var(--easing), color 0.3s; }
+.clink:hover .clink__arrow { transform: translate(4px,-4px); color: var(--ember); }
+.xfooter { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; width: min(1000px,94vw); font-size: 10px; letter-spacing: 0.12em; color: var(--ash-dim); text-transform: uppercase; }
+
+/* command bar (acte IV) framed inside contact */
+.xcmd { width: min(1000px, 94vw); border: 1px solid var(--line-2); background: rgba(8,5,6,0.72); backdrop-filter: blur(10px); }
+.xcmd .cmdbar { border-top: none; background: transparent; }
+.xcmd .cmdbar__log { max-height: 96px; }

@@ -3,7 +3,7 @@ import Background from './gl/Background'
 import Scene from './gl/Scene'
 import Cursor from './components/Cursor'
 import Boot from './components/Boot'
-import Desktop from './components/desktop/Desktop'
+import Experience from './components/experience/Experience'
 import SoundToggle from './components/SoundToggle'
 import sound from './audio/sound'
 import './components/desktop/portal.css'
@@ -16,8 +16,7 @@ export default function App() {
 
   useEffect(() => {
     if (phase === 'desktop') {
-      if (window.__gl) window.__gl.progress = 0.4          // ambient particle heat
-      sound.setProgress(0.4)
+      if (window.__gl) window.__gl.progress = 0    // Experience owns scroll progress
       const t = setTimeout(() => setDeskIn(true), 60)
       return () => clearTimeout(t)
     }
@@ -48,7 +47,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {phase === 'desktop' && <Desktop appeared={deskIn} />}
+      {phase === 'desktop' && <Experience />}
 
       {phase === 'desktop' && <SoundToggle />}
     </>

@@ -121,7 +121,7 @@ export default function Scene() {
 
     const buildForms = () => {
       forms = [
-        sampleText(['RAYAN', 'SAMA'], 175, 0.8), // 0 hero
+        sampleText(['RAYAN', 'SAMA'], 175, 0.8, 0.82, 1.5), // 0 hero
         wave(),                                   // 1 manifesto
         grid(),                                   // 2 projects
         sphere(),                                 // 3 arsenal
@@ -149,7 +149,7 @@ export default function Scene() {
 
     buildForms(); resize()
     // upgrade text shape once Fraunces is ready
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { forms[0] = sampleText(['RAYAN','SAMA'],175,0.8); forms[4] = sampleText(['ROOT'],300,1.0,0.62,7.5) })
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { forms[0] = sampleText(['RAYAN','SAMA'],175,0.8,0.82,1.5); forms[4] = sampleText(['ROOT'],300,1.0,0.62,7.5) })
     addEventListener('resize', resize)
 
     const target = new THREE.Vector2(0, 0), mouse = new THREE.Vector2(0, 0)
