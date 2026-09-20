@@ -22,6 +22,17 @@ export default function App() {
     }
   }, [phase])
 
+  useEffect(() => {
+    const kick = () => { sound.init(); sound.resume() }
+    addEventListener('pointerdown', kick, { passive: true })
+    addEventListener('keydown', kick)
+    addEventListener('wheel', kick, { passive: true })
+    const vis = () => { if (document.visibilityState === 'visible') sound.resume() }
+    document.addEventListener('visibilitychange', vis)
+    return () => { removeEventListener('pointerdown', kick); removeEventListener('keydown', kick); removeEventListener('wheel', kick); document.removeEventListener('visibilitychange', vis) }
+  }, [])
+  const kickAudio = true
+
   const onBreached = () => {
     setPhase('portal')
     setTimeout(() => setPhase('desktop'), 1150) // portal reveal duration

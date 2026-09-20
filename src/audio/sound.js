@@ -53,6 +53,34 @@ function buildDrone() {
   noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start()
 
   drone = { gain: g, filter, oscs, lfo }
+  startMusic()
+}
+
+let musicTimer = null
+const SCALE = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63] // A minor pentatonic-ish
+function note(freq, dur = 2.4, gain = 0.05) {
+  const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = freq
+  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 2
+  const g = ctx.createGain(); g.gain.value = 0.0001
+  const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1400
+  o.connect(g); o2.connect(g); g.connect(f); f.connect(master)
+  const t = ctx.currentTime
+  g.gain.linearRampToValueAtTime(gain, t + 0.25)
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  o.start(t); o2.start(t); o.stop(t + dur + 0.1); o2.stop(t + dur + 0.1)
+}
+function startMusic() {
+  if (musicTimer) return
+  let i = 0
+  musicTimer = setInterval(() => {
+    if (muted) return
+    const p = targetProgress
+    // plus on descend vers root, plus c'est dense/grave-brillant
+    const n = SCALE[(i * 2 + (Math.random() * 2 | 0)) % SCALE.length]
+    note(n * (0.5 + p * 0.5), 2.6 + Math.random() * 1.4, 0.035 + p * 0.03)
+    if (Math.random() < 0.3 + p * 0.3) note(SCALE[(i + 3) % SCALE.length], 3.2, 0.025)
+    i++
+  }, 2100)
 }
 
 function noiseBurst(dur, freq, q, gain, type = 'bandpass') {
@@ -95,7 +123,7 @@ const api = {
     targetProgress = p
     if (!drone) return
     const t = ctx.currentTime
-    const g = 0.02 + p * 0.07                 // drone loudness rises to root
+    const g = 0.06 + p * 0.12                 // drone loudness rises to root
     const cut = 180 + p * 900                 // opens up
     drone.gain.gain.setTargetAtTime(g, t, 0.6)
     drone.filter.frequency.setTargetAtTime(cut, t, 0.8)
@@ -120,8 +148,12 @@ const api = {
     return muted
   },
   isMuted() { return muted },
+  resume() { if (ctx && ctx.state === 'suspended') ctx.resume() },
+  state() { return ctx ? ctx.state : 'none' },
+  started() { return started },
 }
 
 try { muted = localStorage.getItem('rs_muted') === '1' } catch {}
+if (typeof window !== 'undefined') window.__sound = api
 
 export default api
