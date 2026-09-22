@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { PROJECTS } from '../../data/projects'
 import { NEOFETCH, ASCII, PROCS, SYSLOG } from '../../data/system'
+import { SECTORS } from '../../data/incidents'
 import sound from '../../audio/sound'
 
 export function IdCard() {
@@ -21,13 +22,34 @@ export function IdCard() {
 
 export function SysLog({ run = true }) {
   const [n, setN] = useState(0)
-  useEffect(() => { if (!run) return; const i = setInterval(() => setN(x => Math.min(SYSLOG.length, x + 1)), 620); return () => clearInterval(i) }, [run])
+  useEffect(() => { if (!run) return; const i = setInterval(() => setN(x => Math.min(SYSLOG.length, x + 1)), 340); return () => clearInterval(i) }, [run])
   return (
     <div className="syslog mono">
       {SYSLOG.slice(0, n).map((l, i) => (
         <div className="syslog__line" key={i}><span className={`syslog__tag tag--${l.tag}`}>[{l.tag}]</span> {l.t}</div>
       ))}
       <div className="syslog__caret">▊</div>
+    </div>
+  )
+}
+
+export function SectorLog() {
+  return (
+    <div className="sectorlog mono">
+      {SECTORS.map(s => (
+        <div className="sectorlog__row" data-stagger key={s.sector}>
+          <div className="sectorlog__num">{s.sector}</div>
+          <div className="sectorlog__body">
+            <div className="sectorlog__meta">
+              <span className={`syslog__tag tag--${s.tag}`}>[{s.tag}]</span>
+              <span className="sectorlog__year">{s.year}</span>
+            </div>
+            <div className="sectorlog__title">{s.title}</div>
+            <p className="sectorlog__text">{s.body}</p>
+            <div className="sectorlog__tags">{s.tags.map(t => <span key={t}>{t}</span>)}</div>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

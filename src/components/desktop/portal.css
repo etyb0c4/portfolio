@@ -2,7 +2,7 @@
 .portal__line {
   width: 2px; height: 2px; background: var(--bone);
   box-shadow: 0 0 30px 6px var(--ember), 0 0 80px 20px rgba(180,52,43,0.6);
-  animation: portalLine 1.15s var(--easing) forwards;
+  animation: portalLine 0.82s var(--easing) forwards;
 }
 @keyframes portalLine {
   0%   { width: 2px; height: 2px; opacity: 0; }
@@ -13,7 +13,7 @@
 }
 .portal__flash {
   position: absolute; inset: 0; background: var(--bone); opacity: 0;
-  animation: portalFlash 1.15s var(--easing) forwards;
+  animation: portalFlash 0.82s var(--easing) forwards;
 }
 @keyframes portalFlash { 0%,54%{ opacity: 0; } 60%{ opacity: 0.85; } 74%{ opacity: 0; } 100%{ opacity: 0; } }
 .portal__code { position: absolute; bottom: 16%; display: flex; flex-direction: column; gap: 6px; align-items: center;

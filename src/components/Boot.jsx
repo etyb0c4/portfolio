@@ -1,87 +1,160 @@
 import { useEffect, useRef, useState } from 'react'
-import { flash } from '../lib/store'
+import gsap from 'gsap'
 import sound from '../audio/sound'
 import './Boot.css'
 
-const LINES = [
-  { t: 'guest@node-0:~$ ', c: 'ssh root@etyb0c4.core', typed: true },
-  { t: '', c: 'connecting to etyb0c4.core [10.0.0.1:22] …' },
-  { t: '', c: 'ED25519 fingerprint SHA256:9f2a…c41e — trusted.' },
-  { t: '', c: 'Establishing secure channel', dots: true },
-  { t: '', c: '[  OK  ] channel secured · aes-256-gcm', ok: true },
-  { t: '', c: '[ERROR] ACCESS DENIED: root privileges required for etyb0c4.core', deny: true },
+// ambient daemon chatter looping behind the prompt — the machine is alive before you touch it
+const AMBIENT = [
+  'kern: watchdog: bpf_prog_load id=4471 ok',
+  'sshd[2211]: refused connect from 10.0.0.77 port 51221',
+  'audit: SELINUX avc denied { read } for pid=1904',
+  'systemd: etyb0c4.core reached target multi-user',
+  'kern: eth0: link up, 1000 Mbps, full duplex',
+  'cron[881]: (root) CMD (/usr/lib/sysstat/sa1 1 1)',
+  'sshd[2213]: refused connect from 10.0.0.77 port 51244',
+  'kern: tpm_crb MSFT0101: device ready',
+  'audit: integrity check passed — chain 0x9f2a',
+  'systemd: rotating /var/log/etyb0c4.journal',
+  'kern: intrusion sensor armed · perimeter nominal',
+  'sshd[2219]: too many authentication failures',
+]
+
+/* The machine does not explode — it refuses, then panics, then loses signal.
+   Every line lands on its own beat instead of everything firing at once. */
+const DENIAL = [
+  { at: 280,  t: '-bash: permission denied', kind: 'deny' },
+  { at: 640,  t: 'audit: FAILED su for root on pts/0', kind: 'warn' },
+  { at: 920,  t: 'kern: unauthorized syscall 0x3b from uid=1000', kind: 'warn' },
+  { at: 1160, t: 'kern: BUG: unable to handle page fault at 00000000', kind: 'panic' },
+  { at: 1300, t: 'kern: Oops: 0002 [#1] SMP PTI', kind: 'panic' },
+  { at: 1420, t: 'kern: CPU: 3 PID: 1904 Comm: etyb0c4.core Tainted: G', kind: 'panic' },
+  { at: 1530, t: 'kern: Kernel panic - not syncing: Fatal exception', kind: 'panic' },
+  { at: 1640, t: 'kern: ---[ end trace 9f2ac41e ]---', kind: 'panic' },
 ]
 
 export default function Boot({ onEnter }) {
-  const [step, setStep] = useState(0)
-  const [typed, setTyped] = useState('')
-  const [ready, setReady] = useState(false)
-  const [breaching, setBreaching] = useState(0)
-  const [gone, setGone] = useState(false)
-  const holdRef = useRef(null)
+  const [val, setVal] = useState('')
+  const [history, setHistory] = useState([])
+  const [ambient, setAmbient] = useState([])
+  const [denied, setDenied] = useState(false)
+  const [lines, setLines] = useState([])
+  const [failing, setFailing] = useState(false)
+  const seq = useRef(0)
+  const inputRef = useRef(null)
+  const innerRef = useRef(null)
+  const screenRef = useRef(null)
+  const collapseRef = useRef(null)
+  const timers = useRef([])
+  const rafs = useRef([])
 
-  // play the sequence
+  useEffect(() => { inputRef.current?.focus() }, [])
+
   useEffect(() => {
-    if (step >= LINES.length) { setReady(true); return }
-    const line = LINES[step]
-    if (line.typed) {
-      let i = 0
-      const iv = setInterval(() => {
-        i++; setTyped(line.c.slice(0, i)); sound.tick()
-        if (i >= line.c.length) { clearInterval(iv); setTimeout(() => { setStep(s => s+1); setTyped('') }, 320) }
-      }, 55)
-      return () => clearInterval(iv)
+    if (denied) return
+    const push = () => {
+      const idx = seq.current++
+      setAmbient(a => [...a.slice(-7), { id: idx, t: AMBIENT[idx % AMBIENT.length] }])
     }
-    const d = line.dots ? 700 : line.deny ? 500 : 260
-    const to = setTimeout(() => setStep(s => s+1), d)
-    return () => clearTimeout(to)
-  }, [step])
+    push()
+    const iv = setInterval(push, 900)
+    return () => clearInterval(iv)
+  }, [denied])
 
-  // hold to breach
-  const startHold = () => {
-    sound.init(); sound.breach(); flash(0.5)
-    const t0 = performance.now()
-    const loop = () => {
-      const p = Math.min(1, (performance.now() - t0) / 1400)
-      setBreaching(p)
-      if (p < 1) holdRef.current = requestAnimationFrame(loop)
-      else { flash(1.3); setTimeout(() => { setGone(true); onEnter?.() }, 260) }
-    }
-    holdRef.current = requestAnimationFrame(loop)
+  useEffect(() => () => {
+    timers.current.forEach(clearTimeout)
+    rafs.current.forEach(cancelAnimationFrame)
+  }, [])
+
+  const run = () => {
+    // 1 — the refusal and the panic: text only, no fireworks
+    DENIAL.forEach(l => {
+      timers.current.push(setTimeout(() => {
+        setLines(v => [...v, l])
+        if (l.kind === 'deny') sound.reject()
+        else if (l.kind === 'panic') sound.key()
+        else sound.snap()
+      }, l.at))
+    })
+
+    // 2 — the display starts losing sync: tearing and colour draining, nothing more
+    timers.current.push(setTimeout(() => {
+      setFailing(true)
+      sound.riser(1.5)
+      const el = screenRef.current
+      const t0 = performance.now()
+      const tear = () => {
+        const p = Math.min(1, (performance.now() - t0) / 1400)
+        if (el) {
+          el.style.setProperty('--tear', `${(Math.random() - 0.5) * p * 30}px`)
+          el.style.setProperty('--shift', `${(Math.random() - 0.5) * p * 4}px`)
+          el.style.filter = `saturate(${1 - p * 0.8}) contrast(${1 + p}) brightness(${1 + p * 0.3})`
+        }
+        if (p < 1) rafs.current.push(requestAnimationFrame(tear))
+      }
+      rafs.current.push(requestAnimationFrame(tear))
+    }, 1800))
+
+    // 3 — the tube gives up: collapse to a line, then to a point
+    timers.current.push(setTimeout(() => {
+      sound.powerdown()
+      gsap.timeline({ onComplete: () => onEnter?.() })
+        .to(innerRef.current, { scaleY: 0.005, duration: 0.3, ease: 'power3.in' })
+        .set(collapseRef.current, { opacity: 1, scaleX: 1 })
+        .set(innerRef.current, { opacity: 0 })
+        .to(collapseRef.current, { scaleX: 0.015, duration: 0.3, ease: 'power2.in' }, '+=0.07')
+        .to(collapseRef.current, { opacity: 0, duration: 0.16, ease: 'power2.in' })
+        .call(() => sound.impact(0.6))
+    }, 3300))
   }
-  const endHold = () => { cancelAnimationFrame(holdRef.current); if (breaching < 1) setBreaching(0) }
+
+  const submit = (e) => {
+    e.preventDefault()
+    if (denied) return
+    sound.init()
+    const cmd = val.trim() || 'help'
+    setHistory(h => [...h, cmd])
+    setVal('')
+    setDenied(true)
+    sound.key()
+    run()
+  }
 
   return (
-    <div className={`boot ${gone ? 'boot--gone' : ''}`}>
+    <div className="boot">
       <div className="boot__crt" />
-      <div className="boot__inner">
-        <pre className="boot__ascii">{String.raw`
+      <div className={`boot__inner ${failing ? 'is-failing' : ''}`} ref={innerRef} onClick={() => inputRef.current?.focus()}>
+        <div className="boot__titlebar mono"><i/><i/><i/><span>guest@node-0 — /bin/sh — 120×34</span></div>
+        <div className="boot__screen" ref={screenRef}>
+          <pre className="boot__ascii">{String.raw`
    ██▀███   ▄▄▄       ▓██   ██▓ ▄▄▄       ███▄    █
   ▓██ ▒ ██▒▒████▄      ▒██  ██▒▒████▄     ██ ▀█   █
   ▓██ ░▄█ ▒▒██  ▀█▄     ▒██ ██░▒██  ▀█▄  ▓██  ▀█ ██▒
   ▒██▀▀█▄  ░██▄▄▄▄██    ░ ▐██▓░░██▄▄▄▄██ ▓██▒  ▐▌██▒
   ░██▓ ▒██▒ ▓█   ▓██▒   ░ ██▒▓░ ▓█   ▓██▒▒██░   ▓██░
 `}</pre>
-        <div className="boot__log">
-          {LINES.slice(0, step).map((l, i) => (
-            <div key={i} className={`boot__line ${l.ok?'is-ok':''} ${l.deny?'is-deny':''}`}>
-              {l.t && <span className="boot__prompt">{l.t}</span>}
-              <span>{l.c}{l.dots ? '…' : ''}</span>
-            </div>
-          ))}
-          {!ready && LINES[step]?.typed !== undefined && LINES[step]?.typed && (
-            <div className="boot__line"><span className="boot__prompt">{LINES[step].t}</span><span>{typed}</span><i className="boot__caret"/></div>
-          )}
+          <div className="boot__ambient mono" aria-hidden="true">
+            {ambient.map(a => <div className="boot__amb" key={a.id}>{a.t}</div>)}
+          </div>
+          <div className="boot__log mono">
+            {history.map((h, i) => (
+              <div className="boot__line" key={i}><span className="boot__prompt">guest@node-0:~$ </span><span>{h}</span></div>
+            ))}
+            {lines.map((l, i) => (
+              <div className={`boot__line is-${l.kind}`} key={`d${i}`}><span>{l.t}</span></div>
+            ))}
+            {!denied && (
+              <form className="boot__cmdline" onSubmit={submit}>
+                <span className="boot__prompt">guest@node-0:~$ </span>
+                <input ref={inputRef} className="boot__input" value={val}
+                  onChange={e => { if (e.target.value.length !== val.length) sound.key(); setVal(e.target.value) }}
+                  spellCheck={false} autoComplete="off" placeholder="type anything, or 'help'" />
+                <i className="boot__caret" />
+              </form>
+            )}
+          </div>
         </div>
-
-        {ready && (
-          <button className="breach" onPointerDown={startHold} onPointerUp={endHold} onPointerLeave={endHold} data-cursor>
-            <span className="breach__bar" style={{ '--p': breaching }} />
-            <span className="breach__label">{breaching > 0 ? 'OVERRIDING…' : 'HOLD TO OVERRIDE SECURITY PROTOCOLS'}</span>
-            <span className="breach__hint mono">[ sudo override ]</span>
-          </button>
-        )}
       </div>
+      <div className="boot__collapse" ref={collapseRef} aria-hidden="true" />
     </div>
   )
 }

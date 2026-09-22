@@ -13,8 +13,8 @@
 .xbar__right .topbar__clock { color: var(--bone); }
 
 /* sections */
-.xsection { position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-  gap: 4vh; padding: 14vh clamp(20px, 6vw, 120px) 10vh; }
+.xsection { position: relative; min-height: 92svh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: 4vh; padding: 10vh clamp(20px, 6vw, 120px) 7vh; }
 .xhead { text-align: center; max-width: 20ch; }
 .xhead h2, h2.xhead { font-size: clamp(34px, 6.5vw, 104px); font-weight: 300; letter-spacing: -0.03em; color: var(--bone); line-height: 1.03; }
 .xhead .kicker { display: inline-flex; margin-bottom: 16px; }
@@ -65,3 +65,45 @@
 .xcmd { width: min(1000px, 94vw); border: 1px solid var(--line-2); background: rgba(8,5,6,0.72); backdrop-filter: blur(10px); }
 .xcmd .cmdbar { border-top: none; background: transparent; }
 .xcmd .cmdbar__log { max-height: 96px; }
+
+/* cinematic char reveal */
+.xch { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
+.xhead h2, h2.xhead { perspective: 600px; }
+
+/* bigger, more expressive headings */
+.xhead h2, h2.xhead { font-size: clamp(40px, 8vw, 140px); letter-spacing: -0.04em; }
+
+/* refined glass windows with accent glow */
+.xwin { background: linear-gradient(160deg, rgba(20,16,20,0.62), rgba(8,6,9,0.5));
+  border: 1px solid color-mix(in srgb, var(--blood) 30%, var(--line-2));
+  box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02) inset,
+              0 1px 0 rgba(255,255,255,0.06) inset, 0 0 60px -20px var(--blood); }
+.xwin__bar { background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent); }
+.xwin__name { color: var(--ember); }
+
+/* section vertical rhythm — more breathing room, cinematic */
+.xsection { gap: 5vh; will-change: transform, opacity, filter; }
+
+/* whoami + manifesto duo layout */
+.xsection--duo .xhead { max-width: 42ch; }
+.xduo { display: grid; grid-template-columns: 1fr 1.1fr; gap: 22px; width: min(1040px, 94vw); align-items: start; }
+.xduo .xwin { width: 100%; }
+@media (max-width: 760px) { .xduo { grid-template-columns: 1fr; } }
+
+/* act card — a chapter slate, black frame + title, before each act cuts in */
+.actcard { position: fixed; inset: 0; z-index: 65; display: none; align-items: center; justify-content: center;
+  background: #000; pointer-events: none; }
+.actcard__text { font-family: var(--serif); font-weight: 300; font-size: clamp(24px, 4.2vw, 56px);
+  letter-spacing: 0.03em; color: var(--bone); text-align: center; padding: 0 8vw; text-shadow: 0 0 40px rgba(180,52,43,0.35); }
+
+/* docking warp — full-viewport rush effect when opening a project */
+.xwarp { position: fixed; inset: -10%; z-index: 59; pointer-events: none; opacity: 0;
+  background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.55) 0deg 0.9deg, transparent 0.9deg 5deg);
+  mix-blend-mode: screen; filter: blur(1.5px); }
+
+/* scene-cut transition flash — a quick RGB-split glitch bar swept in on section change */
+.xglitch { position: fixed; inset: 0; z-index: 58; pointer-events: none; opacity: 0;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,0.07) 0 1px, transparent 2px 4px),
+    linear-gradient(90deg, rgba(255,80,60,0.22), transparent 38%, transparent 62%, rgba(70,190,255,0.16));
+  mix-blend-mode: screen; }

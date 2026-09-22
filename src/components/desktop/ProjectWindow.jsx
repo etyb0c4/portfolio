@@ -17,13 +17,14 @@ export default function ProjectWindow({ project: p, onClose }) {
     `[ 0.041] loading modules: ${p.stack.slice(0,3).join(', ')}`,
     `[ 0.088] allocating runtime`,
     `[ 0.132] starting ${p.id}.service`,
+    `[ 0.158] anomaly class: stable · contained`,
     `[ 0.170] ready.`,
   ]
   useEffect(() => {
     let i = 0
     const iv = setInterval(() => {
-      i++; setLines(boot.slice(0, i)); sound.tick()
-      if (i >= boot.length) { clearInterval(iv); setTimeout(() => setBooted(true), 220) }
+      i++; setLines(boot.slice(0, i)); sound.snap()
+      if (i >= boot.length) { clearInterval(iv); setTimeout(() => { setBooted(true); sound.chime() }, 220) }
     }, 130)
     const esc = (e) => { if (e.key === 'Escape') onClose() }
     addEventListener('keydown', esc)

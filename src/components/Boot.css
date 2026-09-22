@@ -4,38 +4,97 @@
   display: grid; place-items: center;
   transition: opacity 0.7s var(--easing), filter 0.7s var(--easing);
 }
-.boot--gone { opacity: 0; filter: blur(14px) brightness(2); pointer-events: none; }
+
 .boot__crt {
   position: absolute; inset: 0; pointer-events: none;
   background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,0.35) 3px 4px);
   opacity: 0.35; mix-blend-mode: multiply;
 }
-.boot__inner { width: min(760px, 90vw); font-family: var(--mono); }
+.boot__inner {
+  position: relative;
+  width: min(1120px, 93vw); font-family: var(--mono);
+  display: flex; flex-direction: column;
+  min-height: min(68vh, 640px);
+  border: 1px solid rgba(180,52,43,0.32);
+  background: linear-gradient(180deg, rgba(18,10,11,0.72), rgba(8,5,6,0.82));
+  box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 70px -30px rgba(180,52,43,0.7);
+}
+.boot__titlebar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; border-bottom: 1px solid rgba(180,52,43,0.22);
+  font-size: 12px; color: var(--ash-dim); letter-spacing: 0.1em;
+  background: rgba(0,0,0,0.3);
+}
+.boot__titlebar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(180,52,43,0.55); display: block; }
+.boot__titlebar span { margin-left: 8px; }
+.boot__screen { flex: 1; display: flex; flex-direction: column; padding: 26px 30px 24px; min-height: 0; }
 .boot__ascii {
-  font-family: var(--mono); font-size: clamp(6px, 1.15vw, 11px); line-height: 1.05;
-  color: var(--blood); text-shadow: 0 0 18px rgba(180,52,43,0.6); white-space: pre; margin-bottom: 22px;
+  font-family: var(--mono); font-size: clamp(8px, 1.7vw, 17px); line-height: 1.05;
+  color: var(--blood); text-shadow: 0 0 18px rgba(180,52,43,0.6); white-space: pre; margin-bottom: 26px; align-self: center;
   filter: drop-shadow(0 0 6px rgba(180,52,43,0.4));
 }
-.boot__log { font-size: 13px; color: var(--ash); min-height: 168px; }
+.boot__ambient {
+  flex: 1; min-height: 120px; overflow: hidden; margin-bottom: 18px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  font-size: 13px; line-height: 1.55; color: rgba(154,143,139,0.42);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 60%);
+  mask-image: linear-gradient(to bottom, transparent, #000 60%);
+}
+.boot__amb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: ambIn 0.4s var(--easing); }
+@keyframes ambIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.boot__log { font-size: 16px; color: var(--ash); min-height: 64px; }
 .boot__line { padding: 2px 0; letter-spacing: 0.02em; opacity: 0; animation: bootline 0.28s var(--easing) forwards; }
 @keyframes bootline { from { opacity: 0; transform: translateY(4px); } to { opacity: 0.92; transform: none; } }
 .boot__prompt { color: var(--blood-hi); }
-.boot__line.is-ok span:last-child { color: #7ee081; }
-.boot__line.is-deny span:last-child { color: var(--ember); font-weight: 700; letter-spacing: 0.08em; }
-.boot__caret { display:inline-block; width:8px; height:15px; margin-left:2px; background:var(--ember); vertical-align:-2px; animation: blink 1s steps(1) infinite; }
+.boot__cmdline { display: flex; align-items: center; padding: 2px 0; }
+.boot__input {
+  flex: 1; background: none; border: none; outline: none; color: var(--bone);
+  font-family: var(--mono); font-size: 16px; caret-color: var(--ember);
+}
+.boot__input::placeholder { color: var(--ash-dim); }
+.boot__caret { display:inline-block; width:9px; height:19px; margin-left:2px; background:var(--ember); vertical-align:-2px; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
-.breach {
-  margin-top: 30px; position: relative; width: 100%; height: 62px;
-  border: 1px solid var(--line-2); overflow: hidden;
-  display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
-  background: rgba(180,52,43,0.05); transition: border-color 0.3s;
+
+
+
+
+
+
+/* full-viewport flashes — these read across the whole screen, not just the terminal box */
+
+
+
+
+/* full-viewport chromatic-aberration distortion as the terminal breaks down */
+
+
+
+
+
+/* ---- refusal + panic lines ---- */
+.boot__line.is-deny  span { color: #ff6a5a; }
+.boot__line.is-warn  span { color: #e0a050; }
+.boot__line.is-panic span { color: rgba(239,231,226,0.8); }
+
+/* ---- loss of signal: tearing bands and a drained picture, no flashing ---- */
+.boot__screen { --tear: 0px; --shift: 0px; }
+.boot__inner.is-failing .boot__screen { transform: translateX(var(--shift)); }
+.boot__inner.is-failing .boot__log,
+.boot__inner.is-failing .boot__ambient { transform: translateX(var(--tear)); }
+.boot__inner.is-failing .boot__ascii { transform: translateX(calc(var(--tear) * -0.6)); }
+.boot__inner.is-failing::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 3px);
+  animation: sigLoss 0.22s steps(2) infinite;
 }
-.breach:hover { border-color: var(--blood); }
-.breach__bar {
-  position: absolute; inset: 0; transform-origin: left;
-  transform: scaleX(var(--p)); background: linear-gradient(90deg, var(--blood), var(--ember));
-  opacity: 0.85; transition: transform 0.06s linear;
+@keyframes sigLoss { 0% { opacity: 0.35; } 100% { opacity: 0.7; } }
+
+/* ---- the tube collapsing to a line, then a point ---- */
+.boot__collapse {
+  position: fixed; left: 0; right: 0; top: 50%; height: 2px; z-index: 214;
+  background: linear-gradient(90deg, transparent, #fff6ec 12%, #fff 50%, #fff6ec 88%, transparent);
+  box-shadow: 0 0 26px 6px rgba(255,240,220,0.75);
+  opacity: 0; transform-origin: 50% 50%; pointer-events: none;
 }
-.breach__label { position: relative; font-family: var(--mono); font-weight: 700; letter-spacing: 0.3em; font-size: 13px; color: var(--bone); }
-.breach__hint { position: relative; font-size: 11px; color: rgba(239,231,226,0.7); letter-spacing: 0.15em; }

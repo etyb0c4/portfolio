@@ -29,17 +29,18 @@ const FRAG = /* glsl */`
     vec2 u=f*f*(3.-2.*f);
     return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;
   }
-  // ridged multifractal -> filaments
+  // ridged multifractal -> filaments (3 octaves: this renders at low res and is upscaled,
+  // so extra octaves cost a lot and show almost nothing)
   float ridged(vec2 p){
     float v=0., a=0.55, tot=0.; mat2 m=mat2(1.7,1.1,-1.1,1.7);
-    for(int i=0;i<6;i++){
+    for(int i=0;i<3;i++){
       float n=noise(p); n=1.0-abs(n*2.0-1.0); n=n*n;
       v+=a*n; tot+=a; p=m*p*1.02; a*=0.5;
     }
     return v/tot;
   }
   float fbm(vec2 p){ float v=0.,a=0.5; mat2 m=mat2(1.6,1.2,-1.2,1.6);
-    for(int i=0;i<5;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v; }
+    for(int i=0;i<3;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v; }
 
   void main(){
     vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;
@@ -101,7 +102,9 @@ export default function Background(){
   useEffect(() => {
     const canvas = ref.current
     const renderer = new THREE.WebGLRenderer({ canvas, antialias:false, powerPreference:'high-performance' })
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75))
+    // it's a soft out-of-focus nebula — rendering it at half resolution and letting the
+    // browser upscale is visually indistinguishable and ~4x cheaper
+    renderer.setPixelRatio(0.5)
     const scene = new THREE.Scene()
     const cam = new THREE.Camera()
     const geo = new THREE.BufferGeometry()
@@ -130,8 +133,16 @@ export default function Background(){
     const onMove = e => { target.set((e.clientX/innerWidth)*2-1, -((e.clientY/innerHeight)*2-1)) }
     addEventListener('pointermove', onMove)
 
+    // a lost context paints the page black and never recovers on its own
+    const onLost = (e) => { e.preventDefault(); cancelAnimationFrame(raf) }
+    const onRestored = () => { resize(); tick() }
+    canvas.addEventListener('webglcontextlost', onLost)
+    canvas.addEventListener('webglcontextrestored', onRestored)
+
     let raf, start = performance.now()
     const tick = () => {
+      raf = requestAnimationFrame(tick)
+      if (document.hidden || (window.__gl && window.__gl.render === false)) return
       const now = performance.now()
       uniforms.uTime.value = (now - start) / 1000
       // progress + heat come from globals set by scroll/events
@@ -143,12 +154,14 @@ export default function Background(){
       if (window.__gl && window.__gl.colA) { uniforms.uColA.value.set(window.__gl.colA[0],window.__gl.colA[1],window.__gl.colA[2]); uniforms.uColB.value.set(window.__gl.colB[0],window.__gl.colB[1],window.__gl.colB[2]) }
       mouse.lerp(target, 0.06); uniforms.uMouse.value.copy(mouse)
       renderer.render(scene, cam)
-      raf = requestAnimationFrame(tick)
     }
     tick()
 
     return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize)
-      removeEventListener('pointermove', onMove); renderer.dispose(); geo.dispose(); mat.dispose() }
+      removeEventListener('pointermove', onMove)
+      canvas.removeEventListener('webglcontextlost', onLost)
+      canvas.removeEventListener('webglcontextrestored', onRestored)
+      renderer.dispose(); geo.dispose(); mat.dispose() }
   }, [])
   return <canvas id="bg-canvas" ref={ref} />
 }

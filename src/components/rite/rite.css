@@ -1,0 +1,209 @@
+/* =========================================================
+   Act I bis — la chute
+   ========================================================= */
+.fall { position: fixed; inset: 0; z-index: 150; pointer-events: none; overflow: hidden; }
+.fall__warp {
+  position: absolute; inset: -25%; opacity: 0; transform-origin: 50% 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255,140,90,0.7) 0deg 0.7deg, transparent 0.7deg 4.2deg);
+  mix-blend-mode: screen; filter: blur(1px);
+}
+.fall__rain { position: absolute; inset: -12% 0; }
+.fall__rain span {
+  position: absolute; top: -40%; writing-mode: vertical-rl;
+  font-size: clamp(9px, 1vw, 13px); letter-spacing: 0.3em; color: #ff9a6a;
+  text-shadow: 0 0 12px rgba(255,120,80,0.8); white-space: nowrap;
+  animation-name: fallRain; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes fallRain { from { transform: translateY(-30vh); } to { transform: translateY(150vh); } }
+.fall__vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(60% 50% at 50% 50%, transparent 20%, rgba(0,0,0,0.82) 100%);
+}
+.fall__label {
+  position: absolute; left: 50%; bottom: 13vh; transform: translateX(-50%);
+  font-size: 11px; letter-spacing: 0.55em; text-transform: uppercase; color: #ffb08a;
+  animation: fallPulse 0.9s ease-in-out infinite;
+}
+@keyframes fallPulse { 0%,100% { opacity: 0.9; } 50% { opacity: 0.25; } }
+
+/* =========================================================
+   Act II — l'abîme
+   ========================================================= */
+.abyss {
+  position: fixed; inset: 0; z-index: 120; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4vh;
+  padding: 12vh 6vw; text-align: center;
+  background:
+    radial-gradient(90% 60% at 50% 108%, #7d2410 0%, transparent 62%),
+    radial-gradient(120% 90% at 50% 10%, #2a0b08 0%, #080505 70%);
+  transition: background 1.2s ease;
+}
+.abyss--accepted { background: radial-gradient(100% 80% at 50% 60%, #6b4a1e 0%, #150a06 75%); }
+
+.abyss__embers { position: absolute; inset: 0; pointer-events: none; }
+.abyss__embers i {
+  position: absolute; bottom: -5%; border-radius: 50%; background: #ff9a5a;
+  box-shadow: 0 0 10px #ff7a45; opacity: 0.8;
+  animation-name: emberRise; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes emberRise {
+  from { transform: translateY(0) translateX(0); opacity: 0; }
+  12%  { opacity: 0.85; }
+  to   { transform: translateY(-105vh) translateX(28px); opacity: 0; }
+}
+
+.abyss__copy { position: relative; z-index: 2; max-width: min(90vw, 40ch); margin-top: -6vh; }
+.abyss__text {
+  font-size: clamp(26px, 4.4vw, 58px); font-weight: 300; line-height: 1.14;
+  letter-spacing: -0.02em; color: #ffe9d8; min-height: 1.1em; text-wrap: balance;
+}
+.abyss__text--dim {
+  font-size: clamp(15px, 1.9vw, 24px); color: rgba(255,233,216,0.6);
+  margin-top: 0.7em; max-width: 46ch; margin-left: auto; margin-right: auto;
+}
+.abyss__caret { display: inline-block; width: 8px; height: 0.9em; margin-left: 5px; background: #ff8a5a; vertical-align: -0.12em; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.abyss__hint {
+  position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); bottom: 10vh;
+  font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,200,170,0.75);
+  animation: fallPulse 2.4s ease-in-out infinite; white-space: nowrap;
+}
+.abyss__hint b { color: #ffb08a; font-size: 14px; }
+.abyss__canvas { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; touch-action: none; cursor: crosshair; background: transparent; }
+/* the drawing target sits below the copy, not behind it */
+.abyss__guide {
+  position: absolute; z-index: 3; left: 50%; bottom: 17vh; transform: translateX(-50%);
+  width: auto; height: min(24vh, 200px); color: rgba(255,150,110,0.14); pointer-events: none;
+}
+.abyss__accepted {
+  position: relative; z-index: 5; font-size: 13px; letter-spacing: 0.45em; text-transform: uppercase;
+  color: #ffdca0; text-shadow: 0 0 28px rgba(255,200,130,0.8);
+}
+
+/* =========================================================
+   Act III — l'ascension
+   ========================================================= */
+.ascension { position: relative; background: #120705; }
+/* two stacked fixed skies; the bright one fades in as the climb progresses */
+.ascension__sky {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(to top, #120705 0%, #3a1a12 45%, #6b3a1e 80%, #8a4a24 100%);
+}
+.ascension__sky--high {
+  opacity: 0;
+  background: linear-gradient(to top, #2a1509 0%, #7a4420 38%, #d9a463 74%, #fff0d2 100%);
+}
+/* flipped: the wrist stays up in the sky and the fingers reach down toward the viewer */
+.ascension__track {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 34vh; padding: 34vh 6vw 30vh;
+}
+.beat { width: min(820px, 92vw); text-align: center; }
+.beat--open { min-height: 36vh; display: flex; flex-direction: column; justify-content: center; }
+.beat__kicker {
+  display: inline-block; margin-bottom: 20px;
+  font-size: 11px; letter-spacing: 0.42em; text-transform: uppercase; color: rgba(255,222,180,0.65);
+}
+.beat__line {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(34px, 6.4vw, 92px); line-height: 1.02; letter-spacing: -0.035em;
+  color: #fff6e8; text-shadow: 0 0 60px rgba(255,200,140,0.35);
+}
+.beat__wordwrap { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.06em; }
+.beat__word { display: inline-block; padding-right: 0.22em; }
+.beat__sub {
+  margin-top: 26px; font-family: var(--sans);
+  font-size: clamp(14px, 1.5vw, 19px); line-height: 1.65; color: rgba(255,240,222,0.72);
+  max-width: 54ch; margin-left: auto; margin-right: auto;
+}
+.beat__sub--summit { font-size: clamp(18px, 2.4vw, 30px); color: rgba(60,30,15,0.85); }
+.beat__facts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
+.beat__fact {
+  font-size: 11px; letter-spacing: 0.14em; color: rgba(255,238,214,0.8);
+  border: 1px solid rgba(255,220,170,0.28); padding: 7px 14px; border-radius: 2px;
+  background: rgba(255,220,170,0.05);
+}
+.ascension__summit { min-height: 70vh; display: flex; align-items: center; justify-content: center; }
+.ascension__blowout { position: fixed; inset: 0; z-index: 400; background: #fff8ec; opacity: 0; pointer-events: none; }
+
+/* =========================================================
+   Act IV + V — la carte du Bénin
+   ========================================================= */
+.beninmap {
+  position: fixed; inset: 0; z-index: 100; overflow: hidden;
+  background: radial-gradient(120% 100% at 50% 45%, #241407 0%, #070403 72%);
+}
+.beninmap__field { position: absolute; inset: 0; width: 100%; height: 100%; }
+.beninmap__star { fill: rgba(255,222,180,0.55); }
+
+.beninmap__stage {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1.6vh; padding: 9vh 4vw 7vh;
+}
+.beninmap__title {
+  font-weight: 300; font-size: clamp(22px, 3.4vw, 48px); letter-spacing: -0.03em; color: #fff3e0;
+  text-shadow: 0 0 50px rgba(255,190,130,0.35); text-align: center;
+}
+.beninmap__title span { display: inline-block; }
+
+.beninmap__svg { width: auto; height: min(76vh, 640px); overflow: visible; transform-origin: 50% 50%; }
+.beninmap__glow { fill: url(#beninFill); stroke: none; filter: blur(6px); }
+.beninmap__outline {
+  fill: none; stroke: #ffcf8a; stroke-width: 2.4; stroke-linejoin: round;
+  filter: drop-shadow(0 0 14px rgba(255,180,120,0.75));
+}
+
+.relic { cursor: pointer; transform-box: fill-box; transform-origin: 50% 50%; }
+.relic__hit { fill: transparent; }
+.relic__pulse { fill: none; stroke: #ffb07a; stroke-width: 0.8; opacity: 0.6; transform-box: fill-box; transform-origin: 50% 50%; animation: relicPulse 2.4s ease-out infinite; }
+@keyframes relicPulse { 0% { transform: scale(0.5); opacity: 0.75; } 100% { transform: scale(1.9); opacity: 0; } }
+.relic__ring { fill: none; stroke: #ffd88a; stroke-width: 1.1; opacity: 0.85; }
+.relic__dot { fill: #fff1d6; filter: drop-shadow(0 0 7px #ffcf8a); }
+.relic__name {
+  fill: #fff3e0; font-size: 7.5px; text-anchor: middle; font-family: var(--mono);
+  letter-spacing: 0.04em; opacity: 0; transition: opacity 0.25s;
+}
+.relic__city {
+  fill: rgba(255,220,170,0.7); font-size: 5.5px; text-anchor: middle; font-family: var(--mono);
+  letter-spacing: 0.08em; text-transform: uppercase; opacity: 0; transition: opacity 0.25s;
+}
+.relic:hover .relic__name, .relic:hover .relic__city { opacity: 1; }
+.relic:hover .relic__ring { stroke-width: 1.8; }
+
+.beninmap__caption {
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: rgba(255,220,170,0.55); opacity: 0; transition: opacity 0.8s ease;
+}
+.beninmap__caption.is-in { opacity: 1; }
+
+@media (max-width: 640px) {
+  .beninmap__svg { height: 46vh; }
+  .ascension__track { gap: 26vh; }
+}
+
+/* The project window renders inside this act and inherits the global crimson tokens,
+   which clashes with the gold. Re-point the tokens for everything under the map. */
+.beninmap {
+  --blood: #b8752a;
+  --blood-hi: #e0a050;
+  --ember: #ffcf8a;
+}
+.beninmap .pwin__win { box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 70px rgba(255,180,110,0.18); }
+.beninmap .pwin { background: rgba(10,6,3,0.72); }
+
+/* ---- the drawn mark, carried from the rite into the climb ---- */
+.beacon {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  z-index: 118; pointer-events: none; overflow: visible;
+}
+.beacon { will-change: transform, opacity; }
+.beacon__burn {
+  fill: none; stroke: #ff8a3c; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round;
+  animation: beaconFlicker 2.6s ease-in-out infinite;
+}
+.beacon__core {
+  fill: none; stroke: #fff3d6; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+}
+@keyframes beaconFlicker { 0%,100% { opacity: 0.92; } 42% { opacity: 0.66; } 71% { opacity: 1; } }

@@ -1,5 +1,8 @@
 // tiny global bridge between DOM/scroll and the WebGL field
-if (typeof window !== 'undefined' && !window.__gl) window.__gl = { progress: 0, heat: 0 }
+// `render` gates the two WebGL loops: every act except the fall paints an opaque
+// background over the canvases, so drawing them there is pure waste (and it was
+// heavy enough to starve input and get contexts dropped).
+if (typeof window !== 'undefined' && !window.__gl) window.__gl = { progress: 0, heat: 0, dock: 0, fall: 0, fallDepth: 0, climb: 0, render: true }
 
 export const setProgress = (p) => { if (window.__gl) window.__gl.progress = Math.max(0, Math.min(1, p)) }
 export const flash = (amount = 0.8) => { if (window.__gl) window.__gl.heat = Math.min(1.4, window.__gl.heat + amount) }

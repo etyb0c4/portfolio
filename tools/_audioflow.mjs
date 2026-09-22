@@ -1,0 +1,36 @@
+import { chromium } from 'playwright'
+const b = await chromium.launch({ executablePath:'/usr/bin/chromium', args:['--use-gl=angle','--use-angle=swiftshader','--autoplay-policy=no-user-gesture-required'] })
+const p = await b.newPage({ viewport:{width:1600,height:900} })
+p.on('pageerror', e=>console.log('PAGEERR:', e.message))
+const peak = async (ms=1200) => { let m=0; const n=Math.ceil(ms/30)
+  for(let i=0;i<n;i++){ const v=await p.evaluate(()=>window.__sound?.level?.()??-1); if(v>m)m=v; await p.waitForTimeout(30) } return m.toFixed(4) }
+const badge = () => p.evaluate(()=>document.querySelector('.sndtog')?.innerText?.trim())
+
+await p.goto('http://localhost:5183/portfolio/', {waitUntil:'networkidle'})
+await p.waitForTimeout(1000)
+console.log('badge before gesture :', await badge())
+await p.click('.boot__input')
+await p.keyboard.type('whoami', { delay: 70 })
+console.log('badge after typing   :', await badge())
+console.log('level while typing   :', await peak(900))
+await p.keyboard.press('Enter')
+console.log('level denied+fall    :', await peak(2600))
+await p.waitForTimeout(1500)
+console.log('level abyss (drone)  :', await peak(1500))
+await p.waitForSelector('.abyss__canvas',{timeout:15000})
+const box = await p.evaluate(()=>{const c=document.querySelector('.abyss__canvas');const r=c.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}})
+const ox = box.x+box.w/2-60, oy = box.y+box.h*0.70-200
+const seg=(a,bb,n)=>Array.from({length:n+1},(_,i)=>[a[0]+(bb[0]-a[0])*i/n, a[1]+(bb[1]-a[1])*i/n])
+const draw = async (pts)=>{ await p.mouse.move(ox+pts[0][0],oy+pts[0][1]); await p.mouse.down()
+  for(const [x,y] of pts.slice(1)){ await p.mouse.move(ox+x,oy+y); await p.waitForTimeout(8) } await p.mouse.up(); await p.waitForTimeout(100) }
+await draw(seg([0,0],[0,200],24))
+console.log('level pen stroke     :', await peak(600))
+await draw([...seg([0,0],[55,8],8),...seg([55,8],[70,45],8),...seg([70,45],[40,92],8),...seg([40,92],[0,96],6),...seg([0,96],[78,200],14)])
+console.log('level mark accepted  :', await peak(1600))
+await p.waitForTimeout(1800)
+for(let i=0;i<10;i++){ await p.mouse.wheel(0,900); await p.waitForTimeout(200) }
+console.log('level climbing       :', await peak(1500))
+await p.waitForTimeout(2500)
+console.log('level map            :', await peak(1500))
+console.log('badge at end         :', await badge())
+await b.close()
