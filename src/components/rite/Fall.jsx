@@ -17,6 +17,8 @@ export default function Fall({ onDone }) {
   const warpRef = useRef(null)
   const rainRef = useRef(null)
   const rootRef = useRef(null)
+  const glowRef = useRef(null)
+  const blindRef = useRef(null)
 
   useEffect(() => {
     if (!window.__gl) { onDone?.(); return }
@@ -36,10 +38,24 @@ export default function Fall({ onDone }) {
       // a couple of gusts on the way down so the descent has texture
       .call(() => sound.whoosh(1.1), null, 1.5)
       .call(() => sound.whoosh(1.3), null, 3.0)
-      // impact: everything slams shut
-      .call(() => sound.impact(1.5), null, 4.5)
-      .to([warpRef.current, rainRef.current], { opacity: 0, duration: 0.3, ease: 'power3.out' }, 4.55)
-      .fromTo(rootRef.current, { filter: 'blur(0px)' }, { filter: 'blur(16px)', duration: 0.35, ease: 'power2.in' }, 4.55)
+      // A light far down the shaft. Opacity rises almost linearly so it is genuinely
+      // *growing* the whole way down (a power3 curve left it invisible until the last
+      // half second, which read as a pop rather than an approach); the scale is what
+      // accelerates, so it feels like closing distance.
+      .fromTo(glowRef.current,
+        { opacity: 0, scale: 0.06 },
+        { opacity: 1, duration: 3.9, ease: 'power1.in' }, 0.3)
+      .fromTo(glowRef.current,
+        { scale: 0.06 },
+        { scale: 1.25, duration: 4.3, ease: 'power2.in' }, 0.3)
+      .call(() => sound.riser(2.4), null, 2.6)
+      // the blinding: it goes white before the impact, not after
+      .fromTo(blindRef.current, { opacity: 0 }, { opacity: 1, duration: 0.55, ease: 'power3.in' }, 4.15)
+      .call(() => sound.impact(1.6), null, 4.6)
+      .to([warpRef.current, rainRef.current, glowRef.current], { opacity: 0, duration: 0.25, ease: 'power3.out' }, 4.62)
+      // hold on full white and hand over *through* it — the abyss fades up out of the same
+      // white, so the act change happens behind a frame the viewer cannot see past
+      .to({}, { duration: 0.45 })
       .call(() => { if (window.__gl) { window.__gl.fall = 0; window.__gl.fallDepth = 0 } })
 
     return () => { tl.kill(); sound.endWind(true); if (window.__gl) { window.__gl.fall = 0; window.__gl.fallDepth = 0 } }
@@ -53,8 +69,10 @@ export default function Fall({ onDone }) {
           <span key={i} style={{ left: `${c.left}%`, animationDelay: `-${c.delay}s`, animationDuration: `${c.dur}s`, opacity: c.dim }}>{c.text}</span>
         ))}
       </div>
+      <div className="fall__glow" ref={glowRef} aria-hidden="true" />
       <div className="fall__vignette" aria-hidden="true" />
       <div className="fall__label mono">falling</div>
+      <div className="fall__blind" ref={blindRef} aria-hidden="true" />
     </div>
   )
 }

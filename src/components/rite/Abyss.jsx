@@ -141,6 +141,8 @@ export default function Abyss({ onMark, onDone }) {
 
   return (
     <div className={`abyss ${validated ? 'abyss--accepted' : ''}`}>
+      {/* the fall hands over on full white; this is the other half of that dissolve */}
+      <div className="abyss__flash" aria-hidden="true" />
       <div className="abyss__embers" aria-hidden="true">
         {EMBERS.map((e, i) => (
           <i key={i} style={{ left: `${e.left}%`, animationDelay: `-${e.delay}s`, animationDuration: `${e.dur}s`, width: e.size, height: e.size }} />
