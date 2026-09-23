@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Stairs from './Stairs'
 import { BEATS } from '../../data/ascent'
 import { flash } from '../../lib/store'
 import sound from '../../audio/sound'
@@ -71,6 +72,7 @@ export default function Ascension({ onDone }) {
     <div className="ascension" ref={root}>
       <div className="ascension__sky" aria-hidden="true" />
       <div className="ascension__sky ascension__sky--high" aria-hidden="true" />
+      <Stairs />
 
       <div className="ascension__track">
         <section className="beat beat--open">

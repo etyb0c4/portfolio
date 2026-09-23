@@ -43,13 +43,20 @@ export default function MarkBeacon({ strokes }) {
       .call(() => sound.whoosh(1.1), null, 0.6)
       .call(() => { settled.done = true })
 
-    // 3 — from then on the climb carries it further up and away
+    // 3 — it does not lead the climb; it rises a little further and burns out early,
+    //     handing the ascent over to the stairs
     let raf
     const follow = () => {
       raf = requestAnimationFrame(follow)
       if (!settled.done) return
       const c = (window.__gl && window.__gl.climb) || 0
-      gsap.set(el, { x: homeX, y: homeY - c * innerHeight * 0.34, scale, opacity: 1 - c * 0.4 })
+      const out = Math.min(1, c / 0.14)           // gone within the first stretch of the climb
+      gsap.set(el, {
+        x: homeX,
+        y: homeY - out * innerHeight * 0.30,
+        scale: scale * (1 + out * 0.35),
+        opacity: 1 - out,
+      })
     }
     follow()
     return () => { tl.kill(); cancelAnimationFrame(raf) }

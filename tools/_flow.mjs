@@ -5,7 +5,7 @@ const errs=[]
 p.on('pageerror', e=> errs.push('PAGEERR: '+e.message))
 p.on('console', m=>{ if(m.type()==='error') errs.push('CONSOLE: '+m.text().slice(0,200)) })
 const phase = async () => p.evaluate(() => {
-  if (document.querySelector('.beninmap')) return 'world'
+  if (document.querySelector('.world')) return 'world'
   if (document.querySelector('.ascension')) return 'ascension'
   if (document.querySelector('.abyss')) return 'abyss'
   if (document.querySelector('.fall')) return 'falling'

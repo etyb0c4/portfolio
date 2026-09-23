@@ -149,8 +149,9 @@
 /* =========================================================
    Act IV + V — la carte du Bénin
    ========================================================= */
-.beninmap {
-  position: fixed; inset: 0; z-index: 100; overflow: hidden;
+.world { position: relative; z-index: 100; background: #060302; }
+.beninmap__pin {
+  position: relative; height: 100vh; overflow: hidden;
   background: radial-gradient(120% 100% at 50% 45%, #241407 0%, #070403 72%);
 }
 .beninmap__field { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -166,7 +167,7 @@
 }
 .beninmap__title span { display: inline-block; }
 
-.beninmap__svg { width: auto; height: min(76vh, 640px); overflow: visible; transform-origin: 50% 50%; }
+.beninmap__svg { width: min(92vw, 1180px); height: min(74vh, 660px); overflow: visible; transform-origin: 50% 46%; }
 .beninmap__glow { fill: url(#beninFill); stroke: none; filter: blur(6px); }
 .beninmap__outline {
   fill: none; stroke: #ffcf8a; stroke-width: 2.4; stroke-linejoin: round;
@@ -233,3 +234,127 @@
   animation: abyssFlash 1.5s ease-out forwards;
 }
 @keyframes abyssFlash { from { opacity: 1; } to { opacity: 0; } }
+
+
+/* ---- geographic context: neighbours named around the country ---- */
+.beninmap__neighbour {
+  fill: rgba(255,210,160,0.035); stroke: rgba(255,200,150,0.22);
+  stroke-width: 1.6; stroke-dasharray: 7 7;
+}
+.beninmap__nlabel {
+  fill: rgba(255,214,170,0.45); font-family: var(--mono); font-size: 15px;
+  letter-spacing: 0.22em; text-anchor: middle;
+}
+.beninmap__sea {
+  fill: rgba(150,190,220,0.42); font-family: var(--mono); font-size: 13px;
+  letter-spacing: 0.3em; text-anchor: middle; font-style: italic;
+}
+.beninmap__name {
+  fill: #fff3e0; font-family: var(--serif); font-size: 34px; font-weight: 400;
+  letter-spacing: 0.12em; text-anchor: middle;
+}
+.beninmap__sub {
+  fill: rgba(255,214,170,0.6); font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.24em; text-anchor: middle;
+}
+
+/* =========================================================
+   Final act — the offers
+   ========================================================= */
+.contact {
+  position: relative; min-height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center;
+  background: radial-gradient(120% 80% at 50% 0%, #3b2408 0%, #0a0604 62%, #050303 100%);
+  padding: 14vh 5vw 0;
+}
+/* light pouring down from above, which everything below is reaching for */
+.contact__rays {
+  position: absolute; left: 50%; top: -28vh; transform: translateX(-50%);
+  width: 150vw; height: 110vh; pointer-events: none;
+  background:
+    conic-gradient(from 200deg at 50% 0%,
+      transparent 0deg, rgba(255,214,150,0.16) 12deg, transparent 20deg,
+      transparent 26deg, rgba(255,214,150,0.10) 33deg, transparent 41deg,
+      transparent 48deg, rgba(255,214,150,0.14) 55deg, transparent 64deg,
+      transparent 70deg, rgba(255,214,150,0.09) 77deg, transparent 86deg);
+  filter: blur(3px);
+  /* the layer's own bottom edge was showing as a hard horizontal line */
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 45%, transparent 92%);
+}
+.contact__haze {
+  position: absolute; left: 50%; top: -34vh; transform: translateX(-50%);
+  width: 90vw; height: 90vh; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255,220,160,0.34) 0%, transparent 62%);
+  filter: blur(22px);
+}
+
+.contact__head { position: relative; z-index: 3; text-align: center; }
+.contact__kicker {
+  display: block; margin-bottom: 26px;
+  font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+  color: rgba(255,224,186,0.65);
+}
+.contact__links { display: flex; gap: clamp(18px, 5vw, 64px); justify-content: center; flex-wrap: wrap; }
+.contact__link {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 22px; border: 1px solid rgba(255,214,160,0.22);
+  background: rgba(255,214,160,0.05); backdrop-filter: blur(6px);
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+}
+.contact__link:hover { border-color: rgba(255,224,180,0.65); background: rgba(255,214,160,0.12); transform: translateY(-4px); }
+.contact__label { font-size: clamp(22px, 2.6vw, 34px); color: #fff6e6; letter-spacing: -0.01em; }
+.contact__sub { font-size: 11px; letter-spacing: 0.1em; color: rgba(255,224,186,0.6); }
+
+/* the companies reaching up out of the crowd */
+.contact__suitors { position: absolute; left: 0; right: 0; bottom: 46vh; height: 18vh; z-index: 3; pointer-events: none; }
+.suitor {
+  position: absolute; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;
+  animation: suitorReach 4.6s ease-in-out infinite;
+}
+/* arced around the crowd rather than sitting in a flat row */
+.suitor[data-lift='1'] { bottom: 5vh; }
+.suitor[data-lift='2'] { bottom: 9vh; }
+@keyframes suitorReach {
+  0%, 100% { transform: translateY(14px); opacity: 0.62; }
+  50%      { transform: translateY(-16px); opacity: 1; }
+}
+.suitor__glyph { width: 27px; height: 27px; fill: #ffe3b4; filter: drop-shadow(0 0 12px rgba(255,190,120,0.8)); }
+.suitor__name { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,224,186,0.72); }
+
+/* The crowd itself — your artwork, screened so its dark ground drops out. Sized by height
+   and anchored to the floor so the hands rise from the bottom edge instead of filling the
+   frame, and masked at the edges: screen blending otherwise reveals the image's rectangle. */
+.contact__hands, .contact__swarm {
+  position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+  width: auto; pointer-events: none; user-select: none;
+  mix-blend-mode: screen;
+}
+.contact__hands {
+  z-index: 2; height: min(76vh, 790px); opacity: 0.95;
+  -webkit-mask-image: radial-gradient(ellipse 62% 74% at 50% 86%, #000 46%, transparent 82%);
+  mask-image: radial-gradient(ellipse 62% 74% at 50% 86%, #000 46%, transparent 82%);
+}
+.contact__swarm {
+  z-index: 1; height: min(60vh, 620px); opacity: 0.26;
+  filter: blur(4px) saturate(0.4);
+  -webkit-mask-image: radial-gradient(ellipse 52% 58% at 50% 94%, #000 22%, transparent 66%);
+  mask-image: radial-gradient(ellipse 52% 58% at 50% 94%, #000 22%, transparent 66%);
+}
+
+.contact__foot {
+  position: absolute; bottom: 3vh; left: 0; right: 0; z-index: 4;
+  display: flex; justify-content: space-between; padding: 0 5vw;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,224,186,0.4);
+}
+@media (max-width: 720px) {
+  .contact__suitors { bottom: 40vh; }
+  .suitor__name { display: none; }
+}
+
+/* the flight of steps that carries the climb */
+.stairs {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  z-index: 1; pointer-events: none; display: block;
+}

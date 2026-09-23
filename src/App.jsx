@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import gsap from 'gsap'
 import Background from './gl/Background'
 import Scene from './gl/Scene'
 import Guard from './components/Guard'
@@ -30,6 +31,12 @@ export default function App() {
     // every act but the climb is a fixed full-screen frame — drop any scroll the climb left behind
     scrollTo(0, 0)
   }, [phase])
+
+  // Timed sequences must run in real seconds. GSAP's default lag smoothing pretends only
+  // 33ms elapsed whenever a frame takes over 500ms, so on a slow machine the fall and the
+  // terminal collapse stretched to several times their intended length instead of dropping
+  // frames. Cinematics are on a clock, not a frame count.
+  useEffect(() => { gsap.ticker.lagSmoothing(0) }, [])
 
   useEffect(() => {
     const kick = () => { sound.init(); sound.resume() }
