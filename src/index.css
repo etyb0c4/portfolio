@@ -20,6 +20,9 @@
   --scan:      rgba(180, 52, 43, 0.05);
 
   /* type */
+  /* Cinzel is a Roman inscriptional face — monumental, the register of a film title.
+     It carries the handful of biggest moments; Fraunces stays for everything else. */
+  --display: 'Cinzel', 'Fraunces', Georgia, serif;
   --serif: 'Fraunces', Georgia, serif;
   --sans:  'Space Grotesk', system-ui, sans-serif;
   --mono:  'JetBrains Mono', ui-monospace, monospace;
@@ -61,6 +64,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; color: var(--bone); li
 
 .mono { font-family: var(--mono); }
 .serif { font-family: var(--serif); }
+.display { font-family: var(--display); }
 
 /* fixed WebGL canvas */
 #bg-canvas, #fg-canvas {

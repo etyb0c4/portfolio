@@ -4,14 +4,6 @@ import './Hud.css'
 /* A quiet instrument panel that runs the whole way through: corner ticks, the act you are
    in, a live clock and a progress read-out. It exists to make the frame feel like a device
    you are looking through rather than a page — so it stays small, dim and never moves. */
-const ACTS = {
-  boot:      { n: 'I',   name: 'LE TERMINAL' },
-  falling:   { n: 'II',  name: 'LA CHUTE' },
-  abyss:     { n: 'III', name: 'L’ABÎME' },
-  ascension: { n: 'IV',  name: 'L’ASCENSION' },
-  world:     { n: 'V',   name: 'LE BÉNIN' },
-}
-
 export default function Hud({ phase }) {
   const [clock, setClock] = useState('')
   const [pct, setPct] = useState(0)
@@ -40,8 +32,6 @@ export default function Hud({ phase }) {
     return () => cancelAnimationFrame(raf)
   }, [phase])
 
-  const act = ACTS[phase] || ACTS.boot
-
   return (
     <div className="hud mono" aria-hidden="true">
       <span className="hud__tick hud__tick--tl" />
@@ -51,8 +41,6 @@ export default function Hud({ phase }) {
 
       <div className="hud__tl">
         <span className="hud__dot" />
-        <span>ACTE {act.n}</span>
-        <span className="hud__dim">{act.name}</span>
       </div>
 
       <div className="hud__tr">

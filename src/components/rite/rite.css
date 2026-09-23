@@ -71,14 +71,17 @@
   to   { transform: translateY(-105vh) translateX(28px); opacity: 0; }
 }
 
-.abyss__copy { position: relative; z-index: 2; max-width: min(90vw, 40ch); margin-top: -6vh; }
+.abyss__copy { position: absolute; top: 9vh; left: 50%; transform: translateX(-50%); z-index: 2; width: min(90vw, 40ch); }
 .abyss__text {
-  font-size: clamp(26px, 4.4vw, 58px); font-weight: 300; line-height: 1.14;
-  letter-spacing: -0.02em; color: var(--j-key); min-height: 1.1em; text-wrap: balance;
+  font-family: var(--display); font-weight: 600;
+  font-size: clamp(19px, 2.6vw, 36px); line-height: 1.24;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--j-key); min-height: 1.1em; text-wrap: balance;
 }
 .abyss__text--dim {
-  font-size: clamp(15px, 1.9vw, 24px); color: rgb(var(--j-key-rgb) / 0.62);
-  margin-top: 0.7em; max-width: 46ch; margin-left: auto; margin-right: auto;
+  font-family: var(--serif); font-size: clamp(13px, 1.5vw, 19px);
+  color: rgb(var(--j-key-rgb) / 0.62); text-transform: none; letter-spacing: 0;
+  margin-top: 0.9em; max-width: 46ch; margin-left: auto; margin-right: auto;
 }
 .abyss__caret { display: inline-block; width: 8px; height: 0.9em; margin-left: 5px; background: #ff8a5a; vertical-align: -0.12em; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
@@ -88,12 +91,28 @@
   font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,200,170,0.75);
   animation: fallPulse 2.4s ease-in-out infinite; white-space: nowrap;
 }
+.abyss__hint.is-bad { color: rgb(255 140 110 / 0.95); }
 .abyss__hint b { color: #ffb08a; font-size: 14px; }
 .abyss__canvas { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; touch-action: none; cursor: crosshair; background: transparent; }
-/* the drawing target sits below the copy, not behind it */
+/* The drawing field is the whole middle of the screen. It used to be a small ghost near
+   the bottom, so people drew small marks that then failed the size check. */
+.abyss__field {
+  position: absolute; z-index: 2; left: 50%; top: 52%; transform: translate(-50%, -50%);
+  width: min(62vh, 78vw); height: min(62vh, 78vw); pointer-events: none;
+  border: 1px solid rgb(var(--j-key-rgb) / 0.10);
+  border-radius: 3px;
+}
+/* corner ticks so the field reads as a place to draw */
+.abyss__field::before, .abyss__field::after {
+  content: ''; position: absolute; width: 26px; height: 26px;
+  border: 1px solid rgb(var(--j-key-rgb) / 0.3);
+}
+.abyss__field::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.abyss__field::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
 .abyss__guide {
-  position: absolute; z-index: 3; left: 50%; bottom: 17vh; transform: translateX(-50%);
-  width: auto; height: min(24vh, 200px); color: rgba(255,150,110,0.14); pointer-events: none;
+  position: absolute; z-index: 3; left: 50%; top: 52%; transform: translate(-50%, -50%);
+  width: auto; height: min(50vh, 62vw); color: rgb(var(--j-key-rgb) / 0.13); pointer-events: none;
 }
 .abyss__accepted {
   position: relative; z-index: 5; font-size: 13px; letter-spacing: 0.45em; text-transform: uppercase;
@@ -132,8 +151,9 @@
   color: rgb(var(--j-key-rgb) / 0.7);
 }
 .beat__line {
-  font-family: var(--serif); font-weight: 300;
-  font-size: clamp(34px, 6.4vw, 92px); line-height: 1.02; letter-spacing: -0.035em;
+  font-family: var(--display); font-weight: 600;
+  font-size: clamp(26px, 4.6vw, 68px); line-height: 1.12; letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--j-key); text-shadow: 0 0 70px rgb(var(--j-glow-rgb) / 0.45);
 }
 .beat__wordwrap { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.06em; }
@@ -177,7 +197,8 @@
   align-items: center; justify-content: center; gap: 1.6vh; padding: 9vh 4vw 7vh;
 }
 .beninmap__title {
-  font-weight: 300; font-size: clamp(22px, 3.4vw, 48px); letter-spacing: -0.03em; color: #fff3e0;
+  font-family: var(--display); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(18px, 2.7vw, 40px); letter-spacing: 0.06em; color: #fff3e0;
   text-shadow: 0 0 50px rgba(255,190,130,0.35); text-align: center;
 }
 .beninmap__title span { display: inline-block; }
@@ -251,8 +272,8 @@
   letter-spacing: 0.3em; text-anchor: middle; font-style: italic;
 }
 .beninmap__name {
-  fill: #fff3e0; font-family: var(--serif); font-size: 34px; font-weight: 400;
-  letter-spacing: 0.12em; text-anchor: middle;
+  fill: #fff3e0; font-family: var(--display); font-size: 34px; font-weight: 700;
+  letter-spacing: 0.2em; text-anchor: middle;
 }
 .beninmap__sub {
   fill: rgba(255,214,170,0.6); font-family: var(--mono); font-size: 11px;
@@ -328,7 +349,8 @@
 .contact__link:focus-visible .contact__sheen { transform: translateX(120%); }
 
 .contact__row { display: flex; align-items: baseline; gap: 12px; }
-.contact__label { font-size: clamp(21px, 2.3vw, 30px); color: #fff6e6; letter-spacing: -0.01em; }
+.contact__label { font-family: var(--display); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(17px, 1.9vw, 25px); color: #fff6e6; letter-spacing: 0.07em; }
 .contact__arrow {
   font-size: 15px; color: rgba(255,224,186,0.55);
   transition: transform 0.35s var(--easing), color 0.35s var(--easing);
@@ -415,4 +437,33 @@
 .clouds {
   position: fixed; inset: 0; width: 100vw; height: 100vh;
   z-index: 1; pointer-events: none; display: block;
+}
+
+/* Explicit zoom control on the map. It drives the same scroll the wheel does, so the two
+   can never disagree — it just makes the interaction visible instead of guessable. */
+.mapzoom {
+  position: absolute; left: 50%; bottom: 8vh; transform: translateX(-50%);
+  z-index: 4; display: flex; align-items: center; gap: 12px;
+  opacity: 0; transition: opacity 0.8s ease;
+}
+.mapzoom.is-in { opacity: 1; }
+.mapzoom__btn {
+  width: 34px; height: 34px; display: grid; place-items: center;
+  font-size: 17px; line-height: 1; color: rgb(var(--j-key-rgb) / 0.9);
+  border: 1px solid rgb(var(--j-key-rgb) / 0.32);
+  background: rgb(var(--j-glow-rgb) / 0.08);
+  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+.mapzoom__btn:hover:not(:disabled) {
+  background: rgb(var(--j-glow-rgb) / 0.22);
+  border-color: rgb(var(--j-key-rgb) / 0.75);
+  transform: translateY(-2px);
+}
+.mapzoom__btn:active:not(:disabled) { transform: translateY(0) scale(0.94); }
+.mapzoom__btn:disabled { opacity: 0.3; }
+.mapzoom__track { display: block; width: 92px; height: 2px; background: rgb(var(--j-key-rgb) / 0.18); overflow: hidden; }
+.mapzoom__track i { display: block; height: 100%; background: rgb(var(--j-key-rgb) / 0.8); transform-origin: 0 50%; }
+.mapzoom__label {
+  min-width: 104px; font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgb(var(--j-key-rgb) / 0.5);
 }

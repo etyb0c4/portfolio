@@ -22,10 +22,14 @@ export default function BeninMap() {
   const pathRef = useRef(null)
   const [open, setOpen] = useState(null)
   const [arrived, setArrived] = useState(false)
+  const [zoom, setZoom] = useState(0)      // 0..1 — how far into the country we are
+  const lenisRef = useRef(null)
+  const spanRef = useRef(1)
 
   useEffect(() => {
     scrollTo(0, 0)
     const lenis = new Lenis({ duration: 1.2, wheelMultiplier: 0.9 })
+    lenisRef.current = lenis
     const tick = (t) => lenis.raf(t * 1000)
     gsap.ticker.add(tick); gsap.ticker.lagSmoothing(0)
     lenis.on('scroll', () => ScrollTrigger.update())
@@ -58,6 +62,8 @@ export default function BeninMap() {
         scrollTrigger: {
           trigger: root.current, start: 'top top', end: '+=140%',
           pin: stage.current, scrub: 0.6, anticipatePin: 1,
+          onRefresh: (self) => { spanRef.current = Math.max(1, self.end - self.start) },
+          onUpdate: (self) => setZoom(self.progress),
         },
       })
         // steadier than power2, which crammed most of the zoom into the last moment
@@ -73,6 +79,16 @@ export default function BeninMap() {
   }, [])
 
   const openRelic = (p) => { sound.connect(); sound.whoosh(0.8); setOpen(p) }
+
+  /* The zoom is still driven by scroll — one source of truth, so the two controls can never
+     disagree — but these buttons make it discoverable instead of something you have to
+     guess by scrolling on a trackpad. */
+  const step = (dir) => {
+    const l = lenisRef.current
+    if (!l) return
+    sound.snap()
+    l.scrollTo(Math.max(0, scrollY + dir * spanRef.current * 0.25), { duration: 0.9 })
+  }
 
   return (
     <div className="world" ref={root}>
@@ -134,8 +150,19 @@ export default function BeninMap() {
           </svg>
 
           <p className={`beninmap__caption mono ${arrived ? 'is-in' : ''}`}>
-            quatre points · cliquez-en un · puis continuez à descendre
+            quatre points · cliquez-en un
           </p>
+
+          <div className={`mapzoom mono ${arrived ? 'is-in' : ''}`}>
+            <button className="mapzoom__btn" onClick={() => step(-1)} aria-label="dézoomer"
+                    onMouseEnter={() => sound.hover()} disabled={zoom <= 0.001}>−</button>
+            <span className="mapzoom__track" aria-hidden="true">
+              <i style={{ transform: `scaleX(${zoom})` }} />
+            </span>
+            <button className="mapzoom__btn" onClick={() => step(1)} aria-label="zoomer"
+                    onMouseEnter={() => sound.hover()} disabled={zoom >= 0.999}>+</button>
+            <span className="mapzoom__label">{zoom < 0.02 ? 'zoomer pour entrer' : `${Math.round(zoom * 100)}%`}</span>
+          </div>
         </div>
       </div>
 

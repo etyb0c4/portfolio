@@ -153,6 +153,7 @@ export default function Abyss({ onDone }) {
 
       {ready && !validated && (
         <>
+          <div className="abyss__field" aria-hidden="true" />
           <div className={`abyss__hint mono ${rejected ? 'is-bad' : ''}`}>
             {rejected ? 'that is not the mark — trace an R' : <>trace the mark — draw <b>R</b></>}
           </div>
