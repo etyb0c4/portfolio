@@ -25,6 +25,7 @@ export default function BeninMap() {
   const [zoom, setZoom] = useState(0)      // 0..1 — how far into the country we are
   const lenisRef = useRef(null)
   const spanRef = useRef(1)
+  const stepRef = useRef(null)
 
   useEffect(() => {
     scrollTo(0, 0)
@@ -75,7 +76,22 @@ export default function BeninMap() {
         .to('.beninmap__veil', { opacity: 0, ease: 'power2.in' }, 0.35)
     }, root)
 
-    return () => { ctx.revert(); gsap.ticker.remove(tick); lenis.destroy() }
+    // the same control from the keyboard — '+' and '-', numpad included, and '=' because
+    // that is the unshifted key '+' sits on for most layouts
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+      let dir = 0
+      if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') dir = 1
+      else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') dir = -1
+      if (!dir) return
+      e.preventDefault()
+      stepRef.current?.(dir)
+    }
+    addEventListener('keydown', onKey)
+
+    return () => { ctx.revert(); gsap.ticker.remove(tick); lenis.destroy(); removeEventListener('keydown', onKey) }
   }, [])
 
   const openRelic = (p) => { sound.connect(); sound.whoosh(0.8); setOpen(p) }
@@ -89,6 +105,7 @@ export default function BeninMap() {
     sound.snap()
     l.scrollTo(Math.max(0, scrollY + dir * spanRef.current * 0.25), { duration: 0.9 })
   }
+  stepRef.current = step
 
   return (
     <div className="world" ref={root}>
@@ -149,19 +166,21 @@ export default function BeninMap() {
             })}
           </svg>
 
-          <p className={`beninmap__caption mono ${arrived ? 'is-in' : ''}`}>
+          <p className={`beninmap__caption mono ${arrived ? 'is-in' : ''}`}
+             style={{ '--fade': Math.max(0, 1 - zoom / 0.3) }}>
             quatre points · cliquez-en un
           </p>
 
-          <div className={`mapzoom mono ${arrived ? 'is-in' : ''}`}>
-            <button className="mapzoom__btn" onClick={() => step(-1)} aria-label="dézoomer"
-                    onMouseEnter={() => sound.hover()} disabled={zoom <= 0.001}>−</button>
-            <span className="mapzoom__track" aria-hidden="true">
+          {/* the control is the keyboard; this only says so and shows where you are */}
+          <div className={`mapzoom mono ${arrived ? 'is-in' : ''}`} aria-hidden="true"
+               style={{ '--fade': Math.max(0, 1 - zoom / 0.4) }}>
+            <kbd>+</kbd><kbd>−</kbd>
+            <span className="mapzoom__label">
+              {zoom < 0.02 ? 'pour entrer dans le pays' : `${Math.round(zoom * 100)}%`}
+            </span>
+            <span className="mapzoom__track">
               <i style={{ transform: `scaleX(${zoom})` }} />
             </span>
-            <button className="mapzoom__btn" onClick={() => step(1)} aria-label="zoomer"
-                    onMouseEnter={() => sound.hover()} disabled={zoom >= 0.999}>+</button>
-            <span className="mapzoom__label">{zoom < 0.02 ? 'zoomer pour entrer' : `${Math.round(zoom * 100)}%`}</span>
           </div>
         </div>
       </div>

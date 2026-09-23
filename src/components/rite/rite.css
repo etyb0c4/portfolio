@@ -231,7 +231,7 @@
   font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
   color: rgba(255,220,170,0.55); opacity: 0; transition: opacity 0.8s ease;
 }
-.beninmap__caption.is-in { opacity: 1; }
+.beninmap__caption.is-in { opacity: var(--fade, 1); }
 
 @media (max-width: 640px) {
   .beninmap__svg { height: 46vh; }
@@ -439,31 +439,34 @@
   z-index: 1; pointer-events: none; display: block;
 }
 
-/* Explicit zoom control on the map. It drives the same scroll the wheel does, so the two
-   can never disagree — it just makes the interaction visible instead of guessable. */
+/* The map is zoomed from the keyboard. This is only a read-out: which keys, and how far
+   in you are. Nothing here is clickable — an on-screen +/- would just duplicate the keys. */
 .mapzoom {
   position: absolute; left: 50%; bottom: 8vh; transform: translateX(-50%);
-  z-index: 4; display: flex; align-items: center; gap: 12px;
-  opacity: 0; transition: opacity 0.8s ease;
+  z-index: 4; display: flex; align-items: center; gap: 11px;
+  opacity: 0; transition: opacity 0.8s ease; pointer-events: none;
 }
-.mapzoom.is-in { opacity: 1; }
-.mapzoom__btn {
-  width: 34px; height: 34px; display: grid; place-items: center;
-  font-size: 17px; line-height: 1; color: rgb(var(--j-key-rgb) / 0.9);
-  border: 1px solid rgb(var(--j-key-rgb) / 0.32);
-  background: rgb(var(--j-glow-rgb) / 0.08);
-  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+/* fades out as you travel in, so it never sits on top of the act underneath */
+.mapzoom.is-in { opacity: var(--fade, 1); }
+.mapzoom kbd {
+  font-family: var(--mono); font-size: 12px; line-height: 1;
+  min-width: 24px; padding: 6px 0; text-align: center;
+  border: 1px solid rgb(var(--j-key-rgb) / 0.35);
+  border-bottom-width: 2px; border-radius: 3px;
+  background: rgb(var(--j-glow-rgb) / 0.1);
+  color: rgb(var(--j-key-rgb) / 0.9);
+  animation: keyHint 3.4s ease-in-out infinite;
 }
-.mapzoom__btn:hover:not(:disabled) {
-  background: rgb(var(--j-glow-rgb) / 0.22);
-  border-color: rgb(var(--j-key-rgb) / 0.75);
-  transform: translateY(-2px);
+.mapzoom kbd:last-of-type { animation-delay: 0.45s; }
+@keyframes keyHint {
+  0%, 100% { opacity: 0.55; transform: translateY(0); }
+  12%      { opacity: 1; transform: translateY(-2px); }
+  26%      { opacity: 0.55; transform: translateY(0); }
 }
-.mapzoom__btn:active:not(:disabled) { transform: translateY(0) scale(0.94); }
-.mapzoom__btn:disabled { opacity: 0.3; }
-.mapzoom__track { display: block; width: 92px; height: 2px; background: rgb(var(--j-key-rgb) / 0.18); overflow: hidden; }
-.mapzoom__track i { display: block; height: 100%; background: rgb(var(--j-key-rgb) / 0.8); transform-origin: 0 50%; }
 .mapzoom__label {
-  min-width: 104px; font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase;
+  min-width: 150px; font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase;
   color: rgb(var(--j-key-rgb) / 0.5);
 }
+.mapzoom__track { display: block; width: 92px; height: 2px; background: rgb(var(--j-key-rgb) / 0.18); overflow: hidden; }
+.mapzoom__track i { display: block; height: 100%; background: rgb(var(--j-key-rgb) / 0.8); transform-origin: 0 50%; }
+
