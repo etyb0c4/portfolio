@@ -5,12 +5,22 @@ import { useEffect, useRef } from 'react'
    small, slow and pale, so the parallax alone sells the altitude. The whole stack sinks as
    you climb — you are passing through the weather, not watching it. */
 const BANDS = [
-  { y: 0.88, scale: 1.00, speed: 15, alpha: 0.30, blobs: 13, tint: [255, 228, 194] },
-  { y: 0.72, scale: 0.74, speed: 11, alpha: 0.22, blobs: 14, tint: [255, 220, 182] },
-  { y: 0.57, scale: 0.54, speed: 8,  alpha: 0.16, blobs: 15, tint: [255, 214, 176] },
-  { y: 0.42, scale: 0.38, speed: 5.5, alpha: 0.12, blobs: 15, tint: [255, 228, 200] },
-  { y: 0.28, scale: 0.26, speed: 3.5, alpha: 0.085, blobs: 14, tint: [255, 240, 218] },
+  { y: 0.88, scale: 1.00, speed: 15,  alpha: 0.30,  blobs: 13, lit: 0.15 },
+  { y: 0.72, scale: 0.74, speed: 11,  alpha: 0.22,  blobs: 14, lit: 0.30 },
+  { y: 0.57, scale: 0.54, speed: 8,   alpha: 0.16,  blobs: 15, lit: 0.48 },
+  { y: 0.42, scale: 0.38, speed: 5.5, alpha: 0.12,  blobs: 15, lit: 0.66 },
+  { y: 0.28, scale: 0.26, speed: 3.5, alpha: 0.085, blobs: 14, lit: 0.85 },
 ]
+
+// read the live journey colours so the clouds are lit by whatever sky they are in
+function skyColours() {
+  const cs = getComputedStyle(document.documentElement)
+  const parse = (v, fb) => {
+    const p = (cs.getPropertyValue(v) || '').trim().split(/\s+/).map(Number)
+    return p.length === 3 && p.every(n => !Number.isNaN(n)) ? p : fb
+  }
+  return { glow: parse('--j-glow-rgb', [255, 200, 150]), key: parse('--j-key-rgb', [255, 238, 214]) }
+}
 
 // fixed per-band blob layout so the shapes stay stable frame to frame
 const LAYOUT = BANDS.map((b, bi) =>
@@ -45,6 +55,7 @@ export default function Clouds() {
 
       const climb = (window.__gl && window.__gl.climb) || 0
       const t = performance.now() / 1000
+      const { glow, key } = skyColours()
 
       BANDS.forEach((band, bi) => {
         // climbing pushes every band downward past the viewer, nearer ones faster
@@ -54,7 +65,8 @@ export default function Clouds() {
 
         const blobH = h * 0.22 * band.scale
         const drift = (t * band.speed) % (w * 1.6)
-        const [r, g, bl] = band.tint
+        // higher bands catch more of the light above them
+        const [r, g, bl] = glow.map((v, i) => Math.round(v + (key[i] - v) * band.lit))
 
         LAYOUT[bi].forEach(p => {
           // two copies so the band wraps seamlessly as it drifts

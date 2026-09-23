@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import sound from '../../audio/sound'
+import { applyJourney } from '../../lib/journey'
 import './rite.css'
 
 // vertical code-rain columns that rip upward past the viewer as they drop
@@ -34,7 +35,10 @@ export default function Fall({ onDone }) {
       .fromTo(rainRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0)
       // the dive itself — slow build, then terminal velocity
       .to(obj, { depth: 780, duration: 4.6, ease: 'power2.in',
-        onUpdate: () => { if (window.__gl) window.__gl.fallDepth = obj.depth } }, 0.05)
+        onUpdate: () => {
+          if (window.__gl) window.__gl.fallDepth = obj.depth
+          applyJourney('falling', obj.depth / 780)
+        } }, 0.05)
       // a couple of gusts on the way down so the descent has texture
       .call(() => sound.whoosh(1.1), null, 1.5)
       .call(() => sound.whoosh(1.3), null, 3.0)

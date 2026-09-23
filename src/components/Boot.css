@@ -1,6 +1,7 @@
 .boot {
   position: fixed; inset: 0; z-index: 200;
-  background: radial-gradient(120% 120% at 50% 30%, #100a0b 0%, var(--void) 70%);
+  background: radial-gradient(120% 120% at 50% 30%, var(--j-sky, #100a0b) 0%, var(--j-deep, #0a0708) 70%);
+  transition: background 0.5s linear;
   display: grid; place-items: center;
   transition: opacity 0.7s var(--easing), filter 0.7s var(--easing);
 }
@@ -15,23 +16,24 @@
   width: min(1120px, 93vw); font-family: var(--mono);
   display: flex; flex-direction: column;
   min-height: min(68vh, 640px);
-  border: 1px solid rgba(180,52,43,0.32);
+  border: 1px solid rgb(var(--j-glow-rgb, 180 52 43) / 0.34);
   background: linear-gradient(180deg, rgba(18,10,11,0.72), rgba(8,5,6,0.82));
-  box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 70px -30px rgba(180,52,43,0.7);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 80px -30px rgb(var(--j-glow-rgb, 180 52 43) / 0.75);
 }
 .boot__titlebar {
   display: flex; align-items: center; gap: 10px;
-  padding: 11px 16px; border-bottom: 1px solid rgba(180,52,43,0.22);
+  padding: 11px 16px; border-bottom: 1px solid rgb(var(--j-glow-rgb, 180 52 43) / 0.24);
   font-size: 12px; color: var(--ash-dim); letter-spacing: 0.1em;
   background: rgba(0,0,0,0.3);
 }
-.boot__titlebar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(180,52,43,0.55); display: block; }
+.boot__titlebar i { width: 9px; height: 9px; border-radius: 50%; background: rgb(var(--j-glow-rgb, 180 52 43) / 0.6); display: block; }
 .boot__titlebar span { margin-left: 8px; }
 .boot__screen { flex: 1; display: flex; flex-direction: column; padding: 26px 30px 24px; min-height: 0; }
 .boot__ascii {
   font-family: var(--mono); font-size: clamp(8px, 1.7vw, 17px); line-height: 1.05;
-  color: var(--blood); text-shadow: 0 0 18px rgba(180,52,43,0.6); white-space: pre; margin-bottom: 26px; align-self: center;
-  filter: drop-shadow(0 0 6px rgba(180,52,43,0.4));
+  color: var(--j-glow, var(--blood)); text-shadow: 0 0 22px rgb(var(--j-glow-rgb, 180 52 43) / 0.65); white-space: pre; margin-bottom: 26px; align-self: center;
+  filter: drop-shadow(0 0 8px rgb(var(--j-glow-rgb, 180 52 43) / 0.45));
+  transition: color 0.5s linear;
 }
 .boot__ambient {
   flex: 1; min-height: 120px; overflow: hidden; margin-bottom: 18px;
@@ -46,14 +48,14 @@
 .boot__log { font-size: 16px; color: var(--ash); min-height: 64px; }
 .boot__line { padding: 2px 0; letter-spacing: 0.02em; opacity: 0; animation: bootline 0.28s var(--easing) forwards; }
 @keyframes bootline { from { opacity: 0; transform: translateY(4px); } to { opacity: 0.92; transform: none; } }
-.boot__prompt { color: var(--blood-hi); }
+.boot__prompt { color: var(--j-glow, var(--blood-hi)); transition: color 0.5s linear; }
 .boot__cmdline { display: flex; align-items: center; padding: 2px 0; }
 .boot__input {
-  flex: 1; background: none; border: none; outline: none; color: var(--bone);
+  flex: 1; background: none; border: none; outline: none; color: var(--j-key, var(--bone));
   font-family: var(--mono); font-size: 16px; caret-color: var(--ember);
 }
 .boot__input::placeholder { color: var(--ash-dim); }
-.boot__caret { display:inline-block; width:9px; height:19px; margin-left:2px; background:var(--ember); vertical-align:-2px; animation: blink 1s steps(1) infinite; }
+.boot__caret { display:inline-block; width:9px; height:19px; margin-left:2px; background:var(--j-glow, var(--ember)); vertical-align:-2px; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 
 

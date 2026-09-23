@@ -11,6 +11,7 @@ import Ascension from './components/rite/Ascension'
 import BeninMap from './components/rite/BeninMap'
 import SoundToggle from './components/SoundToggle'
 import sound from './audio/sound'
+import { applyJourney } from './lib/journey'
 
 const PHASES = ['boot', 'falling', 'abyss', 'ascension', 'world']
 
@@ -22,6 +23,7 @@ export default function App() {
 
   useEffect(() => {
     sound.setScene(phase)
+    applyJourney(phase, 0)
     if (window.__gl) {
       window.__gl.progress = 0
       // the fall is the only act that shows the WebGL layers; the rest paint over them,

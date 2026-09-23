@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Clouds from './Clouds'
 import { BEATS } from '../../data/ascent'
 import { flash } from '../../lib/store'
+import { applyJourney } from '../../lib/journey'
 import sound from '../../audio/sound'
 import './rite.css'
 
@@ -18,6 +19,7 @@ export default function Ascension({ onDone }) {
   useEffect(() => {
     scrollTo(0, 0)
     if (window.__gl) window.__gl.climb = 0
+    applyJourney('ascension', 0)
     sound.beginWind('air')
     const lenis = new Lenis({ duration: 1.35, wheelMultiplier: 0.9, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)) })
     const tick = (t) => lenis.raf(t * 1000)
@@ -28,7 +30,11 @@ export default function Ascension({ onDone }) {
       // publish climb progress; the mark beacon rides on it
       ScrollTrigger.create({
         trigger: root.current, start: 'top top', end: 'bottom bottom', scrub: true,
-        onUpdate: (self) => { if (window.__gl) window.__gl.climb = self.progress },
+        onUpdate: (self) => {
+          if (window.__gl) window.__gl.climb = self.progress
+          // night → violet → magenta dawn → gold → altitude, repainted every frame
+          applyJourney('ascension', self.progress)
+        },
       })
       // the sky brightens the higher you get
       gsap.to('.ascension__sky--high', { opacity: 1, ease: 'none',
@@ -63,6 +69,7 @@ export default function Ascension({ onDone }) {
     return () => {
       ctx.revert(); gsap.ticker.remove(tick); lenis.destroy(); sound.endWind(true)
       if (window.__gl) window.__gl.climb = 0
+    applyJourney('ascension', 0)
       // the blowout lives on document.body, outside the gsap context — don't leave it covering the page
       blowoutRef.current?.remove(); blowoutRef.current = null
     }

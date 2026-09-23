@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { flash } from '../../lib/store'
+import { applyJourney } from '../../lib/journey'
 import { matchR } from '../../lib/glyph'
 import sound from '../../audio/sound'
 import './rite.css'
@@ -123,6 +124,8 @@ export default function Abyss({ onDone }) {
     doneRef.current = true
     setValidated(true)
     flash(1.2)
+    gsap.to({ v: 0 }, { v: 1, duration: 1.6, ease: 'power2.inOut',
+      onUpdate() { applyJourney('abyss', this.targets()[0].v) } })
     // the mark burns away where it was drawn — it does not follow into the climb
     const c = canvasRef.current
     gsap.timeline()

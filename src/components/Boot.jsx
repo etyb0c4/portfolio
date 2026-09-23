@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import sound from '../audio/sound'
+import { applyJourney } from '../lib/journey'
 import './Boot.css'
 
 // ambient daemon chatter looping behind the prompt — the machine is alive before you touch it
@@ -66,6 +67,7 @@ export default function Boot({ onEnter }) {
   }, [])
 
   const run = () => {
+    applyJourney('denied', 0)
     // 1 — the refusal and the panic: text only, no fireworks
     DENIAL.forEach(l => {
       timers.current.push(setTimeout(() => {

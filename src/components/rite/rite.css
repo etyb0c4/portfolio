@@ -4,14 +4,15 @@
 .fall { position: fixed; inset: 0; z-index: 150; pointer-events: none; overflow: hidden; }
 .fall__warp {
   position: absolute; inset: -25%; opacity: 0; transform-origin: 50% 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(255,140,90,0.7) 0deg 0.7deg, transparent 0.7deg 4.2deg);
+  background: repeating-conic-gradient(from 0deg, rgb(var(--j-glow-rgb) / 0.75) 0deg 0.7deg, transparent 0.7deg 4.2deg);
   mix-blend-mode: screen; filter: blur(1px);
 }
 .fall__rain { position: absolute; inset: -12% 0; }
 .fall__rain span {
+  color: var(--j-key);
   position: absolute; top: -40%; writing-mode: vertical-rl;
-  font-size: clamp(9px, 1vw, 13px); letter-spacing: 0.3em; color: #ff9a6a;
-  text-shadow: 0 0 12px rgba(255,120,80,0.8); white-space: nowrap;
+  font-size: clamp(9px, 1vw, 13px); letter-spacing: 0.3em;
+  text-shadow: 0 0 12px rgb(var(--j-glow-rgb) / 0.8); white-space: nowrap;
   animation-name: fallRain; animation-timing-function: linear; animation-iteration-count: infinite;
 }
 @keyframes fallRain { from { transform: translateY(-30vh); } to { transform: translateY(150vh); } }
@@ -27,8 +28,8 @@
   width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
   transform-origin: 50% 50%; pointer-events: none;
   background: radial-gradient(circle,
-    #fff6e8 0%, #ffd79a 14%, rgba(255,150,70,0.55) 30%,
-    rgba(255,90,40,0.22) 48%, transparent 68%);
+    #fff9f0 0%, var(--j-key) 14%, rgb(var(--j-glow-rgb) / 0.6) 30%,
+    rgb(var(--j-glow-rgb) / 0.22) 48%, transparent 68%);
   filter: blur(6px);
 }
 
@@ -52,16 +53,16 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4vh;
   padding: 12vh 6vw; text-align: center;
   background:
-    radial-gradient(90% 60% at 50% 108%, #7d2410 0%, transparent 62%),
-    radial-gradient(120% 90% at 50% 10%, #2a0b08 0%, #080505 70%);
-  transition: background 1.2s ease;
+    radial-gradient(90% 60% at 50% 108%, rgb(var(--j-glow-rgb) / 0.55) 0%, transparent 62%),
+    radial-gradient(120% 90% at 50% 10%, var(--j-sky) 0%, var(--j-deep) 70%);
+  transition: background 0.4s linear;
 }
-.abyss--accepted { background: radial-gradient(100% 80% at 50% 60%, #6b4a1e 0%, #150a06 75%); }
+
 
 .abyss__embers { position: absolute; inset: 0; pointer-events: none; }
 .abyss__embers i {
-  position: absolute; bottom: -5%; border-radius: 50%; background: #ff9a5a;
-  box-shadow: 0 0 10px #ff7a45; opacity: 0.8;
+  position: absolute; bottom: -5%; border-radius: 50%; background: var(--j-glow);
+  box-shadow: 0 0 10px var(--j-glow); opacity: 0.8;
   animation-name: emberRise; animation-timing-function: linear; animation-iteration-count: infinite;
 }
 @keyframes emberRise {
@@ -73,10 +74,10 @@
 .abyss__copy { position: relative; z-index: 2; max-width: min(90vw, 40ch); margin-top: -6vh; }
 .abyss__text {
   font-size: clamp(26px, 4.4vw, 58px); font-weight: 300; line-height: 1.14;
-  letter-spacing: -0.02em; color: #ffe9d8; min-height: 1.1em; text-wrap: balance;
+  letter-spacing: -0.02em; color: var(--j-key); min-height: 1.1em; text-wrap: balance;
 }
 .abyss__text--dim {
-  font-size: clamp(15px, 1.9vw, 24px); color: rgba(255,233,216,0.6);
+  font-size: clamp(15px, 1.9vw, 24px); color: rgb(var(--j-key-rgb) / 0.62);
   margin-top: 0.7em; max-width: 46ch; margin-left: auto; margin-right: auto;
 }
 .abyss__caret { display: inline-block; width: 8px; height: 0.9em; margin-left: 5px; background: #ff8a5a; vertical-align: -0.12em; animation: blink 1s steps(1) infinite; }
@@ -102,16 +103,21 @@
 /* =========================================================
    Act III — l'ascension
    ========================================================= */
-.ascension { position: relative; background: #120705; }
-/* two stacked fixed skies; the bright one fades in as the climb progresses */
+.ascension { position: relative; background: var(--j-deep, #120705); }
+/* One sky, repainted by the journey: night, violet, magenta dawn, gold, then altitude.
+   Two stacked static gradients could only ever cross-fade between two fixed looks. */
 .ascension__sky {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background: linear-gradient(to top, #120705 0%, #3a1a12 45%, #6b3a1e 80%, #8a4a24 100%);
+  background:
+    radial-gradient(120% 70% at 50% 8%, rgb(var(--j-glow-rgb) / 0.30) 0%, transparent 62%),
+    linear-gradient(to top,
+      var(--j-deep) 0%,
+      color-mix(in srgb, var(--j-deep), var(--j-sky) 55%) 42%,
+      var(--j-sky) 78%,
+      color-mix(in srgb, var(--j-sky), var(--j-glow) 55%) 100%);
+  transition: background 0.25s linear;
 }
-.ascension__sky--high {
-  opacity: 0;
-  background: linear-gradient(to top, #2a1509 0%, #7a4420 38%, #d9a463 74%, #fff0d2 100%);
-}
+.ascension__sky--high { display: none; }
 /* flipped: the wrist stays up in the sky and the fingers reach down toward the viewer */
 .ascension__track {
   position: relative; z-index: 2;
@@ -122,29 +128,30 @@
 .beat--open { min-height: 36vh; display: flex; flex-direction: column; justify-content: center; }
 .beat__kicker {
   display: inline-block; margin-bottom: 20px;
-  font-size: 11px; letter-spacing: 0.42em; text-transform: uppercase; color: rgba(255,222,180,0.65);
+  font-size: 11px; letter-spacing: 0.42em; text-transform: uppercase;
+  color: rgb(var(--j-key-rgb) / 0.7);
 }
 .beat__line {
   font-family: var(--serif); font-weight: 300;
   font-size: clamp(34px, 6.4vw, 92px); line-height: 1.02; letter-spacing: -0.035em;
-  color: #fff6e8; text-shadow: 0 0 60px rgba(255,200,140,0.35);
+  color: var(--j-key); text-shadow: 0 0 70px rgb(var(--j-glow-rgb) / 0.45);
 }
 .beat__wordwrap { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.06em; }
 .beat__word { display: inline-block; padding-right: 0.22em; }
 .beat__sub {
   margin-top: 26px; font-family: var(--sans);
-  font-size: clamp(14px, 1.5vw, 19px); line-height: 1.65; color: rgba(255,240,222,0.72);
+  font-size: clamp(14px, 1.5vw, 19px); line-height: 1.65; color: rgb(var(--j-key-rgb) / 0.78);
   max-width: 54ch; margin-left: auto; margin-right: auto;
 }
-.beat__sub--summit { font-size: clamp(18px, 2.4vw, 30px); color: rgba(60,30,15,0.85); }
+.beat__sub--summit { font-size: clamp(18px, 2.4vw, 30px); color: rgb(var(--j-key-rgb) / 0.9); }
 .beat__facts { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
 .beat__fact {
-  font-size: 11px; letter-spacing: 0.14em; color: rgba(255,238,214,0.8);
-  border: 1px solid rgba(255,220,170,0.28); padding: 7px 14px; border-radius: 2px;
-  background: rgba(255,220,170,0.05);
+  font-size: 11px; letter-spacing: 0.14em; color: rgb(var(--j-key-rgb) / 0.85);
+  border: 1px solid rgb(var(--j-key-rgb) / 0.3); padding: 7px 14px; border-radius: 2px;
+  background: rgb(var(--j-glow-rgb) / 0.07);
 }
 .ascension__summit { min-height: 70vh; display: flex; align-items: center; justify-content: center; }
-.ascension__blowout { position: fixed; inset: 0; z-index: 400; background: #fff8ec; opacity: 0; pointer-events: none; }
+.ascension__blowout { position: fixed; inset: 0; z-index: 400; background: #ffffff; opacity: 0; pointer-events: none; }
 
 /* =========================================================
    Act IV + V — la carte du Bénin
