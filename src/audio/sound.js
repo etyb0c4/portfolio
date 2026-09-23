@@ -1,3 +1,5 @@
+import { initMusic, setAct as musicAct, setIntensity, musicGain } from './music'
+
 /* Procedural audio — no assets. A living soundscape that escalates with privilege.
    Everything is gentle by default; a mute toggle is exposed. */
 
@@ -53,70 +55,12 @@ function buildDrone() {
   noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start()
 
   drone = { gain: g, filter, oscs, lfo }
-  startMusic()
+  initMusic(ctx, master)
 }
 
-/* ---------------------------------------------------------------
-   Adaptive score. Each act has its own key, register, pace and timbre;
-   moving between them crossfades the drone and swaps the pattern, so the
-   music follows the story instead of looping the same figure throughout.
-   --------------------------------------------------------------- */
-const SCENES = {
-  boot:      { root: 55.00, mode: [0, 3, 7, 10],     rate: 2600, oct: [0, 1],    gain: 0.022, cut: 520,  wave: 'triangle', drone: 0.05, glide: 0 },
-  falling:   { root: 41.20, mode: [0, 1, 5, 6, 8],   rate: 900,  oct: [-1, 0],   gain: 0.034, cut: 900,  wave: 'sawtooth', drone: 0.15, glide: -0.35 },
-  abyss:     { root: 48.99, mode: [0, 1, 3, 6, 8],   rate: 2100, oct: [-1, 0],   gain: 0.030, cut: 420,  wave: 'triangle', drone: 0.12, glide: 0 },
-  ascension: { root: 65.41, mode: [0, 2, 4, 7, 9],   rate: 1500, oct: [1, 2, 3], gain: 0.030, cut: 2600, wave: 'sine',     drone: 0.08, glide: 0 },
-  world:     { root: 73.42, mode: [0, 2, 4, 7, 11],  rate: 1900, oct: [1, 2],    gain: 0.026, cut: 3200, wave: 'sine',     drone: 0.06, glide: 0 },
-}
-let scene = SCENES.boot
+/* The score lives in ./music.js — a real arrangement rather than notes picked at random,
+   which is what made the old bed sound like one loop repeating. Sound effects stay here. */
 let sceneName = 'boot'
-let musicTimer = null
-let step = 0
-
-const semi = (root, n) => root * Math.pow(2, n / 12)
-
-function note(freq, dur = 2.4, gain = 0.05, wave = 'triangle', glide = 0) {
-  const o = ctx.createOscillator(); o.type = wave; o.frequency.value = freq
-  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 2
-  const g = ctx.createGain(); g.gain.value = 0.0001
-  const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = scene.cut
-  o.connect(g); o2.connect(g); g.connect(f); f.connect(master)
-  const t = ctx.currentTime
-  g.gain.linearRampToValueAtTime(gain, t + 0.25)
-  g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
-  if (glide) {
-    o.frequency.exponentialRampToValueAtTime(Math.max(20, freq * (1 + glide)), t + dur)
-    o2.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 2 * (1 + glide)), t + dur)
-  }
-  o.start(t); o2.start(t); o.stop(t + dur + 0.1); o2.stop(t + dur + 0.1)
-}
-
-function playStep() {
-  if (muted || !ctx) return
-  const sc = scene
-  const deg = sc.mode[(step * 3 + (Math.random() * 2 | 0)) % sc.mode.length]
-  const oct = sc.oct[(Math.random() * sc.oct.length) | 0]
-  const f = semi(sc.root, deg) * Math.pow(2, oct)
-  note(f, 2.4 + Math.random() * 1.6, sc.gain, sc.wave, sc.glide)
-  // an occasional companion tone so the texture is not a single line
-  if (Math.random() < 0.42) {
-    const d2 = sc.mode[(step + 2) % sc.mode.length]
-    note(semi(sc.root, d2) * Math.pow(2, oct + (sceneName === 'ascension' ? 1 : 0)),
-         3.1, sc.gain * 0.6, sc.wave, sc.glide)
-  }
-  step++
-}
-
-function schedule() {
-  clearInterval(musicTimer)
-  musicTimer = setInterval(playStep, scene.rate)
-}
-
-function startMusic() {
-  if (musicTimer) return
-  playStep()
-  schedule()
-}
 
 function noiseBurst(dur, freq, q, gain, type = 'bandpass') {
   const src = ctx.createBufferSource()
@@ -192,14 +136,13 @@ const api = {
     started = true
     api.setProgress(targetProgress)
   },
-  /** Progress within the current act. It only *modulates* around the scene's own
-      settings — writing absolute values here would fight setScene and flatten the score. */
+  /** Progress inside the act. This is what makes the ascension *build*: layers switch on
+      as it rises, so the arrangement fills out instead of restating itself. */
   setProgress(p) {
     targetProgress = p
-    if (!drone || muted) return
-    const t = ctx.currentTime
-    drone.gain.gain.setTargetAtTime(scene.drone * (0.8 + p * 0.5), t, 0.7)
-    drone.filter.frequency.setTargetAtTime(scene.cut * (0.4 + p * 0.5), t, 0.9)
+    setIntensity(sceneName === 'ascension' ? 0.2 + p * 0.8
+               : sceneName === 'falling'   ? 0.45 + p * 0.55
+               : 0.4)
   },
   tick() { if (started && !muted) tone(1200 + Math.random() * 300, 0.05, 0.02, 'square') },
   breach() {
@@ -329,23 +272,21 @@ const api = {
   /** Move the score to another act: crossfades the drone and swaps the pattern.
       Called from the phase machine, so the music tracks the story. */
   setScene(name) {
-    if (!SCENES[name] || sceneName === name) return
+    if (sceneName === name) return
     sceneName = name
-    scene = SCENES[name]
+    musicAct(name)
     if (!ctx || !drone) return
     const t = ctx.currentTime
-    drone.gain.gain.setTargetAtTime(muted ? 0.0001 : scene.drone, t, 1.1)
-    drone.filter.frequency.setTargetAtTime(scene.cut * 0.45, t, 1.4)
-    drone.oscs.forEach((o, i) => {
-      const mult = [1, 1.006, 0.5, 1.5][i] ?? 1
-      o.frequency.setTargetAtTime(scene.root * mult, t, 1.2)
-    })
-    if (musicTimer) schedule()
+    // the drone is now just a floor under the music, not the music itself
+    const floor = name === 'abyss' ? 0.09 : name === 'falling' ? 0.11 : 0.05
+    drone.gain.gain.setTargetAtTime(muted ? 0.0001 : floor, t, 1.1)
+    drone.filter.frequency.setTargetAtTime(name === 'ascension' ? 900 : 380, t, 1.4)
   },
   scene() { return sceneName },
   toggleMute() {
     muted = !muted
     if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.05)
+    musicGain(muted ? 0 : 0.85)
     try {
       localStorage.setItem('rs_muted', muted ? '1' : '0')
       localStorage.setItem('rs_muted_at', String(Date.now()))

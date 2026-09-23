@@ -38,6 +38,7 @@ export default function Fall({ onDone }) {
         onUpdate: () => {
           if (window.__gl) window.__gl.fallDepth = obj.depth
           applyJourney('falling', obj.depth / 780)
+          sound.setProgress(obj.depth / 780)
         } }, 0.05)
       // a couple of gusts on the way down so the descent has texture
       .call(() => sound.whoosh(1.1), null, 1.5)

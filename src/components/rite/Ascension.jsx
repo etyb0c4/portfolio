@@ -34,6 +34,8 @@ export default function Ascension({ onDone }) {
           if (window.__gl) window.__gl.climb = self.progress
           // night → violet → magenta dawn → gold → altitude, repainted every frame
           applyJourney('ascension', self.progress)
+          // and the arrangement fills out as the climb rises
+          sound.setProgress(self.progress)
         },
       })
       // the sky brightens the higher you get
