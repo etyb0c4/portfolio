@@ -56,13 +56,17 @@ export default function BeninMap() {
       // the contact act is behind it. Scrubbed, so scrolling back pulls the map out again.
       gsap.timeline({
         scrollTrigger: {
-          trigger: root.current, start: 'top top', end: '+=150%',
+          trigger: root.current, start: 'top top', end: '+=140%',
           pin: stage.current, scrub: 0.6, anticipatePin: 1,
         },
       })
-        .to('.beninmap__svg', { scale: 16, opacity: 0, ease: 'power2.in' }, 0)
-        .to('.beninmap__title, .beninmap__caption, .beninmap__field', { opacity: 0, ease: 'none' }, 0)
-        .to('.beninmap__pin', { backgroundColor: 'rgba(0,0,0,0)', ease: 'none' }, 0)
+        // steadier than power2, which crammed most of the zoom into the last moment
+        .to('.beninmap__svg', { scale: 14, ease: 'power1.in' }, 0)
+        .to('.beninmap__svg', { opacity: 0, ease: 'power2.in' }, 0.42)
+        .to('.beninmap__title, .beninmap__caption', { opacity: 0, ease: 'none' }, 0)
+        .to('.beninmap__field', { opacity: 0, scale: 2.4, ease: 'power1.in' }, 0)
+        // the ground opens onto the act underneath instead of going black
+        .to('.beninmap__veil', { opacity: 0, ease: 'power2.in' }, 0.35)
     }, root)
 
     return () => { ctx.revert(); gsap.ticker.remove(tick); lenis.destroy() }
@@ -73,6 +77,7 @@ export default function BeninMap() {
   return (
     <div className="world" ref={root}>
       <div className="beninmap__pin" ref={stage}>
+        <div className="beninmap__veil" aria-hidden="true" />
         <svg className="beninmap__field" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           {FIELD.map((d, i) => <circle key={i} cx={d.x} cy={d.y} r={d.r} className="beninmap__star" />)}
         </svg>

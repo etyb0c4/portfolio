@@ -151,7 +151,15 @@
    ========================================================= */
 .world { position: relative; z-index: 100; background: #060302; }
 .beninmap__pin {
-  position: relative; height: 100vh; overflow: hidden;
+  /* no background of its own: the fadeable veil below carries it, otherwise this layer
+     stays opaque after the zoom and hides the act underneath */
+  position: relative; z-index: 2; height: 100vh; overflow: hidden;
+}
+/* Its own backdrop, faded out by the scrub so the contact act shows through as the map
+   flies past the camera. Without this the map vanished and left a screen of dead black
+   before the contact scrolled up. */
+.beninmap__veil {
+  position: absolute; inset: 0; z-index: 0;
   background: radial-gradient(120% 100% at 50% 45%, #241407 0%, #070403 72%);
 }
 .beninmap__field { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -212,20 +220,6 @@
 .beninmap .pwin__win { box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 70px rgba(255,180,110,0.18); }
 .beninmap .pwin { background: rgba(10,6,3,0.72); }
 
-/* ---- the drawn mark, carried from the rite into the climb ---- */
-.beacon {
-  position: fixed; inset: 0; width: 100vw; height: 100vh;
-  z-index: 118; pointer-events: none; overflow: visible;
-}
-.beacon { will-change: transform, opacity; }
-.beacon__burn {
-  fill: none; stroke: #ff8a3c; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round;
-  animation: beaconFlicker 2.6s ease-in-out infinite;
-}
-.beacon__core {
-  fill: none; stroke: #fff3d6; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
-}
-@keyframes beaconFlicker { 0%,100% { opacity: 0.92; } 42% { opacity: 0.66; } 71% { opacity: 1; } }
 
 /* continues the blinding the fall ended on, so the two acts share one white frame */
 .abyss__flash {
@@ -262,7 +256,7 @@
    Final act — the offers
    ========================================================= */
 .contact {
-  position: relative; min-height: 100vh; overflow: hidden;
+  position: relative; z-index: 1; margin-top: -100vh; min-height: 100vh; overflow: hidden;
   display: flex; flex-direction: column; align-items: center;
   background: radial-gradient(120% 80% at 50% 0%, #3b2408 0%, #0a0604 62%, #050303 100%);
   padding: 14vh 5vw 0;
@@ -306,40 +300,56 @@
 .contact__label { font-size: clamp(22px, 2.6vw, 34px); color: #fff6e6; letter-spacing: -0.01em; }
 .contact__sub { font-size: 11px; letter-spacing: 0.1em; color: rgba(255,224,186,0.6); }
 
-/* the companies reaching up out of the crowd */
-.contact__suitors { position: absolute; left: 0; right: 0; bottom: 46vh; height: 18vh; z-index: 3; pointer-events: none; }
-.suitor {
-  position: absolute; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 7px;
-  animation: suitorReach 4.6s ease-in-out infinite;
-}
-/* arced around the crowd rather than sitting in a flat row */
-.suitor[data-lift='1'] { bottom: 5vh; }
-.suitor[data-lift='2'] { bottom: 9vh; }
-@keyframes suitorReach {
-  0%, 100% { transform: translateY(14px); opacity: 0.62; }
-  50%      { transform: translateY(-16px); opacity: 1; }
-}
-.suitor__glyph { width: 27px; height: 27px; fill: #ffe3b4; filter: drop-shadow(0 0 12px rgba(255,190,120,0.8)); }
-.suitor__name { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,224,186,0.72); }
-
-/* The crowd itself — your artwork, screened so its dark ground drops out. Sized by height
-   and anchored to the floor so the hands rise from the bottom edge instead of filling the
-   frame, and masked at the edges: screen blending otherwise reveals the image's rectangle. */
-.contact__hands, .contact__swarm {
-  position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
-  width: auto; pointer-events: none; user-select: none;
-  mix-blend-mode: screen;
+/* The artwork and the company badges share one box, so each badge stays locked to the
+   forearm it was placed on no matter how the crowd is scaled or parallaxed. */
+.contact__crowd {
+  position: absolute; left: 50%; bottom: 0; z-index: 2;
+  height: min(76vh, 790px); aspect-ratio: 733 / 1100;
+  pointer-events: none;
 }
 .contact__hands {
-  z-index: 2; height: min(76vh, 790px); opacity: 0.95;
-  -webkit-mask-image: radial-gradient(ellipse 62% 74% at 50% 86%, #000 46%, transparent 82%);
-  mask-image: radial-gradient(ellipse 62% 74% at 50% 86%, #000 46%, transparent 82%);
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; mix-blend-mode: screen; opacity: 0.95;
+  /* two masks: the ellipse softens the silhouette, the linear pair kills the image's
+     straight left/right edges, which screen blending otherwise shows as a faint box */
+  -webkit-mask-image:
+    radial-gradient(ellipse 58% 74% at 50% 58%, #000 38%, transparent 82%),
+    linear-gradient(to right, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image:
+    radial-gradient(ellipse 58% 74% at 50% 58%, #000 38%, transparent 82%),
+    linear-gradient(to right, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
 }
 .contact__swarm {
-  z-index: 1; height: min(60vh, 620px); opacity: 0.26;
-  filter: blur(4px) saturate(0.4);
+  position: absolute; left: 50%; bottom: 0; z-index: 1;
+  height: min(60vh, 620px); width: auto; opacity: 0.24;
+  mix-blend-mode: screen; filter: blur(4px) saturate(0.4); pointer-events: none;
   -webkit-mask-image: radial-gradient(ellipse 52% 58% at 50% 94%, #000 22%, transparent 66%);
   mask-image: radial-gradient(ellipse 52% 58% at 50% 94%, #000 22%, transparent 66%);
+}
+
+/* a cuff clasped on the arm — the mark of whoever that hand belongs to */
+.suitor {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  animation: suitorReach 4.6s ease-in-out infinite;
+}
+@keyframes suitorReach {
+  0%, 100% { transform: translate(-50%, -48%); }
+  50%      { transform: translate(-50%, -56%); }
+}
+.suitor__cuff {
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(30,16,6,0.92) 40%, rgba(30,16,6,0.55) 100%);
+  border: 1px solid rgba(255,206,140,0.55);
+  box-shadow: 0 0 18px rgba(255,170,90,0.55), inset 0 0 10px rgba(255,190,120,0.25);
+}
+.suitor__glyph { width: 18px; height: 18px; fill: #ffe3b4; }
+.suitor__name {
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,228,192,0.9); text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  white-space: nowrap;
 }
 
 .contact__foot {

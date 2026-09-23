@@ -17,7 +17,7 @@ const EMBERS = Array.from({ length: 26 }, (_, i) => ({
   size: 1 + Math.random() * 2.5,
 }))
 
-export default function Abyss({ onMark, onDone }) {
+export default function Abyss({ onDone }) {
   const [typed, setTyped] = useState(['', ''])
   const [ready, setReady] = useState(false)
   const [validated, setValidated] = useState(false)
@@ -26,7 +26,6 @@ export default function Abyss({ onMark, onDone }) {
   const ctxRef = useRef(null)
   const drawingRef = useRef(false)
   const strokesRef = useRef([])        // array of strokes; an R is usually drawn in 2
-  const pageRef = useRef([])           // the same strokes in page pixels, handed to the beacon
   const guideRef = useRef(null)
   const doneRef = useRef(false)
   const settleRef = useRef(null)
@@ -75,7 +74,6 @@ export default function Abyss({ onMark, onDone }) {
     const c = canvasRef.current, ctx = ctxRef.current
     if (c && ctx) ctx.clearRect(0, 0, c.width, c.height)
     strokesRef.current = []
-    pageRef.current = []
   }
 
   const start = (e) => {
@@ -87,7 +85,6 @@ export default function Abyss({ onMark, onDone }) {
     if (guideRef.current) gsap.to(guideRef.current, { opacity: 0, duration: 0.4 })
     const p = posFrom(e)
     strokesRef.current.push([p])
-    pageRef.current.push([{ x: e.clientX, y: e.clientY }])
     ctxRef.current.beginPath(); ctxRef.current.moveTo(p.x, p.y)
     sound.penDown()
   }
@@ -97,8 +94,6 @@ export default function Abyss({ onMark, onDone }) {
     const p = posFrom(e)
     const s = strokesRef.current[strokesRef.current.length - 1]
     s.push(p)
-    const ps = pageRef.current[pageRef.current.length - 1]
-    if (ps) ps.push({ x: e.clientX, y: e.clientY })
     ctxRef.current.lineTo(p.x, p.y); ctxRef.current.stroke()
     if (s.length % 9 === 0) sound.penScratch()
   }
@@ -128,12 +123,11 @@ export default function Abyss({ onMark, onDone }) {
     doneRef.current = true
     setValidated(true)
     flash(1.2)
-    // hand the mark up first: the beacon mounts directly over the wet ink, so the
-    // switch of acts is covered by one continuous object instead of a cut
-    onMark?.(pageRef.current.map(s => s.map(p => ({ ...p }))))
+    // the mark burns away where it was drawn — it does not follow into the climb
     const c = canvasRef.current
     gsap.timeline()
-      .to(c, { opacity: 0, duration: 0.7, ease: 'power2.inOut' }, 0.35)
+      .to(c, { filter: 'brightness(2.6)', duration: 0.35, ease: 'power2.out' }, 0)
+      .to(c, { opacity: 0, duration: 0.9, ease: 'power2.inOut' }, 0.35)
       .to('.abyss__copy, .abyss__hint', { opacity: 0, y: -18, duration: 0.8, ease: 'power2.in' }, 0.3)
       .to('.abyss', { opacity: 0, duration: 1.0, ease: 'power2.inOut' }, 1.5)
       .call(() => onDone?.())

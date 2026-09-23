@@ -8,7 +8,6 @@ import Fall from './components/rite/Fall'
 import Abyss from './components/rite/Abyss'
 import Ascension from './components/rite/Ascension'
 import BeninMap from './components/rite/BeninMap'
-import MarkBeacon from './components/rite/MarkBeacon'
 import SoundToggle from './components/SoundToggle'
 import sound from './audio/sound'
 
@@ -19,7 +18,6 @@ export default function App() {
   const skipTo = typeof location !== 'undefined' && new URLSearchParams(location.search).get('phase')
   const initial = PHASES.includes(skipTo) ? skipTo : 'boot'
   const [phase, setPhase] = useState(initial)
-  const [mark, setMark] = useState(null)   // the R the visitor drew, kept across the act switch
 
   useEffect(() => {
     if (window.__gl) {
@@ -61,13 +59,10 @@ export default function App() {
       <Guard>
         {phase === 'boot' && <Boot onEnter={() => setPhase('falling')} />}
         {phase === 'falling' && <Fall onDone={() => setPhase('abyss')} />}
-        {phase === 'abyss' && <Abyss onMark={setMark} onDone={() => setPhase('ascension')} />}
+        {phase === 'abyss' && <Abyss onDone={() => setPhase('ascension')} />}
         {phase === 'ascension' && <Ascension onDone={() => setPhase('world')} />}
         {phase === 'world' && <BeninMap />}
       </Guard>
-
-      {/* mounted outside the act switch so the mark survives abyss → ascension unbroken */}
-      {mark && (phase === 'abyss' || phase === 'ascension') && <MarkBeacon strokes={mark} />}
 
       <SoundToggle />
     </>
