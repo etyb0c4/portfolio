@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import Background from './gl/Background'
 import Scene from './gl/Scene'
 import Guard from './components/Guard'
+import Hud from './components/Hud'
 import Boot from './components/Boot'
 import Fall from './components/rite/Fall'
 import Abyss from './components/rite/Abyss'
@@ -20,6 +21,7 @@ export default function App() {
   const [phase, setPhase] = useState(initial)
 
   useEffect(() => {
+    sound.setScene(phase)
     if (window.__gl) {
       window.__gl.progress = 0
       // the fall is the only act that shows the WebGL layers; the rest paint over them,
@@ -64,6 +66,7 @@ export default function App() {
         {phase === 'world' && <BeninMap />}
       </Guard>
 
+      <Hud phase={phase} />
       <SoundToggle />
     </>
   )

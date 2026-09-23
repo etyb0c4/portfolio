@@ -56,31 +56,66 @@ function buildDrone() {
   startMusic()
 }
 
+/* ---------------------------------------------------------------
+   Adaptive score. Each act has its own key, register, pace and timbre;
+   moving between them crossfades the drone and swaps the pattern, so the
+   music follows the story instead of looping the same figure throughout.
+   --------------------------------------------------------------- */
+const SCENES = {
+  boot:      { root: 55.00, mode: [0, 3, 7, 10],     rate: 2600, oct: [0, 1],    gain: 0.022, cut: 520,  wave: 'triangle', drone: 0.05, glide: 0 },
+  falling:   { root: 41.20, mode: [0, 1, 5, 6, 8],   rate: 900,  oct: [-1, 0],   gain: 0.034, cut: 900,  wave: 'sawtooth', drone: 0.15, glide: -0.35 },
+  abyss:     { root: 48.99, mode: [0, 1, 3, 6, 8],   rate: 2100, oct: [-1, 0],   gain: 0.030, cut: 420,  wave: 'triangle', drone: 0.12, glide: 0 },
+  ascension: { root: 65.41, mode: [0, 2, 4, 7, 9],   rate: 1500, oct: [1, 2, 3], gain: 0.030, cut: 2600, wave: 'sine',     drone: 0.08, glide: 0 },
+  world:     { root: 73.42, mode: [0, 2, 4, 7, 11],  rate: 1900, oct: [1, 2],    gain: 0.026, cut: 3200, wave: 'sine',     drone: 0.06, glide: 0 },
+}
+let scene = SCENES.boot
+let sceneName = 'boot'
 let musicTimer = null
-const SCALE = [110.00, 130.81, 146.83, 164.81, 196.00, 220.00, 261.63] // A minor pentatonic-ish
-function note(freq, dur = 2.4, gain = 0.05) {
-  const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = freq
+let step = 0
+
+const semi = (root, n) => root * Math.pow(2, n / 12)
+
+function note(freq, dur = 2.4, gain = 0.05, wave = 'triangle', glide = 0) {
+  const o = ctx.createOscillator(); o.type = wave; o.frequency.value = freq
   const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 2
   const g = ctx.createGain(); g.gain.value = 0.0001
-  const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1400
+  const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = scene.cut
   o.connect(g); o2.connect(g); g.connect(f); f.connect(master)
   const t = ctx.currentTime
   g.gain.linearRampToValueAtTime(gain, t + 0.25)
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+  if (glide) {
+    o.frequency.exponentialRampToValueAtTime(Math.max(20, freq * (1 + glide)), t + dur)
+    o2.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 2 * (1 + glide)), t + dur)
+  }
   o.start(t); o2.start(t); o.stop(t + dur + 0.1); o2.stop(t + dur + 0.1)
 }
+
+function playStep() {
+  if (muted || !ctx) return
+  const sc = scene
+  const deg = sc.mode[(step * 3 + (Math.random() * 2 | 0)) % sc.mode.length]
+  const oct = sc.oct[(Math.random() * sc.oct.length) | 0]
+  const f = semi(sc.root, deg) * Math.pow(2, oct)
+  note(f, 2.4 + Math.random() * 1.6, sc.gain, sc.wave, sc.glide)
+  // an occasional companion tone so the texture is not a single line
+  if (Math.random() < 0.42) {
+    const d2 = sc.mode[(step + 2) % sc.mode.length]
+    note(semi(sc.root, d2) * Math.pow(2, oct + (sceneName === 'ascension' ? 1 : 0)),
+         3.1, sc.gain * 0.6, sc.wave, sc.glide)
+  }
+  step++
+}
+
+function schedule() {
+  clearInterval(musicTimer)
+  musicTimer = setInterval(playStep, scene.rate)
+}
+
 function startMusic() {
   if (musicTimer) return
-  let i = 0
-  musicTimer = setInterval(() => {
-    if (muted) return
-    const p = targetProgress
-    // plus on descend vers root, plus c'est dense/grave-brillant
-    const n = SCALE[(i * 2 + (Math.random() * 2 | 0)) % SCALE.length]
-    note(n * (0.5 + p * 0.5), 2.6 + Math.random() * 1.4, 0.035 + p * 0.03)
-    if (Math.random() < 0.3 + p * 0.3) note(SCALE[(i + 3) % SCALE.length], 3.2, 0.025)
-    i++
-  }, 2100)
+  playStep()
+  schedule()
 }
 
 function noiseBurst(dur, freq, q, gain, type = 'bandpass') {
@@ -157,14 +192,14 @@ const api = {
     started = true
     api.setProgress(targetProgress)
   },
+  /** Progress within the current act. It only *modulates* around the scene's own
+      settings — writing absolute values here would fight setScene and flatten the score. */
   setProgress(p) {
     targetProgress = p
-    if (!drone) return
+    if (!drone || muted) return
     const t = ctx.currentTime
-    const g = 0.06 + p * 0.12                 // drone loudness rises to root
-    const cut = 180 + p * 900                 // opens up
-    drone.gain.gain.setTargetAtTime(g, t, 0.6)
-    drone.filter.frequency.setTargetAtTime(cut, t, 0.8)
+    drone.gain.gain.setTargetAtTime(scene.drone * (0.8 + p * 0.5), t, 0.7)
+    drone.filter.frequency.setTargetAtTime(scene.cut * (0.4 + p * 0.5), t, 0.9)
   },
   tick() { if (started && !muted) tone(1200 + Math.random() * 300, 0.05, 0.02, 'square') },
   breach() {
@@ -250,7 +285,27 @@ const api = {
     noiseBurst(0.22, 320, 2.2, 0.07)
     ;[0, 120].forEach(ms => setTimeout(() => tone(150, 0.16, 0.07, 'square', 105), ms))
   },
-  /** heavy impact — landing, a shard hitting, a hard cut */
+  /** A pane of glass failing: a dry crack, then a spray of tuned shards ringing out
+      and scattering. Deliberately not an explosion — no low boom at all. */
+  glass() {
+    if (!started || muted) return
+    // the crack itself: very short, bright, no body
+    noiseBurst(0.045, 5200, 0.7, 0.20, 'highpass')
+    tone(2400, 0.05, 0.10, 'square', 1500)
+    // shards: high partials ringing and dying at their own rates
+    const shards = [3100, 4200, 2600, 5400, 3600, 4800, 2100, 6100]
+    shards.forEach((f, i) => setTimeout(() => {
+      if (muted) return
+      tone(f * (0.92 + Math.random() * 0.16), 0.22 + Math.random() * 0.5,
+           0.028 + Math.random() * 0.02, 'triangle', 0.55)
+    }, 20 + i * 34 + Math.random() * 40))
+    // the scatter across the floor afterwards
+    ;[260, 400, 560, 760, 980].forEach(ms => setTimeout(() => {
+      if (muted) return
+      noiseBurst(0.09, 3800 + Math.random() * 2600, 2.4, 0.03, 'highpass')
+    }, ms))
+  },
+  /** heavy impact — landing, a hard cut */
   impact(power = 1) {
     if (!started || muted) return
     tone(90, 0.55 * power, 0.26 * power, 'sine', 36)
@@ -271,6 +326,23 @@ const api = {
     if (!started || muted) return
     ;[0, 130].forEach(ms => setTimeout(() => tone(1400, 0.07, 0.04, 'square'), ms))
   },
+  /** Move the score to another act: crossfades the drone and swaps the pattern.
+      Called from the phase machine, so the music tracks the story. */
+  setScene(name) {
+    if (!SCENES[name] || sceneName === name) return
+    sceneName = name
+    scene = SCENES[name]
+    if (!ctx || !drone) return
+    const t = ctx.currentTime
+    drone.gain.gain.setTargetAtTime(muted ? 0.0001 : scene.drone, t, 1.1)
+    drone.filter.frequency.setTargetAtTime(scene.cut * 0.45, t, 1.4)
+    drone.oscs.forEach((o, i) => {
+      const mult = [1, 1.006, 0.5, 1.5][i] ?? 1
+      o.frequency.setTargetAtTime(scene.root * mult, t, 1.2)
+    })
+    if (musicTimer) schedule()
+  },
+  scene() { return sceneName },
   toggleMute() {
     muted = !muted
     if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.05)

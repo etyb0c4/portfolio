@@ -96,14 +96,14 @@ export default function Boot({ onEnter }) {
 
     // 3 — the tube gives up: collapse to a line, then to a point
     timers.current.push(setTimeout(() => {
-      sound.powerdown()
+      sound.glass()
       gsap.timeline({ onComplete: () => onEnter?.() })
         .to(innerRef.current, { scaleY: 0.005, duration: 0.3, ease: 'power3.in' })
         .set(collapseRef.current, { opacity: 1, scaleX: 1 })
         .set(innerRef.current, { opacity: 0 })
         .to(collapseRef.current, { scaleX: 0.015, duration: 0.3, ease: 'power2.in' }, '+=0.07')
         .to(collapseRef.current, { opacity: 0, duration: 0.16, ease: 'power2.in' })
-        .call(() => sound.impact(0.6))
+        .call(() => sound.powerdown())
     }, 3300))
   }
 
