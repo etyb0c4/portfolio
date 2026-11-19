@@ -196,13 +196,13 @@ function toggleMenu(force) {
 }
 el.menuBtn.addEventListener('click', () => { audio.start(); toggleMenu(); audio.hit('tick') })
 $('#menu-list').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) choose(b.dataset.id) })
-$('#cta').addEventListener('click', () => { el.dockMain.classList.add('open'); audio.hit('open') })
-$('#say-hi').addEventListener('click', () => { el.dockMain.classList.add('open'); audio.hit('open') })
+$('#cta').addEventListener('click', () => { audio.start(); el.dockMain.classList.add('open'); audio.hit('open') })
+$('#say-hi').addEventListener('click', () => { audio.start(); el.dockMain.classList.add('open'); audio.hit('open') })
 $('#back').addEventListener('click', () => el.dockMain.classList.remove('open'))
 const syncSound = () => el.sound.setAttribute('aria-pressed', String(audio.on))
 syncSound()
 el.sound.addEventListener('click', () => { audio.start(); audio.toggle(); syncSound() })
-$('#skip').addEventListener('click', () => skip())
+$('#skip').addEventListener('click', () => { audio.start(); skip() })
 $('#replay').addEventListener('click', () => location.reload())
 
 /* ───────── flow ───────── */
