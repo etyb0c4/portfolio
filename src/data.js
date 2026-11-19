@@ -20,10 +20,10 @@ export const LINKS = [
 ]
 
 /* Results, rankings, certifications. Newest first.
-   rank: what is printed big on the left ('02', 'TOP 5', '★'…)   as: the handle used   url: optional write-up or scoreboard */
+   rank: what is printed big on the left ('02', 'TOP 5', '★'…)   badge: optional emoji next to it ('🥈'…)   as: the handle used   url: optional write-up or scoreboard */
 export const RECORD = [
   {
-    rank: '02', result: '2nd place', event: 'HackerLab 2026', scope: 'Finale · team', kind: 'CTF',
+    rank: '02', badge: '🥈', result: '2nd place', event: 'HackerLab 2026', scope: 'Finale · team', kind: 'CTF',
     date: '2026-11', as: 'saiyanj1n', tags: ['web', 'pwn', 'rev', 'forensics'], url: '',
   },
 ]

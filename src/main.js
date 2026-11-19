@@ -115,7 +115,7 @@ $('#ops-list').innerHTML = PROJECTS.filter((p) => p.side === 'break').map(card).
 $('#stack-list').innerHTML = chips(STACK)
 $('#record-list').innerHTML = RECORD.map((r) => {
   const body = `
-    <span class="rank">${r.rank}</span>
+    <span class="rank">${r.rank}${r.badge ? `<em class="medal">${r.badge}</em>` : ''}</span>
     <div class="what"><strong>${r.event}</strong><span>${[r.result, r.scope].filter(Boolean).join(' · ')}</span><div class="tagsline">${chips(r.tags || [])}</div></div>
     <dl><div><dt>type</dt><dd>${r.kind}</dd></div><div><dt>date</dt><dd>${when(r.date)}</dd></div>${r.as ? `<div><dt>as</dt><dd>${r.as}</dd></div>` : ''}</dl>`
   return `<li>${r.url ? `<a class="row" href="${r.url}"${ext(r.url)}>${body}</a>` : `<div class="row">${body}</div>`}</li>`

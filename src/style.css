@@ -209,6 +209,7 @@ body.in .dock { opacity: 1; transform: translate(-50%, 0); pointer-events: auto;
 .row { display: grid; grid-template-columns: auto 1fr auto; gap: clamp(18px, 3vw, 44px); align-items: center; padding: 26px 0; border-bottom: 1px solid var(--line); transition: padding 0.3s, background 0.3s; }
 .dim a.row:hover { padding-left: 14px; padding-right: 14px; background: var(--card); }
 .rank { font: 800 clamp(4rem, 8vw, 8rem)/0.8 var(--display); font-stretch: 62%; color: var(--orange); letter-spacing: -0.02em; }
+.rank .medal { font-size: 0.3em; font-style: normal; vertical-align: 0.6em; margin-left: 0.14em; letter-spacing: 0; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4)); }
 .cat { font: 600 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.05em; padding: 7px 8px; background: var(--orange); color: var(--ink); }
 .what strong { display: block; font-weight: 800; font-stretch: 75%; text-transform: uppercase; font-size: clamp(1.5rem, 2.6vw, 2.5rem); line-height: 1; }
 .what > span { display: block; margin-top: 8px; color: var(--mute); }
