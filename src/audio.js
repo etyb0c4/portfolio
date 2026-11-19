@@ -1,15 +1,15 @@
-/* A small generative score: one pad that retunes per act, plus a handful of gesture sounds.
-   Acts: paper (the studio), tear (the box open), night (glass, lights out), end (contact). */
+// A small generative score: one pad that retunes per act, plus a handful of gesture sounds.
 const CHORDS = {
-  paper: [110, 164.81, 246.94, 277.18],
-  tear: [65.41, 98, 155.56, 233.08],
-  night: [87.31, 130.81, 196, 207.65],
-  end: [98, 146.83, 246.94, 369.99],
+  ice: [110, 164.81, 246.94, 277.18],
+  sky: [146.83, 220, 329.63, 369.99],
+  red: [65.41, 98, 155.56, 233.08],
+  deep: [87.31, 130.81, 196, 207.65],
+  world: [98, 146.83, 246.94, 369.99],
 }
-const CUTOFF = { paper: 950, tear: 520, night: 620, end: 1700 }
+const CUTOFF = { ice: 900, sky: 1500, red: 520, deep: 620, world: 1900 }
 
 export function createAudio() {
-  let ctx = null, master, filt, wet, voices = [], riser, riserGain, act = 'paper'
+  let ctx = null, master, filt, wet, voices = [], scratch, riser, riserGain, act = 'ice'
   let on = true
   try { on = localStorage.getItem('sound') !== '0' } catch { /* storage blocked */ }
 
@@ -34,12 +34,12 @@ export function createAudio() {
     wet = ctx.createGain(); wet.gain.value = 0.55
     wet.connect(verb); verb.connect(master)
 
-    filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = CUTOFF.paper; filt.Q.value = 0.6
+    filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = CUTOFF.ice; filt.Q.value = 0.6
     filt.connect(master); filt.connect(wet)
     const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.07; lg.gain.value = 180
     lfo.connect(lg); lg.connect(filt.frequency); lfo.start()
 
-    voices = CHORDS.paper.map((f, i) => {
+    voices = CHORDS.ice.map((f, i) => {
       const g = ctx.createGain(); g.gain.value = 0.055 / (1 + i * 0.25); g.connect(filt)
       return ['sawtooth', 'triangle'].map((type, k) => {
         const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; o.detune.value = (k ? 7 : -7) + i * 2
@@ -47,14 +47,18 @@ export function createAudio() {
       })
     })
 
+    const sb = ctx.createBufferSource(); sb.buffer = noiseBuffer(2); sb.loop = true
+    const sf = ctx.createBiquadFilter(); sf.type = 'bandpass'; sf.frequency.value = 3200; sf.Q.value = 0.8
+    scratch = ctx.createGain(); scratch.gain.value = 0
+    sb.connect(sf); sf.connect(scratch); scratch.connect(master); scratch.connect(wet); sb.start()
+
     riser = ctx.createOscillator(); riser.type = 'sine'; riser.frequency.value = 80
     riserGain = ctx.createGain(); riserGain.gain.value = 0
     riser.connect(riserGain); riserGain.connect(master); riserGain.connect(wet); riser.start()
-    setAct(act, true)
+    setAct(act)
   }
 
-  const setAct = (name, force) => {
-    if (name === act && !force) return
+  const setAct = (name) => {
     act = name
     if (!ctx) return
     const t = ctx.currentTime
@@ -82,25 +86,13 @@ export function createAudio() {
     if (kind === 'tick') ping(1400, 0.06, 0.03)
     else if (kind === 'open') { ping(659.25, 0.5, 0.06); ping(987.77, 0.7, 0.045, 0.07) }
     else if (kind === 'close') ping(440, 0.3, 0.04)
-    else if (kind === 'thud') {
-      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
-      o.frequency.setValueAtTime(88, t); o.frequency.exponentialRampToValueAtTime(30, t + 0.4)
-      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5)
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.55)
-      burst(0.25, 0.1, 900)
-    } else if (kind === 'crack') {
-      burst(0.5, 0.26, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16)
+    else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
+    else if (kind === 'shatter') {
+      burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
       o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.9)
-      g.gain.setValueAtTime(0.55, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1)
+      g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1)
       o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.2)
-    } else if (kind === 'shatter') {
-      burst(1.15, 0.42, 1300); burst(0.4, 0.2, 3400)
-      ;[988, 1480, 1976, 2640].forEach((f, i) => ping(f, 0.8 + i * 0.2, 0.035, 0.03 + i * 0.05))
-      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
-      o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(24, t + 1.2)
-      g.gain.setValueAtTime(0.65, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4)
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.5)
     } else if (kind === 'reveal') [392, 587.33, 739.99, 987.77, 1479.98].forEach((f, i) => ping(f, 3.2, 0.05, i * 0.13, 'triangle'))
   }
 
@@ -113,10 +105,11 @@ export function createAudio() {
       if (ctx) master.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.25)
       return on
     },
+    draw(speed) { if (ctx) scratch.gain.setTargetAtTime(Math.min(speed, 1) * 0.07, ctx.currentTime, 0.05) },
     hold(p) {
       if (!ctx) return
       riser.frequency.setTargetAtTime(70 + p * p * 520, ctx.currentTime, 0.05)
-      riserGain.gain.setTargetAtTime(p * (on ? 0.1 : 0), ctx.currentTime, 0.05)
+      riserGain.gain.setTargetAtTime(p * 0.1, ctx.currentTime, 0.05)
     },
   }
 }

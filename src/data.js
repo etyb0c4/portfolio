@@ -76,3 +76,11 @@ export const FLAGS = {
   box: 'FLAG{th3r3_1s_4lw4ys_4_w4y_1n}',
   console: 'FLAG{d3vt00ls_1s_r3c0n}',
 }
+
+/* what the shattering leaves behind: one shard per discipline (drawn as canvas labels) */
+export const SHARD_LABELS = [
+  { sw: 'W', a: 'eb', b: 'exploitation', c: 'Burp Suite · sqlmap · ZAP' },
+  { sw: 'B', a: 'inary', b: 'pwn', c: 'pwntools · GDB · Metasploit' },
+  { sw: 'R', a: 'everse', b: 'engineering', c: 'Ghidra · jadx' },
+  { sw: 'F', a: 'orensics', b: '', c: 'Volatility · binwalk · Wireshark' },
+]

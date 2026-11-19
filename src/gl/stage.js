@@ -1,6 +1,5 @@
 import * as THREE from 'three'
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
-import { FULL_VERT, BACK_FRAG, OVER_FRAG } from './glsl.js'
+import { FULL_VERT, TRAIL_FRAG, BACK_FRAG, OVER_FRAG } from './glsl.js'
 
 const tri = () => {
   const g = new THREE.BufferGeometry()
@@ -21,21 +20,24 @@ export function createStage(canvas) {
   renderer.autoClear = false
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFShadowMap
-  renderer.toneMapping = THREE.NeutralToneMapping
-  renderer.toneMappingExposure = 1.05
+  renderer.toneMapping = THREE.NoToneMapping
   const flat = new THREE.Camera()
 
-  // studio light without a single downloaded file: a small room baked into an environment map
-  const pmrem = new THREE.PMREMGenerator(renderer)
-  const env = pmrem.fromScene(new RoomEnvironment(), 0.03).texture
-  pmrem.dispose()
+  const mkTarget = () => new THREE.WebGLRenderTarget(256, 256, { depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter })
+  let ta = mkTarget(), tb = mkTarget()
+  const trail = fullscreen(TRAIL_FRAG, {
+    uPrev: { value: null }, uA: { value: new THREE.Vector2(0.5, 0.5) }, uB: { value: new THREE.Vector2(0.5, 0.5) },
+    uAspect: { value: 1 }, uSize: { value: 0.05 }, uFade: { value: 0.96 }, uSub: { value: 0.003 }, uOn: { value: 0 },
+  })
 
   const back = fullscreen(BACK_FRAG, {
-    uTime: { value: 0 }, uAspect: { value: 1 }, uDark: { value: 0 }, uRage: { value: 0 }, uPool: { value: new THREE.Vector2(0.5, 0.55) },
+    uTime: { value: 0 }, uAspect: { value: 1 }, uTrail: { value: null }, uPointer: { value: new THREE.Vector2(0.5, 0.5) },
+    uIce: { value: 1 }, uSky: { value: 0 }, uSkyRich: { value: 0 }, uCurtain: { value: 0 }, uDeep: { value: 0 }, uWorld: { value: 0 }, uMelt: { value: 0 },
   })
+
   const over = fullscreen(OVER_FRAG, {
-    uTime: { value: 0 }, uAspect: { value: 1 }, uGrain: { value: 0.045 }, uVig: { value: 0.16 }, uFade: { value: 1 },
-    uFadeCol: { value: new THREE.Color('#0c0c0d') }, uLens: { value: new THREE.Vector4(0, 0, 1, 0) },
+    uTime: { value: 0 }, uAspect: { value: 1 }, uCloud: { value: 0 }, uOpen: { value: 0 },
+    uBlack: { value: 0 }, uWhite: { value: 0 }, uGrain: { value: 0.05 }, uVig: { value: 0.25 },
   }, { transparent: true, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor })
 
   let aspect = 1, cap = 1.5
@@ -43,20 +45,32 @@ export function createStage(canvas) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap))
     renderer.setSize(w, h, false)
     aspect = w / h
-    back.u.uAspect.value = over.u.uAspect.value = aspect
+    trail.u.uAspect.value = back.u.uAspect.value = over.u.uAspect.value = aspect
+  }
+
+  // a/b are the previous and current pointer positions in 0..1, y up
+  const stamp = (a, b, on, opts) => {
+    trail.u.uPrev.value = ta.texture
+    trail.u.uA.value.set(a.x, a.y); trail.u.uB.value.set(b.x, b.y)
+    trail.u.uOn.value = on
+    trail.u.uSize.value = opts.size; trail.u.uFade.value = opts.fade; trail.u.uSub.value = opts.sub
+    renderer.setRenderTarget(tb)
+    renderer.render(trail.scene, flat)
+    renderer.setRenderTarget(null)
+    ;[ta, tb] = [tb, ta]
+    back.u.uTrail.value = ta.texture
   }
 
   const render = (time, scene, camera) => {
     back.u.uTime.value = over.u.uTime.value = time
     renderer.clear()
     renderer.render(back.scene, flat)
-    renderer.clearDepth()
-    renderer.render(scene, camera)
+    if (scene) { renderer.clearDepth(); renderer.render(scene, camera) }
     renderer.render(over.scene, flat)
   }
 
   // step the resolution down when frames run long; false once there is nothing left to give
   const lower = () => { if (cap <= 0.75) return false; cap = cap > 1 ? 1 : 0.75; return true }
 
-  return { renderer, env, lower, back: back.u, over: over.u, resize, render, get aspect() { return aspect }, get dpr() { return renderer.getPixelRatio() } }
+  return { renderer, lower, back: back.u, over: over.u, resize, stamp, render, get aspect() { return aspect } }
 }

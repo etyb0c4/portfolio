@@ -1,0 +1,13 @@
+import { chromium } from 'playwright'
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
+await p.goto('http://localhost:5199/', { waitUntil: 'networkidle' })
+await p.waitForTimeout(2500)
+await p.keyboard.press('Enter')
+await p.waitForTimeout(2500)
+await p.evaluate(() => { window.__rs.S.target = 40 })
+await p.waitForTimeout(2800)
+await p.screenshot({ path: '.shots/v8/21-fork-fixed.jpg', type: 'jpeg', quality: 78 })
+await p.click('.gate-card.good'); await p.waitForTimeout(1500)
+await p.screenshot({ path: '.shots/v8/22-dim-good.jpg', type: 'jpeg', quality: 78 })
+await b.close()
