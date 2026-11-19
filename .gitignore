@@ -1,3 +1,4 @@
 node_modules
-.shots/
-dist/
+dist
+.shots
+_v1

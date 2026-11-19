@@ -1,0 +1,20 @@
+import { chromium } from 'playwright'
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
+const errs = []
+p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()) })
+p.on('pageerror', (e) => errs.push('PAGEERROR: ' + e.message))
+await p.goto('http://localhost:5199/', { waitUntil: 'networkidle' })
+await p.waitForTimeout(4500)
+const tops = await p.evaluate(() => Object.fromEntries(['recon','teardown','record','contact'].map((i)=>[i,document.getElementById(i).offsetTop])))
+const go = async (y, tag, wait = 2200) => { await p.evaluate((y) => scrollTo(0, y), Math.round(y)); await p.waitForTimeout(wait); await p.screenshot({ path: `.shots/v4/${tag}.jpg`, type: 'jpeg', quality: 78 }) }
+await p.screenshot({ path: '.shots/v4/00-hero.jpg', type: 'jpeg', quality: 78 })
+await go(tops.recon * 0.62, '01-st1')
+await go(tops.recon + (tops.teardown - tops.recon) * 0.55, '02-st2')
+await go(tops.teardown + (tops.record - tops.teardown) * 0.38, '03-teardown-air')
+await go(tops.teardown + (tops.record - tops.teardown) * 0.56, '04-st3')
+await go(tops.record - 900 * 0.3, '05-st4')
+await go(tops.record + 200, '06-night')
+await go(tops.contact - 900 * 0.5, '07-st5', 2400)
+console.log(errs.length ? 'ERRORS:\n' + [...new Set(errs)].slice(0, 8).join('\n') : 'clean')
+await b.close()

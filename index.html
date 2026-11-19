@@ -2,24 +2,195 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0708" />
-    <meta name="description" content="Rayan SAMA — full-stack developer & security researcher. I build systems before I break them." />
-    <meta name="author" content="Rayan SAMA" />
+    <meta name="theme-color" content="#ecebe7" />
+    <title>Rayan Sama · RS—01</title>
+    <meta name="description" content="Rayan Sama (etyb0c4 / saiyanj1n), full-stack developer and security researcher in Cotonou. Trace the S, break the seal, pick a dimension." />
+    <meta name="author" content="Rayan Sama" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="RAYAN SAMA — full-stack developer & security researcher" />
-    <meta property="og:description" content="I build systems before I break them. Breach in to see the work." />
-    <meta property="og:image" content="/og.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <title>RAYAN SAMA // root access</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,300..900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
+    <meta property="og:title" content="Rayan Sama · RS—01" />
+    <meta property="og:description" content="I take black boxes apart, then I build better ones. Two dimensions: good path, dark path." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>Rayan SAMA — full-stack developer & security researcher.</noscript>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="boot" aria-hidden="true"><b>RS—01</b><span id="boot-n">000</span><i>unsealing</i></div>
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <canvas id="ink" aria-hidden="true"></canvas>
+    <div id="tags" aria-hidden="true"></div>
+
+    <!-- the same content, for anyone who cannot or will not play -->
+    <article class="sr">
+      <h1>Rayan Sama — full-stack developer &amp; security researcher</h1>
+      <p>Also known as etyb0c4 or saiyanj1n. Cotonou, Bénin. Epitech, class of 2029. 2nd place, HackerLab 2026 finale. Open to internships.</p>
+      <p><a href="mailto:ryansama.tech@gmail.com">ryansama.tech@gmail.com</a> · <a href="https://github.com/etyb0c4">GitHub</a> · <a href="https://linkedin.com/in/rayan-sama">LinkedIn</a></p>
+      <ul id="sr-work"></ul>
+    </article>
+
+    <div id="story" class="story" aria-hidden="true">
+      <section class="st" data-in="0.44" data-out="0.98">
+        <p class="b tl"><span class="s">the label says</span><span class="x">do not</span><span class="x"><i>open</i>.</span></p>
+        <p class="b br"><span class="s">it really does say that</span></p>
+      </section>
+      <section class="st" data-in="1.36" data-out="1.86">
+        <p class="b tl"><span class="s">so, naturally,</span></p>
+        <p class="b br"><span class="x">I <i>pressed</i>.</span></p>
+      </section>
+      <section class="st" data-in="5.12" data-out="5.7">
+        <p class="b c"><span class="s">breaking is diagnosis</span><span class="x">build it back.</span><span class="x"><i>better</i>.</span></p>
+      </section>
+    </div>
+    <div id="story2" class="story" aria-hidden="true">
+      <section class="st red" data-in="2.1" data-out="2.52">
+        <p class="b tl"><span class="s">everything opens</span><span class="x">find where</span></p>
+        <p class="b br"><span class="x">it <i>gives</i>.</span></p>
+      </section>
+      <section class="st red" data-in="2.58" data-out="3.04">
+        <p class="b c"><span class="s">right there</span><span class="x">and it <i>gave</i>.</span></p>
+      </section>
+    </div>
+
+    <!-- the acts: content that rides the timeline -->
+    <div id="acts" aria-hidden="true">
+      <section class="act" data-in="0.04" data-out="0.96">
+        <div class="col">
+          <p class="k" id="hero-k"></p>
+          <h1 id="hero-name"></h1>
+          <p class="aka" id="hero-aka"></p>
+          <p class="lead" id="hero-line"></p>
+          <div class="chips" id="hero-chips"></div>
+        </div>
+      </section>
+      <section class="act" data-in="1.04" data-out="1.92">
+        <div class="col">
+          <p class="k"><b>01</b> Way in</p>
+          <h2>Every box looks <em class="fr">sealed</em> from the outside.</h2>
+          <p class="lead">It never is. I enumerate first: what is listening, what it runs, what it trusts. This one has three doors.</p>
+          <ul class="ports" id="ports"></ul>
+        </div>
+      </section>
+      <section class="act" data-in="2.02" data-out="2.46">
+        <div class="col">
+          <p class="k"><b>02</b> Rupture</p>
+          <h2>It holds, it holds — and then it <em class="fr">doesn't</em>.</h2>
+        </div>
+      </section>
+      <section class="act" data-in="3.3" data-out="4.38">
+        <div class="col">
+          <p class="k"><b>03</b> Teardown</p>
+          <h2>Then I take it <em class="fr">apart</em>.</h2>
+          <p class="lead">Four disciplines, one habit: understand the mechanism, find where it gives.</p>
+          <ol class="parts" id="parts"></ol>
+        </div>
+      </section>
+      <section class="act" data-in="4.82" data-out="5.6">
+        <div class="col">
+          <p class="k"><b>04</b> Rebuild</p>
+          <h2>What was a black box is now <em class="fr">glass</em>.</h2>
+          <p class="lead">That is the job. Understanding a thing and defeating it are the same discipline, learned from opposite ends.</p>
+        </div>
+      </section>
+      <section class="act name" data-in="5.96" data-out="6.72">
+        <div class="col c">
+          <p class="k c" id="name-k"></p>
+          <h1 id="name-big"></h1>
+          <p class="aka" id="name-aka"></p>
+          <div class="chips c" id="name-chips"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- the fork: the experience ends on a choice -->
+    <div id="fork" aria-hidden="true">
+      <div class="fork-head">
+        <p class="k"><b>05</b> The fork</p>
+        <h2>Same person. Two <em class="fr">dimensions</em>.</h2>
+      </div>
+      <div class="fork-split">
+        <button type="button" class="gate-card good" data-choose="good">
+          <span class="gc-k">dimension a · the one that builds</span>
+          <span class="gc-t">good<br />path</span>
+          <span class="gc-s">interfaces · engines · tools that feel alive</span>
+          <span class="gc-go">enter →</span>
+        </button>
+        <button type="button" class="gate-card dark" data-choose="dark">
+          <span class="gc-k">dimension b · the one that breaks</span>
+          <span class="gc-t">dark<br />path</span>
+          <span class="gc-s">CTF · pwn · the record against other people</span>
+          <span class="gc-go">enter →</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- the dimensions: where the actual content lives -->
+    <div class="dim" id="dim-good" hidden>
+      <div class="dim-in">
+        <p class="dim-h"><b>dimension a</b> the one that builds <button type="button" class="dim-x" aria-label="Back to the fork">×</button></p>
+        <section>
+          <p class="k"><b>A1</b> Work</p>
+          <h2>The dimension where I <em class="fr">build</em>.</h2>
+          <div class="work" id="work-list"></div>
+        </section>
+        <section>
+          <p class="k"><b>A2</b> Stack</p>
+          <div class="tagsline big" id="stack-list"></div>
+        </section>
+        <section class="contact">
+          <p class="k"><b>A3</b> Contact</p>
+          <div class="id id-card"></div>
+          <p class="foot"></p>
+        </section>
+      </div>
+    </div>
+    <div class="dim" id="dim-dark" hidden>
+      <div class="dim-in">
+        <p class="dim-h"><b>dimension b</b> the one that breaks <button type="button" class="dim-x" aria-label="Back to the fork">×</button></p>
+        <section>
+          <p class="k"><b>B1</b> Record</p>
+          <h2>Measured against <em class="fr">other people</em>.</h2>
+          <ul class="record" id="record-list"></ul>
+        </section>
+        <section>
+          <p class="k"><b>B2</b> Operations</p>
+          <h2>Built to <em class="fr">break</em> things.</h2>
+          <div class="work" id="ops-list"></div>
+        </section>
+        <section>
+          <p class="k"><b>B3</b> Arsenal</p>
+          <div class="arsenal" id="arsenal-list"></div>
+        </section>
+        <section id="notes" hidden>
+          <p class="k"><b>B4</b> Field notes</p>
+          <ul class="notes" id="notes-list"></ul>
+        </section>
+        <section class="contact">
+          <p class="k"><b>B5</b> Contact</p>
+          <div class="id id-card"></div>
+          <p class="foot"></p>
+        </section>
+      </div>
+    </div>
+    <button id="cross" type="button" hidden><i></i><span></span></button>
+
+    <!-- instruments -->
+    <header id="bar">
+      <a class="unit" href="#top"><b>RS—01</b><span id="chapter">sealed unit</span></a>
+      <div class="bar-r"><button id="snd" type="button" aria-label="Sound"></button></div>
+    </header>
+    <div id="rail" aria-hidden="true"><i id="rail-needle"></i></div>
+    <div id="cur" aria-hidden="true"><i></i></div>
+
+    <div id="trace">
+      <svg viewBox="0 0 100 140" aria-hidden="true"><path id="trace-s" d="M78 26 C70 12 38 10 30 26 C20 44 72 58 78 78 C84 102 38 120 22 104" pathLength="100" /></svg>
+      <span class="trace-label">trace an S to break in</span>
+      <button id="skip" type="button">skip <kbd>↵</kbd></button>
+    </div>
+    <div id="holdgate" aria-hidden="true">
+      <svg viewBox="0 0 80 80"><circle class="hg-bg" cx="40" cy="40" r="30" /><circle class="hg-fg" id="hg-fg" cx="40" cy="40" r="30" pathLength="100" /></svg>
+      <span>hold<br />to break<br />the seal</span>
+    </div>
+    <div id="hint"><i></i><span>scroll</span></div>
+
+    <noscript><style>#boot,#trace{display:none}</style><p style="padding:2rem">Rayan Sama (etyb0c4 / saiyanj1n), full-stack developer and security researcher. ryansama.tech@gmail.com · github.com/etyb0c4</p></noscript>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

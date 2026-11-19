@@ -1,0 +1,13 @@
+import { chromium } from 'playwright'
+const b = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] })
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } })
+await p.goto('http://localhost:5199/', { waitUntil: 'networkidle' })
+await p.waitForTimeout(4500)
+await p.screenshot({ path: '.shots/v2/10-hero2.jpg', type: 'jpeg', quality: 78 })
+const t = await p.evaluate(() => document.getElementById('recon').offsetTop)
+await p.evaluate((y) => scrollTo(0, y), t); await p.waitForTimeout(2200)
+await p.screenshot({ path: '.shots/v2/11-recon2.jpg', type: 'jpeg', quality: 78 })
+const c = await p.evaluate(() => document.getElementById('contact').offsetTop)
+await p.evaluate((y) => scrollTo(0, y), c); await p.waitForTimeout(2600)
+await p.screenshot({ path: '.shots/v2/12-contact2.jpg', type: 'jpeg', quality: 78 })
+await b.close()

@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
-  base: '/portfolio/',
-  plugins: [react()],
+  base: './', // relative paths, so the build works at a domain root or under any sub-path
+  server: { port: 5199, strictPort: true },
+  build: { target: 'es2022', chunkSizeWarningLimit: 900 },
 })
