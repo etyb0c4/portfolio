@@ -43,7 +43,7 @@ T({ curtain: 0, deep: 1, grain: 0.09, vig: 0.3 }, 18.8, 2.4, 'sine.inOut')
 T({ camZ: -64 }, 19.5, 12, 'sine.inOut')
 T({ shards: 0 }, 20.6, 1.4)
 tl.set(G, { coreDark: 1 }, 22)
-T({ coreS: 1 }, 30.0, 1.8, 'power3.out')
+T({ vig: 0.46, grain: 0.13 }, 30.0, 1.7)
 T({ white: 1 }, 32.0, 0.55, 'power2.in')
 tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
 T({ white: 0 }, 33.0, 0.9, 'power2.out')
@@ -89,7 +89,7 @@ document.querySelectorAll('.st').forEach((st) => {
 
 /* ───────── dom ───────── */
 const el = {
-  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), slash: $('#slash'), cut: $('#cut'), hint: $('#hint'), explore: $('#explore'),
+  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), slash: $('#slash'), cut: $('#cut'), thread: $('#thread'), hint: $('#hint'), explore: $('#explore'),
   needle: $('#needle'), ring: $('#ring'), uidN: $('#uid-n'), uidName: $('#uid-name'), sound: $('#sound'),
   dockMain: $('#dock-main'), menu: $('#menu'), menuBtn: $('#menu-btn'), fork: $('#fork'), cross: $('#cross'),
 }
@@ -232,6 +232,12 @@ const isSlashGate = (g) => g === GATES[1]
 function doSlash(x1, y1, x2, y2) {
   const g = GATES[1]
   if (g.solved || S.auto || !S.entered) return
+  const ty = size.h / 2
+  if ((y1 - ty) * (y2 - ty) >= 0) return // the gesture has to cross the thread
+  const cx = x1 + ((ty - y1) / (y2 - y1 || 1)) * (x2 - x1)
+  el.thread.style.setProperty('--cx', `${clamp(cx, 0, size.w)}px`)
+  el.thread.classList.add('on', 'cut')
+  setTimeout(() => el.thread.classList.remove('on', 'cut'), 950)
   const len = Math.max(Math.hypot(x2 - x1, y2 - y1) * 1.5, size.h * 0.55)
   const ang = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
   const i = el.cut.firstElementChild
@@ -241,8 +247,33 @@ function doSlash(x1, y1, x2, y2) {
   i.style.transform = `translate(-50%, -50%) rotate(${ang}deg)`
   el.cut.classList.remove('go'); void el.cut.offsetWidth; el.cut.classList.add('go')
   setTimeout(() => el.cut.classList.remove('go'), 950)
+  splitScreen(x1, y1, x2, y2)
   audio.hit('slash')
   solve(g)
+}
+
+/* the picture itself parts in two along the cut */
+function splitScreen(x1, y1, x2, y2) {
+  const src = stage.renderer.domElement
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1
+  const ux = dx / L, uy = dy / L, nx = -uy, ny = ux
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
+  const R = Math.hypot(size.w, size.h) * 1.2
+  const A = { x: mx - ux * R, y: my - uy * R }, B = { x: mx + ux * R, y: my + uy * R }
+  for (const side of [1, -1]) {
+    const c = document.createElement('canvas')
+    c.width = src.width; c.height = src.height; c.className = 'half'
+    c.getContext('2d').drawImage(src, 0, 0)
+    const P3 = { x: B.x + nx * side * R, y: B.y + ny * side * R }
+    const P4 = { x: A.x + nx * side * R, y: A.y + ny * side * R }
+    c.style.clipPath = `polygon(${A.x}px ${A.y}px, ${B.x}px ${B.y}px, ${P3.x}px ${P3.y}px, ${P4.x}px ${P4.y}px)`
+    c.style.setProperty('--tx', `${nx * side * Math.max(90, size.w * 0.09)}px`)
+    c.style.setProperty('--ty', `${ny * side * Math.max(90, size.w * 0.09)}px`)
+    c.style.setProperty('--rot', `${side * 1.5}deg`)
+    document.body.appendChild(c)
+    requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('go')))
+    setTimeout(() => c.remove(), 1500)
+  }
 }
 
 function skip(then) {
@@ -317,7 +348,7 @@ const release = () => {
   if (g && isSlashGate(g)) {
     const dist = Math.hypot(P.lx - P.sx, P.ly - P.sy)
     const speed = dist / Math.max(performance.now() - P.t0, 1)
-    if (dist > Math.min(size.w, size.h) * 0.2 && speed > 0.4) doSlash(P.sx, P.sy, P.lx, P.ly)
+    if (dist > Math.min(size.w, size.h) * 0.2 && speed > 0.35) doSlash(P.sx, P.sy, P.lx, P.ly)
   }
   P.down = false; S.holding = false
   document.body.classList.remove('grabbing')
@@ -405,6 +436,7 @@ function frame(now) {
   } else if (!S.auto) S.hold = Math.max(0, S.hold - dt * 2)
   el.gate.classList.toggle('on', !!gate && !isSlashGate(gate))
   el.slash.classList.toggle('on', !!gate && isSlashGate(gate))
+  if (!el.thread.classList.contains('cut')) el.thread.classList.toggle('on', S.entered && !S.auto && S.t > 30.3 && !GATES[1].solved)
   el.gateFg.style.strokeDashoffset = String(100 - S.hold * 100)
   audio.hold(gate || S.auto ? S.hold : 0)
 

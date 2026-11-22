@@ -88,12 +88,18 @@ export function createAudio() {
     else if (kind === 'close') ping(440, 0.3, 0.04)
     else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
     else if (kind === 'slash') {
-      burst(0.45, 0.4, 900)
-      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
-      o.type = 'sawtooth'; o.frequency.setValueAtTime(2600, t); o.frequency.exponentialRampToValueAtTime(160, t + 0.3)
-      g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34)
-      o.connect(g); g.connect(master); g.connect(wet); o.start(t); o.stop(t + 0.4)
-    } else if (kind === 'shatter') {
+      burst(0.5, 0.42, 1000)
+      const t = ctx.currentTime
+      const o = ctx.createOscillator(), g = ctx.createGain()
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(2200, t); o.frequency.exponentialRampToValueAtTime(130, t + 0.4)
+      g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45)
+      o.connect(g); g.connect(master); g.connect(wet); o.start(t); o.stop(t + 0.5)
+      const sub = ctx.createOscillator(), sg = ctx.createGain()
+      sub.type = 'sine'; sub.frequency.setValueAtTime(100, t + 0.02); sub.frequency.exponentialRampToValueAtTime(26, t + 0.85)
+      sg.gain.setValueAtTime(0.55, t + 0.02); sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.95)
+      sub.connect(sg); sg.connect(master); sub.start(t); sub.stop(t + 1)
+      ;[1567.98, 2093].forEach((f, i) => ping(f, 1.2, 0.05, 0.03 + i * 0.05, 'triangle'))
+        } else if (kind === 'shatter') {
       burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
       o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.9)
