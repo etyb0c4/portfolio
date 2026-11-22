@@ -89,7 +89,7 @@ document.querySelectorAll('.st').forEach((st) => {
 
 /* ───────── dom ───────── */
 const el = {
-  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), hint: $('#hint'), explore: $('#explore'),
+  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), slash: $('#slash'), cut: $('#cut'), hint: $('#hint'), explore: $('#explore'),
   needle: $('#needle'), ring: $('#ring'), uidN: $('#uid-n'), uidName: $('#uid-name'), sound: $('#sound'),
   dockMain: $('#dock-main'), menu: $('#menu'), menuBtn: $('#menu-btn'), fork: $('#fork'), cross: $('#cross'),
 }
@@ -227,6 +227,24 @@ function solve(gate) {
   gsap.to(S, { t: gate.to, duration: gate.dur, ease: 'none', onComplete: () => { S.target = S.t; S.auto = false } })
 }
 
+/* gate 2 is not a hold: one clean cut through the night */
+const isSlashGate = (g) => g === GATES[1]
+function doSlash(x1, y1, x2, y2) {
+  const g = GATES[1]
+  if (g.solved || S.auto || !S.entered) return
+  const len = Math.max(Math.hypot(x2 - x1, y2 - y1) * 1.5, size.h * 0.55)
+  const ang = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
+  const i = el.cut.firstElementChild
+  i.style.left = `${(x1 + x2) / 2}px`
+  i.style.top = `${(y1 + y2) / 2}px`
+  i.style.width = `${len}px`
+  i.style.transform = `translate(-50%, -50%) rotate(${ang}deg)`
+  el.cut.classList.remove('go'); void el.cut.offsetWidth; el.cut.classList.add('go')
+  setTimeout(() => el.cut.classList.remove('go'), 950)
+  audio.hit('slash')
+  solve(g)
+}
+
 function skip(then) {
   if (S.world) { then?.(); return }
   GATES.forEach((g) => { g.solved = true })
@@ -273,13 +291,13 @@ const canvas = stage.renderer.domElement
 canvas.addEventListener('pointerdown', (e) => {
   audio.start()
   canvas.setPointerCapture?.(e.pointerId)
-  P.down = true; P.type = e.pointerType
+  P.down = true; P.type = e.pointerType; P.t0 = performance.now()
   P.sx = P.lx = e.clientX; P.sy = P.ly = e.clientY; P.moved = 0
   P.x = e.clientX / size.w; P.y = 1 - e.clientY / size.h
   P.px = P.x; P.py = P.y; P.stale = false
   toggleMenu(false)
   if (!S.entered) { stroke = [{ x: e.clientX, y: e.clientY }]; fading = false; el.draw.classList.add('busy') }
-  else if (atGate() && nearCentre(e)) S.holding = true
+  else if (atGate() && !isSlashGate(atGate()) && nearCentre(e)) S.holding = true
   else if (S.world) document.body.classList.add('grabbing')
 })
 addEventListener('pointermove', (e) => {
@@ -295,6 +313,12 @@ addEventListener('pointermove', (e) => {
 })
 const release = () => {
   if (!P.down) return
+  const g = atGate()
+  if (g && isSlashGate(g)) {
+    const dist = Math.hypot(P.lx - P.sx, P.ly - P.sy)
+    const speed = dist / Math.max(performance.now() - P.t0, 1)
+    if (dist > Math.min(size.w, size.h) * 0.2 && speed > 0.4) doSlash(P.sx, P.sy, P.lx, P.ly)
+  }
   P.down = false; S.holding = false
   document.body.classList.remove('grabbing')
   if (!S.entered) { stroke = []; fading = true; el.draw.classList.remove('busy') }
@@ -315,7 +339,7 @@ addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (PATH) leaveDim(); else toggleMenu(false); return }
   if (e.target.closest?.('button, a, .panel') && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
   if (!S.entered) { if (e.key === 'Enter') { audio.start(); skip() } return }
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); if (atGate()) S.holding = true; else nudge(0.9) }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); const g = atGate(); if (g && isSlashGate(g)) doSlash(size.w * 0.7, size.h * 0.32, size.w * 0.3, size.h * 0.68); else if (g) S.holding = true; else nudge(0.9) }
   else if (e.key === 'ArrowDown' || e.key === 'PageDown') nudge(0.9)
   else if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (S.world) leaveFork(); else nudge(-0.9) }
 })
@@ -375,11 +399,12 @@ function frame(now) {
   if (S.entered) tl.time(S.t)
 
   const gate = atGate()
-  if (gate) {
+  if (gate && !isSlashGate(gate)) {
     S.hold = clamp(S.hold + (S.holding ? raw / 1.35 : -raw * 1.3), 0, 1)
     if (S.hold >= 1) solve(gate)
   } else if (!S.auto) S.hold = Math.max(0, S.hold - dt * 2)
-  el.gate.classList.toggle('on', !!gate)
+  el.gate.classList.toggle('on', !!gate && !isSlashGate(gate))
+  el.slash.classList.toggle('on', !!gate && isSlashGate(gate))
   el.gateFg.style.strokeDashoffset = String(100 - S.hold * 100)
   audio.hold(gate || S.auto ? S.hold : 0)
 
@@ -430,7 +455,7 @@ function frame(now) {
 }
 
 // handles for scripted walkthroughs and tests
-window.__rs = { S, G, GATES, enter, skip, solve, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
+window.__rs = { S, G, GATES, enter, skip, solve, doSlash, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)
