@@ -16,7 +16,7 @@ const fullscreen = (fragmentShader, uniforms, extra = {}) => {
 }
 
 export function createStage(canvas) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: true })
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' })
   renderer.autoClear = false
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFShadowMap

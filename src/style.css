@@ -68,31 +68,11 @@ body.point #gl { cursor: pointer; }
 .draw.busy svg { opacity: 0; }
 .draw.gone { opacity: 0; }
 
-/* ───── gate 2: one clean cut ───── */
-.slash { position: fixed; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; pointer-events: none; display: grid; place-items: center; opacity: 0; transform: scale(0.6); transition: opacity 0.5s, transform 0.6s var(--ease); color: var(--ink); }
-.slash.on { opacity: 1; transform: none; }
-.slash svg { position: absolute; inset: 0; overflow: visible; filter: drop-shadow(0 0 10px rgba(255, 79, 26, 0.75)); }
-.slash__hint { fill: none; stroke: var(--orange); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: slashHint 1.7s cubic-bezier(0.65, 0, 0.2, 1) infinite; }
-@keyframes slashHint { 0% { stroke-dashoffset: 100; opacity: 0; } 10% { opacity: 1; } 45% { stroke-dashoffset: 0; opacity: 1; } 72% { stroke-dashoffset: -100; opacity: 1; } 73%, 100% { stroke-dashoffset: -100; opacity: 0; } }
-.slash span { position: absolute; top: calc(100% + 16px); left: 50%; transform: translateX(-50%); text-align: center; font: 600 11px/1.6 var(--mono); letter-spacing: 0.24em; white-space: nowrap; }
-#cut { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
-#thread { position: fixed; left: 0; top: 50%; width: 100%; height: 0; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.6s; --cx: 50vw; }
-#thread.on { opacity: 1; }
-#thread i { position: absolute; top: -1px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, #ffd9c2 9%, #ff6a33 50%, #ffd9c2 91%, transparent); box-shadow: 0 0 12px 2px rgba(255, 110, 45, 0.85), 0 0 56px 12px rgba(255, 79, 26, 0.35); }
-#thread .th-f { left: 3vw; right: 3vw; transform: scaleX(0); transition: transform 1.4s cubic-bezier(0.16, 0.8, 0.22, 1); animation: thrum 0.085s steps(2) infinite; }
-#thread.on .th-f { transform: scaleX(1); }
-@keyframes thrum { 0% { translate: 0 -0.9px; } 100% { translate: 0 0.9px; } }
-#thread .th-l, #thread .th-r { display: none; }
-#thread.cut .th-f { display: none; }
-#thread.cut .th-l { display: block; left: 3vw; right: calc(100vw - var(--cx)); transform-origin: left center; animation: whipL 0.7s cubic-bezier(0.18, 0.85, 0.3, 1) forwards; }
-#thread.cut .th-r { display: block; left: var(--cx); right: 3vw; transform-origin: right center; animation: whipR 0.7s cubic-bezier(0.18, 0.85, 0.3, 1) forwards; }
-@keyframes whipL { 30% { transform: rotate(-3.5deg); opacity: 1; filter: blur(1px); } 100% { transform: rotate(-11deg) translateY(12px); opacity: 0; filter: blur(9px); } }
-@keyframes whipR { 30% { transform: rotate(-3.5deg); opacity: 1; filter: blur(1px); } 100% { transform: rotate(-11deg) translateY(12px); opacity: 0; filter: blur(9px); } }
-.half { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 3; pointer-events: none; transition: transform 1.15s cubic-bezier(0.3, 0, 0.15, 1), opacity 1.15s cubic-bezier(0.5, 0, 0.6, 1); will-change: transform, opacity; }
-.half.go { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); opacity: 0; }
-#cut i { position: absolute; height: 3px; border-radius: 3px; background: linear-gradient(90deg, transparent, #fff6ee 16%, #ffb48e 50%, #fff6ee 84%, transparent); box-shadow: 0 0 18px 4px rgba(255, 140, 70, 0.9), 0 0 80px 26px rgba(255, 79, 26, 0.5); opacity: 0; }
-#cut.go i { animation: cutFlash 0.85s cubic-bezier(0.2, 0.8, 0.25, 1) forwards; }
-@keyframes cutFlash { 0% { opacity: 0; height: 2px; } 9% { opacity: 1; height: 4px; } 35% { opacity: 1; height: 12px; } 100% { opacity: 0; height: 110px; filter: blur(12px); } }
+/* ───── gate 2: put the letter back together ───── */
+.slash { position: fixed; left: 50%; top: 68%; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity 0.5s; color: var(--ink); }
+.slash.on { opacity: 1; }
+.slash span { display: block; text-align: center; font: 600 11px/1.6 var(--mono); letter-spacing: 0.24em; white-space: nowrap; animation: joinPulse 2.2s ease-in-out infinite; }
+@keyframes joinPulse { 50% { opacity: 0.45; } }
 
 /* ───── gates 1 and 2: tap + hold ───── */
 .gate { position: fixed; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; pointer-events: none; opacity: 0; transform: scale(0.6); transition: opacity 0.5s, transform 0.6s var(--ease); color: var(--ink); }

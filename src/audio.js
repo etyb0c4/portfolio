@@ -87,18 +87,14 @@ export function createAudio() {
     else if (kind === 'open') { ping(659.25, 0.5, 0.06); ping(987.77, 0.7, 0.045, 0.07) }
     else if (kind === 'close') ping(440, 0.3, 0.04)
     else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
-    else if (kind === 'slash') {
-      burst(0.5, 0.42, 1000)
+    else if (kind === 'fuse') {
       const t = ctx.currentTime
-      const o = ctx.createOscillator(), g = ctx.createGain()
-      o.type = 'sawtooth'; o.frequency.setValueAtTime(2200, t); o.frequency.exponentialRampToValueAtTime(130, t + 0.4)
-      g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45)
-      o.connect(g); g.connect(master); g.connect(wet); o.start(t); o.stop(t + 0.5)
       const sub = ctx.createOscillator(), sg = ctx.createGain()
-      sub.type = 'sine'; sub.frequency.setValueAtTime(100, t + 0.02); sub.frequency.exponentialRampToValueAtTime(26, t + 0.85)
-      sg.gain.setValueAtTime(0.55, t + 0.02); sg.gain.exponentialRampToValueAtTime(0.0001, t + 0.95)
-      sub.connect(sg); sg.connect(master); sub.start(t); sub.stop(t + 1)
-      ;[1567.98, 2093].forEach((f, i) => ping(f, 1.2, 0.05, 0.03 + i * 0.05, 'triangle'))
+      sub.type = 'sine'; sub.frequency.setValueAtTime(64, t); sub.frequency.exponentialRampToValueAtTime(24, t + 1.1)
+      sg.gain.setValueAtTime(0.6, t); sg.gain.exponentialRampToValueAtTime(0.0001, t + 1.25)
+      sub.connect(sg); sg.connect(master); sub.start(t); sub.stop(t + 1.3)
+      burst(0.6, 0.22, 500)
+      ;[392, 587.33, 783.99, 1174.66].forEach((f, i) => ping(f, 2.4, 0.055, 0.05 + i * 0.09, 'triangle'))
         } else if (kind === 'shatter') {
       burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()

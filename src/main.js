@@ -5,7 +5,7 @@ import './style.css'
 import gsap from 'gsap'
 import * as THREE from 'three'
 import { createStage } from './gl/stage.js'
-import { createCore, createShards, createDepths } from './gl/acts.js'
+import { createCore, createShards, createDepths, createMonogram } from './gl/acts.js'
 import { createAudio } from './audio.js'
 import { IDENTITY, LINKS, RECORD, PROJECTS, PARTS, STACK, NOTES, FLAGS, SHARD_LABELS } from './data.js'
 
@@ -16,7 +16,7 @@ const GATES = [{ at: 9, to: 10.7, dur: 2.4, solved: false }, { at: 32, to: 36, d
 
 // S is where we are; G is what the picture looks like there (driven by the timeline).
 const S = { t: 0, target: 0, entered: false, auto: true, world: false, hold: 0, holding: false, time: 0, idle: 0, flash: 0, exit: 0 }
-const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, grain: 0.05, vig: 0.22 }
+const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, mono: 0, grain: 0.05, vig: 0.22 }
 
 const stage = createStage($('#gl'))
 const audio = createAudio()
@@ -25,7 +25,8 @@ const actCam = new THREE.PerspectiveCamera(35, 1, 0.1, 200)
 const core = createCore()
 const shards = createShards(SHARD_LABELS)
 const depths = createDepths()
-actScene.add(core.group, shards.group, depths.group)
+const mono = createMonogram()
+actScene.add(core.group, shards.group, depths.group, mono.group)
 
 /* ───────── timeline ───────── */
 const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } })
@@ -44,8 +45,9 @@ T({ camZ: -64 }, 19.5, 12, 'sine.inOut')
 T({ shards: 0 }, 20.6, 1.4)
 tl.set(G, { coreDark: 1 }, 22)
 T({ vig: 0.46, grain: 0.13 }, 30.0, 1.7)
-T({ white: 1 }, 32.0, 0.55, 'power2.in')
-tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
+T({ mono: 1 }, 30.2, 1.7, 'power2.out')
+T({ white: 1 }, 32.45, 0.5, 'power2.in')
+tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, mono: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
 T({ white: 0 }, 33.0, 0.9, 'power2.out')
 T({ open: 0.5 }, 36.5, 2.0, 'sine.inOut')
 T({ open: 0.62 }, 38.5, 0.8, 'none')
@@ -89,7 +91,7 @@ document.querySelectorAll('.st').forEach((st) => {
 
 /* ───────── dom ───────── */
 const el = {
-  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), slash: $('#slash'), cut: $('#cut'), thread: $('#thread'), hint: $('#hint'), explore: $('#explore'),
+  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), slash: $('#slash'), hint: $('#hint'), explore: $('#explore'),
   needle: $('#needle'), ring: $('#ring'), uidN: $('#uid-n'), uidName: $('#uid-name'), sound: $('#sound'),
   dockMain: $('#dock-main'), menu: $('#menu'), menuBtn: $('#menu-btn'), fork: $('#fork'), cross: $('#cross'),
 }
@@ -227,53 +229,14 @@ function solve(gate) {
   gsap.to(S, { t: gate.to, duration: gate.dur, ease: 'none', onComplete: () => { S.target = S.t; S.auto = false } })
 }
 
-/* gate 2 is not a hold: one clean cut through the night */
-const isSlashGate = (g) => g === GATES[1]
-function doSlash(x1, y1, x2, y2) {
+/* gate 2: the letter is in two halves; you put it back together */
+const isJoinGate = (g) => g === GATES[1]
+function doFuse() {
   const g = GATES[1]
   if (g.solved || S.auto || !S.entered) return
-  const ty = size.h / 2
-  if ((y1 - ty) * (y2 - ty) >= 0) return // the gesture has to cross the thread
-  const cx = x1 + ((ty - y1) / (y2 - y1 || 1)) * (x2 - x1)
-  el.thread.style.setProperty('--cx', `${clamp(cx, 0, size.w)}px`)
-  el.thread.classList.add('on', 'cut')
-  setTimeout(() => el.thread.classList.remove('on', 'cut'), 950)
-  const len = Math.max(Math.hypot(x2 - x1, y2 - y1) * 1.5, size.h * 0.55)
-  const ang = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
-  const i = el.cut.firstElementChild
-  i.style.left = `${(x1 + x2) / 2}px`
-  i.style.top = `${(y1 + y2) / 2}px`
-  i.style.width = `${len}px`
-  i.style.transform = `translate(-50%, -50%) rotate(${ang}deg)`
-  el.cut.classList.remove('go'); void el.cut.offsetWidth; el.cut.classList.add('go')
-  setTimeout(() => el.cut.classList.remove('go'), 950)
-  splitScreen(x1, y1, x2, y2)
-  audio.hit('slash')
+  mono.fuse()
+  audio.hit('fuse')
   solve(g)
-}
-
-/* the picture itself parts in two along the cut */
-function splitScreen(x1, y1, x2, y2) {
-  const src = stage.renderer.domElement
-  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1
-  const ux = dx / L, uy = dy / L, nx = -uy, ny = ux
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2
-  const R = Math.hypot(size.w, size.h) * 1.2
-  const A = { x: mx - ux * R, y: my - uy * R }, B = { x: mx + ux * R, y: my + uy * R }
-  for (const side of [1, -1]) {
-    const c = document.createElement('canvas')
-    c.width = src.width; c.height = src.height; c.className = 'half'
-    c.getContext('2d').drawImage(src, 0, 0)
-    const P3 = { x: B.x + nx * side * R, y: B.y + ny * side * R }
-    const P4 = { x: A.x + nx * side * R, y: A.y + ny * side * R }
-    c.style.clipPath = `polygon(${A.x}px ${A.y}px, ${B.x}px ${B.y}px, ${P3.x}px ${P3.y}px, ${P4.x}px ${P4.y}px)`
-    c.style.setProperty('--tx', `${nx * side * Math.max(90, size.w * 0.09)}px`)
-    c.style.setProperty('--ty', `${ny * side * Math.max(90, size.w * 0.09)}px`)
-    c.style.setProperty('--rot', `${side * 1.5}deg`)
-    document.body.appendChild(c)
-    requestAnimationFrame(() => requestAnimationFrame(() => c.classList.add('go')))
-    setTimeout(() => c.remove(), 1500)
-  }
 }
 
 function skip(then) {
@@ -328,7 +291,8 @@ canvas.addEventListener('pointerdown', (e) => {
   P.px = P.x; P.py = P.y; P.stale = false
   toggleMenu(false)
   if (!S.entered) { stroke = [{ x: e.clientX, y: e.clientY }]; fading = false; el.draw.classList.add('busy') }
-  else if (atGate() && !isSlashGate(atGate()) && nearCentre(e)) S.holding = true
+  else if (atGate() && isJoinGate(atGate())) { S.grab = true; mono.grab(true) }
+  else if (atGate() && nearCentre(e)) S.holding = true
   else if (S.world) document.body.classList.add('grabbing')
 })
 addEventListener('pointermove', (e) => {
@@ -339,18 +303,15 @@ addEventListener('pointermove', (e) => {
   if (P.down) {
     P.moved += Math.abs(dx) + Math.abs(dy)
     if (!S.entered) { stroke.push({ x: e.clientX, y: e.clientY }); if (isS()) enter() }
-    else if (!S.holding && P.type === 'touch' && !S.world && !PATH) nudge(-dy * 0.014)
+    else if (S.grab && atGate() && isJoinGate(atGate())) {
+      const w = (2 * 9 * Math.tan((actCam.fov * Math.PI) / 360)) / size.h
+      if (mono.drag(dx * w, -dy * w)) doFuse()
+    } else if (!S.holding && P.type === 'touch' && !S.world && !PATH) nudge(-dy * 0.014)
   }
 })
 const release = () => {
   if (!P.down) return
-  const g = atGate()
-  if (g && isSlashGate(g)) {
-    const dist = Math.hypot(P.lx - P.sx, P.ly - P.sy)
-    const speed = dist / Math.max(performance.now() - P.t0, 1)
-    if (dist > Math.min(size.w, size.h) * 0.2 && speed > 0.35) doSlash(P.sx, P.sy, P.lx, P.ly)
-  }
-  P.down = false; S.holding = false
+  P.down = false; S.holding = false; S.grab = false; mono.grab(false)
   document.body.classList.remove('grabbing')
   if (!S.entered) { stroke = []; fading = true; el.draw.classList.remove('busy') }
 }
@@ -370,7 +331,7 @@ addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (PATH) leaveDim(); else toggleMenu(false); return }
   if (e.target.closest?.('button, a, .panel') && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
   if (!S.entered) { if (e.key === 'Enter') { audio.start(); skip() } return }
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); const g = atGate(); if (g && isSlashGate(g)) doSlash(size.w * 0.7, size.h * 0.32, size.w * 0.3, size.h * 0.68); else if (g) S.holding = true; else nudge(0.9) }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); const g = atGate(); if (g && isJoinGate(g)) doFuse(); else if (g) S.holding = true; else nudge(0.9) }
   else if (e.key === 'ArrowDown' || e.key === 'PageDown') nudge(0.9)
   else if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (S.world) leaveFork(); else nudge(-0.9) }
 })
@@ -430,13 +391,12 @@ function frame(now) {
   if (S.entered) tl.time(S.t)
 
   const gate = atGate()
-  if (gate && !isSlashGate(gate)) {
+  if (gate && !isJoinGate(gate)) {
     S.hold = clamp(S.hold + (S.holding ? raw / 1.35 : -raw * 1.3), 0, 1)
     if (S.hold >= 1) solve(gate)
   } else if (!S.auto) S.hold = Math.max(0, S.hold - dt * 2)
-  el.gate.classList.toggle('on', !!gate && !isSlashGate(gate))
-  el.slash.classList.toggle('on', !!gate && isSlashGate(gate))
-  if (!el.thread.classList.contains('cut')) el.thread.classList.toggle('on', S.entered && !S.auto && S.t > 30.3 && !GATES[1].solved)
+  el.gate.classList.toggle('on', !!gate && !isJoinGate(gate))
+  el.slash.classList.toggle('on', !!gate && isJoinGate(gate) && mono.gap() > 0.5)
   el.gateFg.style.strokeDashoffset = String(100 - S.hold * 100)
   audio.hold(gate || S.auto ? S.hold : 0)
 
@@ -474,6 +434,9 @@ function frame(now) {
   actCam.lookAt(cam.x * 0.3, cam.y * 0.3, G.camZ - 10)
   const firstGate = !GATES[0].solved || S.t < 9.25
   core.group.visible = G.coreS > 0.002
+  mono.group.position.set(0, 0, G.camZ - 9)
+  mono.group.scale.setScalar(actCam.aspect < 1 ? 0.78 : 1)
+  mono.update(S.time, dt, G.mono)
   core.group.position.set(0, G.coreY, G.camZ - 8)
   core.group.scale.setScalar(Math.max(0.0001, G.coreS) * (actCam.aspect < 1 ? 0.85 : 1))
   core.u.uDark.value = G.coreDark
@@ -487,7 +450,7 @@ function frame(now) {
 }
 
 // handles for scripted walkthroughs and tests
-window.__rs = { S, G, GATES, enter, skip, solve, doSlash, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
+window.__rs = { S, G, GATES, enter, skip, solve, doFuse, mono, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)

@@ -86,6 +86,183 @@ export function createCore() {
 }
 
 /* ───────── shards: what is left once the sphere gives ───────── */
+
+/* ───────── the monogram: one letter, two halves, almost touching ───────── */
+export function createMonogram() {
+  const group = new THREE.Group()
+  group.visible = false
+  const seg = (a, b, c, d) => new THREE.CubicBezierCurve3(...[a, b, c, d].map(([x, y]) => new THREE.Vector3((x - 51) / 29, (70 - y) / 29, 0)))
+  const path = new THREE.CurvePath()
+  path.add(seg([82, 24], [70, 4], [30, 4], [24, 24]))
+  path.add(seg([24, 24], [18, 43], [44, 52], [54, 61]))
+  path.add(seg([54, 61], [65, 71], [80, 83], [75, 101]))
+  path.add(seg([75, 101], [69, 123], [31, 134], [20, 116]))
+  path.add(seg([20, 116], [14, 106], [22, 96], [31, 100]))
+  const pts = path.getPoints(260)
+  const mid = Math.floor(pts.length / 2)
+  const seam = pts[mid].clone()
+  const R = 0.135
+
+  const VERT = /* glsl */ `varying vec3 vN, vV, vP; void main(){ vP = position; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`
+  const seamU = () => ({ value: seam.clone() })
+  const matDark = (u) => new THREE.ShaderMaterial({
+    uniforms: u, transparent: true,
+    vertexShader: VERT,
+    fragmentShader: /* glsl */ `
+      precision highp float; varying vec3 vN, vV, vP;
+      uniform float uTime, uHeat, uFade; uniform vec3 uSeam;
+      ${NOISE}
+      void main(){
+        vec3 n = normalize(vN), v = normalize(vV);
+        float ndv = clamp(dot(n, v), 0.0, 1.0), fr = pow(1.0 - ndv, 2.1);
+        vec3 col = mix(vec3(0.045, 0.045, 0.052), vec3(0.4, 0.46, 0.78), pow(fr, 1.8) * 0.8);
+        float nearSeam = smoothstep(1.9, 0.15, distance(vP, uSeam));
+        vec3 vr = voro(vP.xy * 9.0 + vP.z * 2.0 + 3.0);
+        float vein = smoothstep(0.05, 0.0, vr.x) * nearSeam;
+        col += vec3(1.0, 0.33, 0.1) * vein * (0.5 + uHeat * (0.6 + 0.2 * sin(uTime * 2.1)));
+        col += vec3(1.0, 0.4, 0.12) * nearSeam * nearSeam * (0.28 + 0.3 * uHeat + 0.05 * sin(uTime * 3.1));
+        col += vec3(1.0, 0.45, 0.16) * pow(ndv, 6.0) * uHeat * 0.4;
+        col += vec3(1.0) * pow(max(dot(n, normalize(vec3(0.4, 0.75, 0.55))), 0.0), 34.0) * 0.5;
+        col = mix(col, vec3(1.0, 0.9, 0.78), clamp(uHeat - 1.0, 0.0, 1.0) * 0.85);
+        gl_FragColor = vec4(col, uFade);
+      }`,
+  })
+  const matPaper = (u) => new THREE.ShaderMaterial({
+    uniforms: u, transparent: true,
+    vertexShader: VERT,
+    fragmentShader: /* glsl */ `
+      precision highp float; varying vec3 vN, vV, vP;
+      uniform float uTime, uHeat, uFade; uniform vec3 uSeam;
+      ${NOISE}
+      void main(){
+        vec3 n = normalize(vN), v = normalize(vV);
+        float ndv = clamp(dot(n, v), 0.0, 1.0), fr = pow(1.0 - ndv, 2.0);
+        float l = 0.56 + 0.44 * max(dot(n, normalize(vec3(0.35, 0.8, 0.55))), 0.0);
+        vec3 col = vec3(0.845, 0.84, 0.822) * l;
+        col += vec3(0.5, 0.6, 1.0) * pow(fr, 2.2) * 0.33;
+        col += vec3((fbm(vP.xy * 9.0) - 0.5) * 0.045);
+        float nearSeam = smoothstep(1.6, 0.2, distance(vP, uSeam));
+        col += vec3(1.0, 0.45, 0.18) * nearSeam * (0.1 + uHeat * 0.5);
+        col += vec3(1.0, 0.5, 0.2) * pow(ndv, 8.0) * uHeat * 0.4;
+        col = mix(col, vec3(1.0, 0.94, 0.86), clamp(uHeat - 1.0, 0.0, 1.0) * 0.8);
+        gl_FragColor = vec4(col, uFade);
+      }`,
+  })
+
+  const makeHalf = (slice, dark) => {
+    const u = { uTime: { value: 0 }, uHeat: { value: dark ? 0.3 : 0.0 }, uFade: { value: 0 }, uSeam: seamU() }
+    const mat = (dark ? matDark : matPaper)(u)
+    const h = new THREE.Group()
+    h.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(slice), 120, R, 22, false), mat))
+    for (const e of [slice[0], slice[slice.length - 1]]) {
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(R, 18, 14), mat)
+      cap.position.copy(e)
+      h.add(cap)
+    }
+    return { h, u }
+  }
+  const dark = makeHalf(pts.slice(0, mid + 1), true)
+  const paper = makeHalf(pts.slice(mid), false)
+  const inner = new THREE.Group()
+  inner.position.set(-seam.x, -seam.y, 0)
+  group.add(inner)
+  inner.add(dark.h, paper.h)
+
+  // the ember burst when the letter becomes whole
+  const N = 340, bpos = new Float32Array(N * 3), bvel = []
+  const bgeo = new THREE.BufferGeometry()
+  bgeo.setAttribute('position', new THREE.BufferAttribute(bpos, 3))
+  const r = rng(7)
+  for (let i = 0; i < N; i++) {
+    const th = r() * Math.PI * 2, ph = Math.acos(2 * r() - 1), sp = 0.9 + r() * 2.8
+    bvel.push(new THREE.Vector3(Math.sin(ph) * Math.cos(th) * sp, Math.sin(ph) * Math.sin(th) * sp, Math.cos(ph) * sp * 0.6))
+  }
+  const bmat = new THREE.PointsMaterial({ color: 0xffa068, size: 0.05, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
+  const points = new THREE.Points(bgeo, bmat)
+  points.visible = false
+  inner.add(points)
+
+  // embers arcing in the gap, aching for contact
+  const SN = 30, spos = new Float32Array(SN * 3), sseed = []
+  for (let i = 0; i < SN; i++) sseed.push([r() * Math.PI * 2, r() * Math.PI * 2, 0.06 + r() * 0.22, 0.6 + r() * 1.8])
+  const sgeo = new THREE.BufferGeometry()
+  sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3))
+  const smat = new THREE.PointsMaterial({ color: 0xff8a4e, size: 0.042, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
+  const sparks = new THREE.Points(sgeo, smat)
+  inner.add(sparks)
+
+  const st = { off: new THREE.Vector3(0.62, 0.4, 0.3), held: false, fused: false, fuseT: -1, off0: new THREE.Vector3(), burstT: -1 }
+  const backOut = (t) => { const s = 1.8; const q = t - 1; return 1 + (s + 1) * q * q * q + s * q * q }
+
+  const update = (time, dt, vis) => {
+    group.visible = vis > 0.001
+    if (!group.visible) return
+    dark.u.uTime.value = paper.u.uTime.value = time
+    dark.u.uFade.value = paper.u.uFade.value = vis
+    group.rotation.y = Math.sin(time * 0.21) * 0.17
+    group.rotation.x = Math.sin(time * 0.165 + 1.3) * 0.06
+    group.rotation.z = -0.1 + Math.sin(time * 0.13) * 0.03
+    const wob = st.fused || st.held ? 0 : 0.085 * Math.sin(time * 0.85)
+    if (st.fuseT >= 0) {
+      st.fuseT += dt
+      const k = backOut(Math.min(st.fuseT / 0.5, 1))
+      dark.h.position.copy(st.off0).multiplyScalar(0.5 * (1 - k))
+      paper.h.position.copy(st.off0).multiplyScalar(-0.5 * (1 - k))
+      const flash = Math.max(0, 2.4 * Math.exp(-2.6 * Math.max(0, st.fuseT - 0.42)))
+      if (st.fuseT > 0.42) { dark.u.uHeat.value = 0.35 + flash; paper.u.uHeat.value = flash * 0.8 }
+      if (st.fuseT > 0.42 && st.burstT < 0) { st.burstT = 0; points.visible = true; for (let i = 0; i < N; i++) bpos.set([seam.x, seam.y, seam.z], i * 3) }
+    } else {
+      const o = st.off
+      dark.h.position.set(o.x * 0.5 + wob * 0.7, o.y * 0.5 + wob, o.z * 0.5)
+      paper.h.position.set(-o.x * 0.5 - wob * 0.5, -o.y * 0.5 - wob * 0.7, -o.z * 0.5)
+      dark.u.uHeat.value = 0.3 + 0.45 * Math.max(0, 1 - o.length() / 1.0)
+    }
+    if (!st.fused) {
+      const gx = seam.x + (dark.h.position.x + paper.h.position.x) / 2
+      const gy = seam.y + (dark.h.position.y + paper.h.position.y) / 2
+      const gz = (dark.h.position.z + paper.h.position.z) / 2
+      const near = Math.max(0, 1 - st.off.length() / 1.1)
+      for (let i = 0; i < SN; i++) {
+        const [a1, a2, rad, sp] = sseed[i]
+        spos[i * 3] = gx + Math.cos(a1 + time * sp) * rad * (1 + near * 0.3)
+        spos[i * 3 + 1] = gy + Math.sin(a2 + time * sp * 1.3) * rad
+        spos[i * 3 + 2] = gz + Math.sin(a1 + time * sp * 0.7) * rad * 0.6
+      }
+      sgeo.attributes.position.needsUpdate = true
+      smat.opacity = vis * (0.35 + 0.4 * near + 0.18 * Math.sin(time * 7.0))
+    } else if (st.burstT < 0) smat.opacity *= 0.9
+    if (st.burstT >= 0) {
+      st.burstT += dt
+      for (let i = 0; i < N; i++) {
+        const v = bvel[i]
+        bpos[i * 3] += v.x * dt; bpos[i * 3 + 1] += v.y * dt; bpos[i * 3 + 2] += v.z * dt
+        v.multiplyScalar(Math.exp(-dt * 2.1)); v.y -= dt * 0.5
+      }
+      bgeo.attributes.position.needsUpdate = true
+      bmat.opacity = Math.max(0, 1 - st.burstT / 1.3)
+      if (st.burstT > 1.3) { st.burstT = -1; points.visible = false }
+    }
+  }
+
+  return {
+    group, update,
+    grab(held) { st.held = held },
+    drag(dx, dy) {
+      if (st.fused) return false
+      st.off.x += dx; st.off.y += dy
+      st.off.z = 0.3 * Math.min(1, Math.hypot(st.off.x, st.off.y) / 0.74)
+      return st.off.length() < 0.3
+    },
+    fuse() {
+      if (st.fused) return
+      st.fused = true; st.held = false
+      st.off0.copy(st.off)
+      st.fuseT = 0
+    },
+    gap: () => st.off.length(),
+  }
+}
+
 function labelTexture(l) {
   const c = document.createElement('canvas'); c.width = 1024; c.height = 640
   const tex = new THREE.CanvasTexture(c)
