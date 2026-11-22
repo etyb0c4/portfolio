@@ -68,8 +68,8 @@ body.point #gl { cursor: pointer; }
 .draw.busy svg { opacity: 0; }
 .draw.gone { opacity: 0; }
 
-/* ───── gate 2: put the letter back together ───── */
-.slash { position: fixed; left: 50%; top: 68%; transform: translateX(-50%); pointer-events: none; opacity: 0; transition: opacity 0.5s; color: var(--ink); }
+/* ───── gate 2: dive through the rift ───── */
+.slash { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); margin-left: clamp(70px, 12vw, 160px); pointer-events: none; opacity: 0; transition: opacity 0.5s; color: var(--ink); }
 .slash.on { opacity: 1; }
 .slash span { display: block; text-align: center; font: 600 11px/1.6 var(--mono); letter-spacing: 0.24em; white-space: nowrap; animation: joinPulse 2.2s ease-in-out infinite; }
 @keyframes joinPulse { 50% { opacity: 0.45; } }

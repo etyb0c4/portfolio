@@ -45,7 +45,7 @@ void main(){
 export const BACK_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt;
+uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uRift, uDive, uDiveT;
 uniform sampler2D uTrail;
 uniform vec2 uPointer;
 ${NOISE}
@@ -126,6 +126,35 @@ vec3 sceneDeep(vec2 p){
   return col;
 }
 
+// the way out: an infinite volumetric fold, flown through at speed
+vec3 tunnel(vec2 p, float T){
+  float ro = T * 0.1;
+  mat2 R = mat2(cos(ro), -sin(ro), sin(ro), cos(ro));
+  vec3 dir = normalize(vec3(p, 1.15));
+  dir.xy = R * dir.xy;
+  vec3 from = vec3(0.6 + T * 0.11, 0.42 + T * 0.07, T * 0.62);
+  float s = 0.12, fade = 1.0;
+  vec3 acc = vec3(0.0);
+  for (int r = 0; r < 13; r++) {
+    vec3 q = from + s * dir;
+    q = abs(vec3(0.82) - mod(q, vec3(1.64)));
+    float pa = 0.0, a = 0.0;
+    for (int i = 0; i < 10; i++) { q = abs(q) / dot(q, q) - 0.60; a += abs(length(q) - pa); pa = length(q); }
+    a *= a * a;
+    acc += (vec3(s, s * s, s * s * s * s) * a * 0.0009 + 0.0005) * fade;
+    fade *= 0.72;
+    s += 0.11;
+  }
+  float A = dot(acc, vec3(0.42, 0.6, 0.25));
+  float B = pow(clamp(1.0 - A * 0.46, 0.0, 1.0), 1.7) * 2.3;
+  vec3 col = vec3(0.010, 0.012, 0.028);
+  col += vec3(pow(B, 1.05) * 1.2, pow(B, 1.9) * 0.58, pow(B, 3.1) * 0.4);
+  col += vec3(0.3, 0.42, 1.0) * pow(clamp(1.0 - A * 0.4, 0.0, 1.0), 7.0) * 0.5;
+  col = 1.0 - exp(-col * 0.9);
+  col *= 1.0 - 0.45 * smoothstep(0.8, 2.0, length(p));
+  return col;
+}
+
 void main(){
   vec2 p = (vUv - 0.5) * 2.0; p.x *= uAspect;
   float tr = texture2D(uTrail, vUv).r;
@@ -138,6 +167,18 @@ void main(){
   if (uCurtain > 0.001) col += (sceneCurtain(pr) + vec3(1.0, 0.45, 0.18) * tr * 0.10) * uCurtain;
   if (uDeep > 0.001) col += (sceneDeep(pr) + vec3(1.0, 0.5, 0.2) * tr * 0.10) * uDeep;
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
+  if (uRift > 0.001 && uDeep > 0.001) {
+    float ex = (fbm3(vec2(p.y * 2.6 + 9.0, uTime * 0.5)) - 0.5) * 0.14;
+    float h = 0.16 + 0.9 * uRift;
+    float along = smoothstep(h, h * 0.35, abs(p.y));
+    float w = (0.008 + 0.055 * uRift) * (0.4 + 0.6 * along);
+    float d = abs(p.x - ex * clamp(1.0 - uRift * 0.5, 0.3, 1.0));
+    float slit = smoothstep(w, 0.0, d) * along;
+    float glow = smoothstep(w * 7.0, 0.0, d) * along;
+    vec3 rc = mix(vec3(1.0, 0.38, 0.11), vec3(1.0, 0.93, 0.82), slit * slit);
+    col += (rc * slit * 1.35 + vec3(1.0, 0.4, 0.12) * glow * 0.3) * uRift * (0.9 + 0.18 * sin(uTime * 6.0)) * uDeep;
+  }
+  if (uDive > 0.001) col = mix(col, tunnel(p, uDiveT), uDive);
   gl_FragColor = vec4(col, 1.0);
 }
 `
@@ -149,6 +190,35 @@ varying vec2 vUv;
 uniform float uTime, uAspect, uCloud, uOpen, uBlack, uWhite, uGrain, uVig;
 ${NOISE}
 void over(inout vec4 acc, vec3 c, float a){ acc = vec4(c * a + acc.rgb * (1.0 - a), a + acc.a * (1.0 - a)); }
+// the way out: an infinite volumetric fold, flown through at speed
+vec3 tunnel(vec2 p, float T){
+  float ro = T * 0.1;
+  mat2 R = mat2(cos(ro), -sin(ro), sin(ro), cos(ro));
+  vec3 dir = normalize(vec3(p, 1.15));
+  dir.xy = R * dir.xy;
+  vec3 from = vec3(0.6 + T * 0.11, 0.42 + T * 0.07, T * 0.62);
+  float s = 0.12, fade = 1.0;
+  vec3 acc = vec3(0.0);
+  for (int r = 0; r < 13; r++) {
+    vec3 q = from + s * dir;
+    q = abs(vec3(0.82) - mod(q, vec3(1.64)));
+    float pa = 0.0, a = 0.0;
+    for (int i = 0; i < 10; i++) { q = abs(q) / dot(q, q) - 0.60; a += abs(length(q) - pa); pa = length(q); }
+    a *= a * a;
+    acc += (vec3(s, s * s, s * s * s * s) * a * 0.0009 + 0.0005) * fade;
+    fade *= 0.72;
+    s += 0.11;
+  }
+  float A = dot(acc, vec3(0.42, 0.6, 0.25));
+  float B = pow(clamp(1.0 - A * 0.46, 0.0, 1.0), 1.7) * 2.3;
+  vec3 col = vec3(0.010, 0.012, 0.028);
+  col += vec3(pow(B, 1.05) * 1.2, pow(B, 1.9) * 0.58, pow(B, 3.1) * 0.4);
+  col += vec3(0.3, 0.42, 1.0) * pow(clamp(1.0 - A * 0.4, 0.0, 1.0), 7.0) * 0.5;
+  col = 1.0 - exp(-col * 0.9);
+  col *= 1.0 - 0.45 * smoothstep(0.8, 2.0, length(p));
+  return col;
+}
+
 void main(){
   vec2 p = (vUv - 0.5) * 2.0; p.x *= uAspect;
   vec4 acc = vec4(0.0);
