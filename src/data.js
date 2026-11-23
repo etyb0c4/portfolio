@@ -95,11 +95,6 @@ export const PROJECTS = [
     stack: ['Symfony', 'PostgreSQL', 'Python', 'REST API', 'pytest', 'Docker'], metric: 'single-use codes · fails closed', img: 'proj/dc-access.jpg', url: '',
   },
   {
-    id: 'ctf', name: 'CTF field notes', role: 'HackTheBox · Root-Me', year: 'ongoing', side: 'break',
-    blurb: 'Machines rooted and flags captured across HackTheBox and Root-Me: web exploitation, binary pwn, reverse engineering, forensics. Every solve becomes a reusable playbook in the arsenal.',
-    stack: ['pwntools', 'Ghidra', 'Burp', 'sqlmap'], metric: 'every solve → a playbook', img: 'proj/ctf.jpg', url: 'https://app.hackthebox.com/users/3097294',
-  },
-  {
     id: 'logdog', name: 'LogDog', role: 'Log forensics CLI', year: '2026', side: 'break',
     blurb: 'Incident response on a Linux box: LogDog ranks every IP that touched it, flags which ones actually got in (account, auth method, timestamp) and reads wtmp to surface active sessions. Pure Python standard library, so it runs on any server you land on.',
     stack: ['Python', 'regex', 'auth.log', 'wtmp'], metric: '0 dependencies', img: 'proj/logdog.jpg', url: 'https://github.com/etyb0c4/LogDog',
