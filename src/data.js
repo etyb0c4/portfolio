@@ -81,13 +81,13 @@ export const PROJECTS = [
   },
 ]
 
-/* What comes out of the box once it is taken apart: one part per discipline.
-   The ids are wired to the four modules inside the 3D box; tools are free to change. */
+/* The arsenal: one part per discipline, tools are free to change. */
 export const PARTS = [
-  { id: 'web', key: 'A', title: 'Web exploitation', tools: ['Burp Suite', 'sqlmap', 'ZAP', 'ffuf'] },
-  { id: 'pwn', key: 'B', title: 'Binary exploitation', tools: ['pwntools', 'GDB', 'Metasploit'] },
-  { id: 'rev', key: 'C', title: 'Reverse engineering', tools: ['Ghidra', 'jadx'] },
-  { id: 'forensics', key: 'D', title: 'Forensics', tools: ['Volatility', 'binwalk', 'Wireshark'] },
+  { id: 'osint', key: 'A', title: 'OSINT & recon', tools: ['Maltego', 'SpiderFoot', 'Shodan'] },
+  { id: 'web', key: 'B', title: 'Web exploitation', tools: ['Burp Suite', 'sqlmap', 'ZAP', 'ffuf'] },
+  { id: 'pwn', key: 'C', title: 'Binary exploitation', tools: ['pwntools', 'GDB', 'Metasploit'] },
+  { id: 'rev', key: 'D', title: 'Reverse engineering', tools: ['Ghidra', 'jadx'] },
+  { id: 'forensics', key: 'E', title: 'Forensics', tools: ['Volatility', 'binwalk', 'Wireshark'] },
 ]
 
 export const PORTS = [
