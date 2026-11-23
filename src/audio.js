@@ -10,6 +10,7 @@ const CUTOFF = { ice: 900, sky: 1500, red: 520, deep: 620, world: 1900 }
 
 export function createAudio() {
   let ctx = null, master, filt, wet, voices = [], scratch, riser, riserGain, act = 'ice'
+  let glassBuf = null, glassUrl = null, lastSwish = 0
   let on = true
   try { on = localStorage.getItem('sound') !== '0' } catch { /* storage blocked */ }
 
@@ -56,6 +57,7 @@ export function createAudio() {
     riserGain = ctx.createGain(); riserGain.gain.value = 0
     riser.connect(riserGain); riserGain.connect(master); riserGain.connect(wet); riser.start()
     setAct(act)
+    if (glassUrl) loadGlass(glassUrl)
   }
 
   const setAct = (name) => {
@@ -81,6 +83,13 @@ export function createAudio() {
     s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
   }
 
+  // a real pane of glass, fetched once; decoded lazily when the night act nears
+  const loadGlass = (url) => {
+    glassUrl = url
+    if (!ctx || glassBuf) return
+    fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((d) => { glassBuf = d }).catch(() => { /* synth fallback stays */ })
+  }
+
   const hit = (kind) => {
     if (!ctx || !on) return
     if (kind === 'tick') ping(1400, 0.06, 0.03)
@@ -104,12 +113,36 @@ export function createAudio() {
     } else if (kind === 'tick') ping(640, 0.045, 0.05, 0, 'square')
     else if (kind === 'snap') { burst(0.09, 0.32, 1900); ping(2200 + Math.random() * 900, 0.2, 0.04) }
     else if (kind === 'glass') {
-      burst(1.1, 0.45, 1300)
-      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
-      o.frequency.setValueAtTime(100, t); o.frequency.exponentialRampToValueAtTime(26, t + 1.0)
-      g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2)
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3)
-      for (let i = 0; i < 8; i++) ping(1500 + Math.random() * 3200, 0.4 + Math.random() * 0.8, 0.028, Math.random() * 0.8, 'triangle')
+      const t = ctx.currentTime
+      if (glassBuf) {
+        // the real thing, with a sub thump underneath for weight
+        const s = ctx.createBufferSource(); s.buffer = glassBuf
+        const g = ctx.createGain(); g.gain.value = 0.85
+        s.connect(g); g.connect(master); g.connect(wet); s.start(t)
+        const o = ctx.createOscillator(), og = ctx.createGain()
+        o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.8)
+        og.gain.setValueAtTime(0.45, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 1.0)
+        o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.1)
+      } else {
+        burst(1.1, 0.45, 1300)
+        const o = ctx.createOscillator(), g = ctx.createGain()
+        o.frequency.setValueAtTime(100, t); o.frequency.exponentialRampToValueAtTime(26, t + 1.0)
+        g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2)
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3)
+        for (let i = 0; i < 8; i++) ping(1500 + Math.random() * 3200, 0.4 + Math.random() * 0.8, 0.028, Math.random() * 0.8, 'triangle')
+      }
+    } else if (kind === 'swish') {
+      // a breath of air between two beats of the story; tuned to the act
+      const t = ctx.currentTime
+      if (t - lastSwish < 0.3) return
+      lastSwish = t
+      const s = ctx.createBufferSource(); s.buffer = noiseBuffer(0.55)
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9
+      const base = (act === 'deep' || act === 'red' ? 300 : 640) * (0.85 + Math.random() * 0.4)
+      f.frequency.setValueAtTime(base, t); f.frequency.exponentialRampToValueAtTime(base * 2.3, t + 0.16); f.frequency.exponentialRampToValueAtTime(base * 0.7, t + 0.44)
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.15, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.52)
+      s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
+      ping(150 + Math.random() * 70, 0.3, 0.035, 0.02)
     } else if (kind === 'shatter') {
       burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
@@ -120,7 +153,7 @@ export function createAudio() {
   }
 
   return {
-    start, setAct, hit,
+    start, setAct, hit, loadGlass,
     get on() { return on },
     toggle() {
       on = !on

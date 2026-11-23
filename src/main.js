@@ -15,7 +15,7 @@ const END = 40
 const GATES = [{ at: 9, to: 10.7, dur: 2.4, solved: false }, { at: 32, to: 36, dur: 5.6, solved: false }]
 
 // S is where we are; G is what the picture looks like there (driven by the timeline).
-const S = { t: 0, target: 0, entered: false, auto: true, world: false, hold: 0, holding: false, time: 0, idle: 0, flash: 0, exit: 0 }
+const S = { t: 0, target: 0, entered: false, auto: true, world: false, hold: 0, holding: false, time: 0, idle: 0, flash: 0, exit: 0, beat: -2 }
 const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, neg: 0, crackR: 0, shatter: 0, slow: 0, cx: 0, cy: 0, grain: 0.05, vig: 0.22 }
 
 const stage = createStage($('#gl'))
@@ -88,9 +88,11 @@ document.querySelectorAll('.st').forEach((st) => {
   tl.to(lines, { yPercent: -24, duration: 0.42, ease: 'power2.in', stagger: 0.03 }, tout)
 })
 
+const BEATS = [...document.querySelectorAll('.st')].map((st) => ({ in: +st.dataset.in, out: +st.dataset.out }))
+
 /* ───────── dom ───────── */
 const el = {
-  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), ztw: $('#ztw'), hint: $('#hint'), explore: $('#explore'),
+  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), ztw: $('#ztw'), zcap: $('#zcap'), zclock: $('#zc-clock'), hint: $('#hint'), explore: $('#explore'),
   needle: $('#needle'), ring: $('#ring'), uidN: $('#uid-n'), uidName: $('#uid-name'), sound: $('#sound'),
   dockMain: $('#dock-main'), menu: $('#menu'), menuBtn: $('#menu-btn'), fork: $('#fork'), cross: $('#cross'),
 }
@@ -232,10 +234,20 @@ function solve(gate) {
 const isStopGate = (g) => g === GATES[1]
 const TS = { t: 0 } // the night's own clock; stops dead when time stops
 const FZ = { on: false, last: 0 }
+const CAP = { run: false, t0: 0, ms: 0 } // the spoken command and its stopwatch
+const fmtClock = (s) => {
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60), ms = Math.floor((s % 1) * 1000)
+  return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(3, '0')}`
+}
 // stolen frames: four slivers of the real scene, flashed like impact frames
 const ZW = ['a', 'b', 'c', 'd'].map((k) => $('#zwf-' + k))
 let zwArmed = false
-const armZW = () => { if (zwArmed) return; zwArmed = true; ZW.forEach((v) => { try { v.preload = 'auto'; v.load() } catch { /* no video, no flash */ } }) }
+const armZW = () => {
+  if (zwArmed) return
+  zwArmed = true
+  ZW.forEach((v) => { try { v.preload = 'auto'; v.load() } catch { /* no video, no flash */ } })
+  audio.loadGlass(asset('zw/glass.mp3'))
+}
 const zwHide = () => ZW.forEach((v) => { try { v.pause() } catch { /* fine */ } v.style.display = 'none' })
 const flash = (i, dur) => {
   const v = ZW[i]
@@ -258,6 +270,11 @@ function doStop(cx, cy) {
   const cv = stage.renderer.domElement
   const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
   gsap.timeline()
+    // the words own the screen: everything else steps back
+    .to('#story', { autoAlpha: 0, duration: 0.3 }, 0.1)
+    .to('#hud', { autoAlpha: 0.15, duration: 0.5 }, 0.1)
+    .add(() => { el.zcap.classList.add('on'); CAP.run = true; CAP.t0 = S.time; CAP.ms = 0 }, 0.15)
+    .fromTo('#zc-1', { autoAlpha: 0, scale: 1.7, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'power3.out' }, 0.2)
     // the swell breaks — stolen frames of the real scene strobe with the negative
     .add(() => { flash(0, 0.2); audio.hit('snap') }, 0.92)
     .to(G, { neg: 1, duration: 0.1, ease: 'power2.in' }, 1.16)
@@ -267,16 +284,24 @@ function doStop(cx, cy) {
     .add(() => { flash(2, 0.2); audio.hit('snap') }, 1.62)
     .add(() => { flash(3, 0.26); audio.hit('tick') }, 1.86)
     .add(() => { document.body.classList.add('neg'); FZ.on = true; FZ.last = S.time; audio.freeze(true) }, 2.14) // time stops dead
+    .fromTo('#zc-2', { autoAlpha: 0, scale: 2.1, filter: 'blur(14px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.22, ease: 'power4.out' }, 2.14)
     .to(G, { crackR: 2.8, duration: 1.8, ease: 'power2.in' }, 2.75)
     .add(() => { audio.hit('snap'); jolt(4) }, 2.9)
     .add(() => { audio.hit('snap'); jolt(-5) }, 3.5)
     .add(() => { audio.hit('snap'); jolt(6) }, 4.05)
     .add(() => { audio.hit('snap'); jolt(-7) }, 4.35)
-    .add(() => { FZ.on = false; audio.freeze(false); audio.hit('glass'); jolt(12) }, 4.65)
+    .add(() => { FZ.on = false; CAP.t0 = S.time - CAP.ms; audio.freeze(false); audio.hit('glass'); jolt(12) }, 4.65)
     .to(G, { neg: 0, duration: 0.3, ease: 'power1.out' }, 4.65) // colours rush back as the night falls apart
     .to(G, { shatter: 1, duration: 0.9, ease: 'power2.in' }, 4.65)
+    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.45, ease: 'power2.in' }, 5.0)
     .add(() => {
       document.body.classList.remove('neg')
+      CAP.run = false
+      el.zcap.classList.remove('on')
+      gsap.set('#zcap', { clearProps: 'all' })
+      gsap.set(['#zc-1', '#zc-2'], { autoAlpha: 0 })
+      gsap.to('#story', { autoAlpha: 1, duration: 0.6 })
+      gsap.to('#hud', { autoAlpha: 1, duration: 0.8 })
       gsap.timeline()
         .to(S, { t: 33.0, duration: 0.55, ease: 'power1.in' })
         .to(S, { t: g.to, duration: 2.9, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
@@ -288,6 +313,8 @@ function skip(then) {
   GATES.forEach((g) => { g.solved = true })
   gsap.killTweensOf(S); gsap.killTweensOf(G)
   FZ.on = false; audio.freeze(false); document.body.classList.remove('neg'); zwHide()
+  CAP.run = false; el.zcap.classList.remove('on')
+  gsap.set(['#story', '#hud'], { clearProps: 'opacity,visibility' })
   S.auto = true; S.holding = false; S.hold = 0
   document.body.classList.add('in')
   el.draw.classList.add('gone')
@@ -447,6 +474,9 @@ function frame(now) {
   audio.hold(gate || S.auto ? S.hold : 0)
 
   if (S.entered) setPhase(PHASES.find((p) => S.t < p.until))
+  // a breath of sound each time the story lands on another beat
+  const bi = BEATS.findIndex((b) => S.t >= b.in && S.t < b.out)
+  if (bi !== S.beat) { if (bi >= 0 && S.beat >= -1 && S.entered && S.time > 1.5) audio.hit('swish'); S.beat = bi }
   el.needle.style.transform = `translateX(${clamp(S.t / END, 0, 1) * 168 * (size.w < 720 ? 120 / 168 : 1)}px)`
 
   const wasWorld = S.world
@@ -471,6 +501,10 @@ function frame(now) {
   // the night's clock: slows as the gate nears, stops dead when time stops
   TS.t += dt * (FZ.on ? 0 : 1 - 0.65 * G.slow)
   if (!zwArmed && S.t > 28) armZW()
+  if (CAP.run) {
+    if (!FZ.on) CAP.ms = S.time - CAP.t0
+    el.zclock.textContent = fmtClock(CAP.ms)
+  }
   if (FZ.on && S.time - FZ.last > 0.72) { FZ.last = S.time; audio.hit('tick') }
 
   // picture

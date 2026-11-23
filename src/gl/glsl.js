@@ -142,18 +142,39 @@ void main(){
   // za warudo: the world flips to negative, time freezes, glass cracks crawl, then everything shatters
   if (uNeg > 0.001) col = mix(col, vec3(1.02) - col, uNeg);
   if (uShatter > 0.001 && uDeep > 0.001) {
-    // the night breaks into plates along the same web it cracked on; paper waits behind
+    // the night breaks into glass plates along the same web it cracked on; paper waits behind
     vec2 sp = (p - uCenter) * 1.8;
     vec3 vc = voro(sp + 3.7);
     float hcell = hash21(floor(sp + vc.yz + 0.5) + 2.0);
+    float h2 = hash21(floor(sp + vc.yz + 0.5) + 9.0);
     float fall = uShatter * uShatter * (0.35 + 0.9 * hcell);
     vec2 drift = vec2((hcell - 0.5) * 1.6, -2.4) * fall;
-    vec3 plate = sceneDeep(p - drift);
+    // each plate tumbles around its own centre as it falls
+    vec2 cc = uCenter + (sp + vc.yz) / 1.8;
+    float rot = (h2 - 0.5) * 2.2 * fall;
+    mat2 RM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
+    vec3 plate = sceneDeep(cc + RM * (p - cc) * (1.0 + 0.18 * fall) - drift);
     plate = mix(plate, vec3(1.02) - plate, uNeg);
-    plate *= 1.0 - 0.3 * uShatter * hcell;
-    float gap = 1.0 - smoothstep(0.0, 0.035 + 0.5 * uShatter * uShatter, vc.x);
+    // tilt shading: one face catches the paper light, the other sinks into ink
+    vec2 toC = normalize(vc.yz + 1e-4);
+    float tilt = dot(toC, normalize(vec2(0.4, 0.9)));
+    plate *= 1.0 + tilt * (0.35 + 0.45 * fall) * (h2 - 0.3);
+    // glass glint sweeping the plate as it turns
+    float glint = pow(clamp(sin(hcell * 31.0 + uShatter * (5.0 + h2 * 6.0)), 0.0, 1.0), 18.0);
+    plate += vec3(1.0, 0.95, 0.85) * glint * 0.55 * uShatter;
+    // bevelled edge: a bright sliver along the lit rim of each shard
+    float rough = (fbm3(sp * 7.0) - 0.5) * 0.013;
+    float gw = 0.035 + 0.5 * uShatter * uShatter + rough;
+    float bevel = smoothstep(gw, gw + 0.022, vc.x) * (1.0 - smoothstep(gw + 0.022, gw + 0.08, vc.x));
+    plate += vec3(1.0, 0.9, 0.75) * bevel * (0.3 + 0.5 * clamp(tilt, 0.0, 1.0)) * uShatter;
+    float gap = 1.0 - smoothstep(0.0, gw, vc.x);
     vec3 paper = vec3(0.93, 0.925, 0.908);
-    col = mix(plate, paper, clamp(gap + uShatter * uShatter * 0.5, 0.0, 1.0));
+    // the plates cast soft shadows down onto the paper behind
+    vec2 shp = (p - vec2(0.05, 0.07) - uCenter) * 1.8;
+    vec3 vsh = voro(shp + 3.7);
+    float shadow = smoothstep(0.0, gw, vsh.x) * gap;
+    vec3 ground = paper * (1.0 - 0.33 * shadow * (1.0 - uShatter * 0.6));
+    col = mix(plate, ground, clamp(gap + uShatter * uShatter * 0.5, 0.0, 1.0));
   } else if (uCrackR > 0.001 && uDeep > 0.001) {
     vec2 d = p - uCenter;
     float r = length(d);
