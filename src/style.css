@@ -135,6 +135,7 @@ body.in .dock { opacity: 1; transform: translate(-50%, 0); pointer-events: auto;
 /* experience rows reuse the record grid; the bullets sit under the role */
 .xp-list .rank small { font-size: 0.3em; font-stretch: 80%; margin-left: 0.08em; letter-spacing: 0.02em; }
 .xp-list .what > span { line-height: 1.35; }
+.xp-list .org-logo { width: 0.72em; height: 0.72em; margin-right: 0.3em; vertical-align: 0.02em; border-radius: 3px; }
 .xp-list .what ul { margin: 14px 0 0; padding: 0; list-style: none; max-width: 62ch; }
 .xp-list .what li { position: relative; padding: 0 0 8px 18px; font-size: 0.95rem; line-height: 1.45; }
 .xp-list .what li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 8px; height: 2px; background: var(--orange); }

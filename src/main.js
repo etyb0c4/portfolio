@@ -126,7 +126,7 @@ $('#record-list').innerHTML = RECORD.map((r) => {
 const xpHTML = EXPERIENCE.map((x) => `
   <li><div class="row">
     <span class="rank">${x.length}<small>${x.unit}</small></span>
-    <div class="what"><strong>${x.org}</strong><span>${x.role} · ${x.kind}</span>
+    <div class="what"><strong>${x.logo ? `<img class="org-logo" src="${asset(x.logo)}" alt="" />` : ''}${x.org}</strong><span>${x.role} · ${x.kind}</span>
       <ul>${x.points.map((pt) => `<li>${pt}</li>`).join('')}</ul>
       <div class="tagsline">${chips(x.stack)}</div></div>
     <dl><div><dt>type</dt><dd>${x.kind}</dd></div><div><dt>from</dt><dd>${when(x.from)}</dd></div><div><dt>to</dt><dd>${when(x.to)}</dd></div><div><dt>where</dt><dd>${x.place}</dd></div></dl>

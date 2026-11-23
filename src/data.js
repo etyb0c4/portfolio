@@ -23,7 +23,7 @@ export const LINKS = [
 /* Where I have worked. Newest first. */
 export const EXPERIENCE = [
   {
-    org: 'ISOCEL', full: "ISOCEL · Ici C'est La Fibre", role: 'SysAdmin, Security & Software Development assistant',
+    org: 'ISOCEL Telecom', logo: 'logos/isocel.png', full: "ISOCEL Telecom · Ici C'est La Fibre", role: 'SysAdmin, Security & Software Development assistant',
     kind: 'Internship', place: 'Cotonou, Bénin · on-site', from: '2026-08', to: '2026-11', length: '4', unit: 'mo',
     points: [
       'Co-built a data-center access control system with the team: access requests and approvals, single-use door codes, a chained audit log, and a Python entry terminal that talks to its REST API, covered by automated tests.',
