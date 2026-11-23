@@ -39,11 +39,11 @@ export const EXPERIENCE = [
 /* Certificates. Newest first.   id: credential id   url: optional public verification link */
 export const CERTS = [
   {
-    title: 'AI Fluency: Framework & Foundations', issuer: 'Anthropic', mark: 'A', date: '2026-10',
-    id: 'k8bjpfwwyta4', skills: ['Critical thinking', 'Prompt engineering', 'Delegation', 'Discernment'], url: '',
+    title: 'AI Fluency: Framework & Foundations', issuer: 'Anthropic', mark: 'A', logo: 'logos/anthropic.png', date: '2026-10',
+    id: 'k8bjpfwwyta4', skills: ['Critical thinking', 'Prompt engineering', 'Delegation', 'Discernment'], url: 'https://verify.skilljar.com/c/k8bjpfwwyta4',
   },
   {
-    title: "CS50's Introduction to Programming with Python", issuer: 'HarvardX · CS50', mark: 'H', date: '2026-10',
+    title: "CS50's Introduction to Programming with Python", issuer: 'HarvardX · CS50', mark: 'H', logo: 'logos/harvard.png', date: '2026-10',
     id: '18a60afa-04c1-412c-b272-41791f9fe175', skills: ['Python', 'pytest', 'unit testing'],
     url: 'https://certificates.cs50.io/18a60afa-04c1-412c-b272-41791f9fe175.pdf',
   },

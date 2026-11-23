@@ -133,7 +133,7 @@ const xpHTML = EXPERIENCE.map((x) => `
   </div></li>`).join('')
 document.querySelectorAll('.xp-list').forEach((u) => { u.innerHTML = xpHTML })
 const certHTML = CERTS.map((c) => `
-  <div class="kit"><p><b>${c.mark}</b>${c.title}</p>
+  <div class="kit"><p>${c.logo ? `<img class="cert-logo" src="${asset(c.logo)}" alt="${c.issuer}" />` : `<b>${c.mark}</b>`}${c.title}</p>
     <p class="meta">${c.issuer} · issued ${when(c.date)}<br>id ${c.url ? `<a href="${c.url}"${ext(c.url)}>${c.id} ↗</a>` : c.id}</p>
     <div class="tagsline">${chips(c.skills)}</div></div>`).join('')
 document.querySelectorAll('.cert-list').forEach((d) => { d.innerHTML = certHTML })

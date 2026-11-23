@@ -143,7 +143,9 @@ body.in .dock { opacity: 1; transform: translate(-50%, 0); pointer-events: auto;
 .xp-list, .xp-list > li { list-style: none; padding-left: 0; }
 /* certificates reuse the arsenal grid */
 .certs .kit p { align-items: flex-start; line-height: 1.15; }
-.certs .meta { margin: 10px 0 12px 38px; font: 400 11px/1.5 var(--mono); color: var(--mute); word-break: break-all; }
+.certs .cert-logo { width: 26px; height: 26px; flex: none; border-radius: 3px; object-fit: contain; background: #fff; }
+.certs .meta { display: block; margin: 10px 0 12px 38px; font: 400 11px/1.5 var(--mono); color: var(--mute); text-transform: uppercase; }
+.certs .meta a { word-break: break-all; text-transform: none; }
 .certs .meta a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .certs .meta a:hover { color: var(--orange); }
 .certs .tagsline { margin-left: 38px; }
