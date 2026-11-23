@@ -20,7 +20,7 @@ export const LINKS = [
   { label: 'CV', text: 'Download (PDF)', url: 'cv/rayan-sama-cv.pdf', download: 'rayan-sama-cv.pdf' },
 ]
 
-/* Where I have worked. Newest first. */
+/* Where I have worked. Newest first.   only: 'build' | 'break' shows the entry in one dimension only */
 export const EXPERIENCE = [
   {
     org: 'ISOCEL Telecom', logo: 'logos/isocel.png', full: "ISOCEL Telecom · Ici C'est La Fibre", role: 'SysAdmin, Security & Software Development assistant',
@@ -33,6 +33,12 @@ export const EXPERIENCE = [
       'Diagnosed and upgraded hardware: disks, RAM, internal components.',
     ],
     stack: ['Linux', 'Windows', 'Python', 'Bash', 'Symfony', 'PostgreSQL', 'REST API', 'OWASP'],
+  },
+  {
+    org: 'Epihack', full: 'Epihack · Epitech Bénin', role: "Member of the ADM, Epitech Bénin's cybersecurity association",
+    kind: 'Association', place: 'Epitech Bénin · Cotonou', length: 'ADM', unit: '', only: 'break',
+    points: [],
+    stack: ['CTF', 'cybersecurity'],
   },
 ]
 
@@ -49,12 +55,19 @@ export const CERTS = [
   },
 ]
 
-/* Results, rankings, certifications. Newest first.
+/* Results and rankings. Newest first.   points: optional details listed under the event
    rank: what is printed big on the left ('02', 'TOP 5', '★'…)   badge: optional emoji next to it ('🥈'…)   as: the handle used   url: optional write-up or scoreboard */
 export const RECORD = [
   {
-    rank: '02', badge: '🥈', result: '2nd place', event: 'HackerLab 2026', scope: 'Finale · team', kind: 'CTF',
-    date: '2026-11', as: 'saiyanj1n', tags: ['web', 'pwn', 'rev', 'forensics'], url: '',
+    rank: '02', badge: '🥈', result: '2nd place', event: 'HackerLab Bénin 2026', scope: 'Finale · team SAIYANS · 48 h on-site', kind: 'CTF',
+    date: '2026-11', as: 'saiyanj1n', url: '',
+    points: [
+      'Attack and defense, not only jeopardy: King of the Hill (root a box, then hold it against three other teams) and a 1-vs-1 Death Match (break the rival machine while patching your own, flags rotating every 10 minutes).',
+      'DFIR speedrun on an ELK stack: rebuild a full incident against the clock.',
+      'Whitebox code audit in front of the jury: find the vulnerability, then defend the patch.',
+      'Jeopardy across forensics, crypto, blockchain tracing, web3, Active Directory, web, OSINT and ICS.',
+    ],
+    tags: ['attack-defense', 'DFIR', 'forensics', 'crypto', 'blockchain', 'AD', 'web', 'OSINT'],
   },
 ]
 

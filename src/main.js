@@ -119,19 +119,19 @@ $('#stack-list').innerHTML = chips(STACK)
 $('#record-list').innerHTML = RECORD.map((r) => {
   const body = `
     <span class="rank">${r.rank}${r.badge ? `<em class="medal">${r.badge}</em>` : ''}</span>
-    <div class="what"><strong>${r.event}</strong><span>${[r.result, r.scope].filter(Boolean).join(' · ')}</span><div class="tagsline">${chips(r.tags || [])}</div></div>
+    <div class="what"><strong>${r.event}</strong><span>${[r.result, r.scope].filter(Boolean).join(' · ')}</span>${r.points?.length ? `<ul>${r.points.map((pt) => `<li>${pt}</li>`).join('')}</ul>` : ''}<div class="tagsline">${chips(r.tags || [])}</div></div>
     <dl><div><dt>type</dt><dd>${r.kind}</dd></div><div><dt>date</dt><dd>${when(r.date)}</dd></div>${r.as ? `<div><dt>as</dt><dd>${r.as}</dd></div>` : ''}</dl>`
   return `<li>${r.url ? `<a class="row" href="${r.url}"${ext(r.url)}>${body}</a>` : `<div class="row">${body}</div>`}</li>`
 }).join('')
-const xpHTML = EXPERIENCE.map((x) => `
+const xpHTML = (side) => EXPERIENCE.filter((x) => !x.only || x.only === side).map((x) => `
   <li><div class="row">
-    <span class="rank">${x.length}<small>${x.unit}</small></span>
+    <span class="rank">${x.length}${x.unit ? `<small>${x.unit}</small>` : ''}</span>
     <div class="what"><strong>${x.logo ? `<img class="org-logo" src="${asset(x.logo)}" alt="" />` : ''}${x.org}</strong><span>${x.role} · ${x.kind}</span>
-      <ul>${x.points.map((pt) => `<li>${pt}</li>`).join('')}</ul>
+      ${x.points.length ? `<ul>${x.points.map((pt) => `<li>${pt}</li>`).join('')}</ul>` : ''}
       <div class="tagsline">${chips(x.stack)}</div></div>
-    <dl><div><dt>type</dt><dd>${x.kind}</dd></div><div><dt>from</dt><dd>${when(x.from)}</dd></div><div><dt>to</dt><dd>${when(x.to)}</dd></div><div><dt>where</dt><dd>${x.place}</dd></div></dl>
+    <dl><div><dt>type</dt><dd>${x.kind}</dd></div>${x.from ? `<div><dt>from</dt><dd>${when(x.from)}</dd></div>` : ''}${x.to ? `<div><dt>to</dt><dd>${when(x.to)}</dd></div>` : ''}<div><dt>where</dt><dd>${x.place}</dd></div></dl>
   </div></li>`).join('')
-document.querySelectorAll('.xp-list').forEach((u) => { u.innerHTML = xpHTML })
+document.querySelectorAll('.xp-list').forEach((u) => { u.innerHTML = xpHTML(u.closest('#dim-dark') ? 'break' : 'build') })
 const certHTML = CERTS.map((c) => `
   <div class="kit"><p>${c.logo ? `<img class="cert-logo" src="${asset(c.logo)}" alt="${c.issuer}" />` : `<b>${c.mark}</b>`}${c.title}</p>
     <p class="meta">${c.issuer} · issued ${when(c.date)}<br>id ${c.url ? `<a href="${c.url}"${ext(c.url)}>${c.id} ↗</a>` : c.id}</p>
