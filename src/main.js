@@ -170,6 +170,7 @@ function choose(path) {
   setTimeout(() => document.body.classList.remove('jumping'), 600)
   $('#dim-good').hidden = path !== 'good'
   $('#dim-dark').hidden = path !== 'dark'
+  audio.setAct(path) // each dimension carries its own score: paper light vs ember night
   const dim = $(path === 'good' ? '#dim-good' : '#dim-dark')
   dim.scrollTop = 0
   gsap.fromTo(dim.querySelector('.dim-in'), { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.1 })
@@ -186,6 +187,7 @@ function leaveDim() {
   $('#dim-good').hidden = true
   $('#dim-dark').hidden = true
   el.cross.hidden = true
+  audio.setAct('world') // back to the fork's base score
   audio.hit('close')
 }
 document.querySelectorAll('[data-choose]').forEach((b) => b.addEventListener('click', () => choose(b.dataset.choose)))

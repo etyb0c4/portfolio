@@ -1,12 +1,17 @@
 // A small generative score: one pad that retunes per act, plus a handful of gesture sounds.
+// 'good' and 'dark' are the two dimensions behind the fork: paper light vs ember night,
+// both deliberately far from the 'world' base the fork floats in.
 const CHORDS = {
   ice: [110, 164.81, 246.94, 277.18],
   sky: [146.83, 220, 329.63, 369.99],
   red: [65.41, 98, 155.56, 233.08],
   deep: [87.31, 130.81, 196, 207.65],
   world: [98, 146.83, 246.94, 369.99],
+  good: [130.81, 196, 293.66, 493.88],
+  dark: [55, 82.41, 130.81, 155.56],
 }
-const CUTOFF = { ice: 900, sky: 1500, red: 520, deep: 620, world: 1900 }
+const CUTOFF = { ice: 900, sky: 1500, red: 520, deep: 620, world: 1900, good: 2800, dark: 340 }
+const WETMIX = { good: 0.78, dark: 0.3 }
 
 export function createAudio() {
   let ctx = null, master, filt, wet, voices = [], scratch, riser, riserGain, act = 'ice'
@@ -66,6 +71,7 @@ export function createAudio() {
     const t = ctx.currentTime
     CHORDS[name].forEach((f, i) => voices[i].forEach((o) => o.frequency.setTargetAtTime(f, t, 0.9)))
     filt.frequency.setTargetAtTime(CUTOFF[name], t, 1.2)
+    wet.gain.setTargetAtTime(WETMIX[name] ?? 0.55, t, 1.4)
   }
 
   const ping = (freq, dur, gain, delay = 0, type = 'sine') => {
@@ -138,7 +144,7 @@ export function createAudio() {
       lastSwish = t
       const s = ctx.createBufferSource(); s.buffer = noiseBuffer(0.55)
       const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.9
-      const base = (act === 'deep' || act === 'red' ? 300 : 640) * (0.85 + Math.random() * 0.4)
+      const base = (act === 'deep' || act === 'red' || act === 'dark' ? 300 : 640) * (0.85 + Math.random() * 0.4)
       f.frequency.setValueAtTime(base, t); f.frequency.exponentialRampToValueAtTime(base * 2.3, t + 0.16); f.frequency.exponentialRampToValueAtTime(base * 0.7, t + 0.44)
       const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.15, t + 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.52)
       s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
