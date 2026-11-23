@@ -540,7 +540,7 @@ function frame(now) {
 }
 
 // handles for scripted walkthroughs and tests
-window.__rs = { S, G, GATES, TS, FZ, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
+window.__rs = { S, G, GATES, TS, FZ, audio, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)

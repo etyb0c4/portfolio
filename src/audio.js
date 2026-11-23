@@ -65,6 +65,130 @@ export function createAudio() {
     if (glassUrl) loadGlass(glassUrl)
   }
 
+  /* ── the two dimensions get real instruments of their own, not a retuned pad ── */
+  const pluck = (f, g) => {
+    const t = ctx.currentTime
+    const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = f
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.4
+    const e = ctx.createGain()
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + 0.006); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.9 + Math.random() * 0.5)
+    o.connect(lp); lp.connect(e); e.connect(master); e.connect(wet)
+    o.start(t); o.stop(t + 1.6)
+  }
+  const bell = (f, g) => {
+    const t = ctx.currentTime
+    ;[1, 2.756].forEach((r, i) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * r
+      const e = ctx.createGain()
+      e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g / (1 + i * 1.8), t + 0.01); e.gain.exponentialRampToValueAtTime(0.0001, t + 2.6)
+      o.connect(e); e.connect(wet); e.connect(master)
+      o.start(t); o.stop(t + 2.8)
+    })
+  }
+  const thump = (f, g) => {
+    const t = ctx.currentTime
+    const o = ctx.createOscillator(); o.type = 'sine'
+    o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.58, t + 0.28)
+    const e = ctx.createGain()
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + 0.012); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.55)
+    o.connect(e); e.connect(master)
+    o.start(t); o.stop(t + 0.7)
+  }
+  const clink = () => {
+    const t = ctx.currentTime
+    const f = 420 + Math.random() * 760
+    const c = ctx.createOscillator(); c.type = 'sine'; c.frequency.value = f
+    const m = ctx.createOscillator(); m.type = 'sine'; m.frequency.value = f * 3.73
+    const mg = ctx.createGain(); mg.gain.value = f * 2.2
+    m.connect(mg); mg.connect(c.frequency)
+    const e = ctx.createGain()
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(0.045, t + 0.004); e.gain.exponentialRampToValueAtTime(0.0001, t + 0.5 + Math.random() * 0.6)
+    c.connect(e); e.connect(wet); e.connect(master)
+    c.start(t); m.start(t); c.stop(t + 1.2); m.stop(t + 1.2)
+  }
+
+  const breath = (f, g) => {
+    const t = ctx.currentTime
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f
+    const e = ctx.createGain()
+    e.gain.setValueAtTime(0, t); e.gain.linearRampToValueAtTime(g, t + 0.9); e.gain.exponentialRampToValueAtTime(0.0001, t + 2.3)
+    o.connect(e); e.connect(master); e.connect(wet)
+    o.start(t); o.stop(t + 2.5)
+  }
+
+  // every mood plays its own instruments; the pad underneath is only the glue
+  let layer = null
+  const stopLayer = () => { if (layer) { layer(); layer = null } }
+  const startLayer = (which) => {
+    stopLayer()
+    if (!ctx) return
+    const timers = [], nodes = []
+    const noiseBed = (type, freq, q, gain, attack = 2) => {
+      const nb = ctx.createBufferSource(); nb.buffer = noiseBuffer(3); nb.loop = true
+      const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q
+      const g = ctx.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(gain, ctx.currentTime, attack)
+      nb.connect(f); f.connect(g); g.connect(master); g.connect(wet); nb.start()
+      nodes.push(nb, g)
+      return g
+    }
+    if (which === 'ice') {
+      // frozen lacquer: thin cold air, crystalline partials far away
+      noiseBed('bandpass', 4200, 1.2, 0.011)
+      timers.push(setInterval(() => { if (on && Math.random() < 0.7) bell(1567.98 * [0.5, 0.75, 1, 1.25][(Math.random() * 4) | 0], 0.026) }, 2900))
+    } else if (which === 'sky') {
+      // the paper studio: warm air, slow soft plucks like someone thinking
+      noiseBed('bandpass', 900, 0.7, 0.013)
+      const scale = [349.23, 392, 440, 523.25, 587.33]
+      timers.push(setInterval(() => { if (on && Math.random() < 0.55) pluck(scale[(Math.random() * scale.length) | 0], 0.03) }, 2200))
+    } else if (which === 'red') {
+      // the rupture: a grinding detuned floor that swells, muffled impacts underneath
+      const d1 = ctx.createOscillator(); d1.type = 'sawtooth'; d1.frequency.value = 58
+      const d2 = ctx.createOscillator(); d2.type = 'sawtooth'; d2.frequency.value = 58.9
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240; lp.Q.value = 1.1
+      const g = ctx.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(0.065, ctx.currentTime, 1.4)
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.13
+      const lg = ctx.createGain(); lg.gain.value = 0.03
+      lfo.connect(lg); lg.connect(g.gain)
+      d1.connect(lp); d2.connect(lp); lp.connect(g); g.connect(master)
+      d1.start(); d2.start(); lfo.start()
+      nodes.push(d1, d2, lfo, g)
+      timers.push(setInterval(() => { if (on && Math.random() < 0.5) thump(49, 0.2) }, 1400))
+    } else if (which === 'deep') {
+      // the ink night: hollow wind that wanders, deep far bells, stars that ping
+      const wind = noiseBed('bandpass', 260, 2.2, 0.028)
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.06
+      const lg = ctx.createGain(); lg.gain.value = 0.016
+      lfo.connect(lg); lg.connect(wind.gain); lfo.start(); nodes.push(lfo)
+      timers.push(setInterval(() => { if (on && Math.random() < 0.5) bell([146.83, 196][(Math.random() * 2) | 0], 0.042) }, 3800))
+      timers.push(setInterval(() => { if (on && Math.random() < 0.28) ping(1800 + Math.random() * 1600, 0.3, 0.013) }, 1100))
+    } else if (which === 'world') {
+      // the fork: a held breath, pulsing softly while the choice waits
+      timers.push(setInterval(() => { if (on) breath(98, 0.04) }, 2600))
+    } else if (which === 'good') {
+      // a music box in paper light: generative major plucks and far bells
+      const scale = [261.63, 293.66, 329.63, 392, 440, 493.88, 523.25, 659.25]
+      timers.push(setInterval(() => {
+        if (!on || Math.random() > 0.6) return
+        pluck(scale[(Math.random() * scale.length) | 0] * (Math.random() < 0.14 ? 2 : 1), 0.045 + Math.random() * 0.04)
+      }, 290))
+      timers.push(setInterval(() => { if (on && Math.random() < 0.7) bell([523.25, 659.25, 783.99][(Math.random() * 3) | 0], 0.05) }, 4600))
+    } else if (which === 'dark') {
+      // the ember night: a slow double heartbeat, a floor of rumble, metal cooling somewhere
+      const rg = noiseBed('lowpass', 130, 0.5, 0.09, 1.6)
+      void rg
+      timers.push(setInterval(() => {
+        if (!on) return
+        thump(42, 0.5)
+        setTimeout(() => { if (layer) thump(39, 0.3) }, 300 + Math.random() * 120)
+      }, 1750))
+      timers.push(setInterval(() => { if (on && Math.random() < 0.55) clink() }, 3400))
+    }
+    layer = () => {
+      timers.forEach(clearInterval)
+      nodes.forEach((n) => { try { n.stop?.() } catch { /* already stopped */ } try { n.disconnect() } catch { /* fine */ } })
+    }
+  }
+
   const setAct = (name) => {
     act = name
     if (!ctx) return
@@ -72,6 +196,7 @@ export function createAudio() {
     CHORDS[name].forEach((f, i) => voices[i].forEach((o) => o.frequency.setTargetAtTime(f, t, 0.9)))
     filt.frequency.setTargetAtTime(CUTOFF[name], t, 1.2)
     wet.gain.setTargetAtTime(WETMIX[name] ?? 0.55, t, 1.4)
+    startLayer(name)
   }
 
   const ping = (freq, dur, gain, delay = 0, type = 'sine') => {
