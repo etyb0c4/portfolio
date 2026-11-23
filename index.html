@@ -46,7 +46,7 @@
         .boot-bar { width: clamp(150px, 18vw, 200px); height: 2px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
         .boot-bar i { display: block; height: 100%; width: 0%; background: #ff4f1a; box-shadow: 0 0 8px rgba(255, 79, 26, 0.7); }
         @media (max-width: 760px), (max-height: 560px) { #boot { --px: 1.5; } .boot-tip { display: none; } }
-        @media (prefers-reduced-motion: reduce) { .v-a, .v-b, .boot-dots i { animation: none; } .v-b { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .boot-dots i { animation: none; } }
       </style>
       <div class="boot-head">RING 3 <b>//</b> COLD BOOT</div>
       <div class="boot-tip" id="boot-tip"></div>

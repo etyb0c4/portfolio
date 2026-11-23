@@ -96,15 +96,16 @@ function labelTexture(l) {
     const g = c.getContext('2d')
     g.clearRect(0, 0, c.width, c.height)
     g.fillStyle = '#fff'; g.textBaseline = 'alphabetic'
-    g.font = "800 condensed 215px 'Archivo Variable'"
+    const narrow = (f) => { g.font = f; if ('fontStretch' in g) g.fontStretch = 'condensed' }
+    narrow("800 215px 'Archivo Variable'")
     const head = (l.sw + l.a).toUpperCase()
-    g.fillText(head, 26, 250)
-    if (l.b) { g.font = "italic 600 condensed 150px 'Archivo Variable'"; g.fillText(l.b.toUpperCase(), 30, 408) }
+    g.fillText(head, 26, 250, c.width - 52)
+    if (l.b) { narrow("italic 600 150px 'Archivo Variable'"); g.fillText(l.b.toUpperCase(), 30, 408, c.width - 60) }
     g.fillStyle = '#ff7a42'
     g.fillRect(30, l.b ? 448 : 300, 46, 8)
     g.fillStyle = '#fff'
     g.font = "500 34px 'Geist Mono Variable'"; g.globalAlpha = 0.9
-    g.fillText(l.c.toUpperCase(), 96, l.b ? 486 : 338)
+    g.fillText(l.c.toUpperCase(), 96, l.b ? 486 : 338, c.width - 120)
     g.globalAlpha = 1
     tex.needsUpdate = true
   }
