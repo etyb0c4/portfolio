@@ -17,6 +17,7 @@ export const LINKS = [
   { label: 'Mail', text: 'ryansama.tech@gmail.com', url: 'mailto:ryansama.tech@gmail.com' },
   { label: 'GitHub', text: 'etyb0c4', url: 'https://github.com/etyb0c4' },
   { label: 'LinkedIn', text: 'rayan-sama', url: 'https://linkedin.com/in/rayan-sama' },
+  { label: 'HackTheBox', text: 'profile', url: 'https://app.hackthebox.com/users/3097294' },
   { label: 'CV', text: 'Download (PDF)', url: 'cv/rayan-sama-cv.pdf', download: 'rayan-sama-cv.pdf' },
 ]
 
@@ -35,10 +36,16 @@ export const EXPERIENCE = [
     stack: ['Linux', 'Windows', 'Python', 'Bash', 'Symfony', 'PostgreSQL', 'REST API', 'OWASP'],
   },
   {
-    org: 'Epihack', full: 'Epihack · Epitech Bénin', role: "Member of the ADM, Epitech Bénin's cybersecurity association",
+    org: 'Epihack', full: 'Epihack · Epitech Bénin', role: "Administration team member, Epitech Bénin's cybersecurity association",
     kind: 'Association', place: 'Epitech Bénin · Cotonou', length: 'ADM', unit: '', only: 'break',
     points: [],
     stack: ['CTF', 'cybersecurity'],
+  },
+  {
+    org: 'BDE Epitech Bénin', full: 'BDE · Epitech Bénin', role: 'Sports team member, also working with the events and tech teams',
+    kind: 'Student union', place: 'Epitech Bénin · Cotonou', length: 'BDE', unit: '', only: 'build',
+    points: [],
+    stack: ['sports', 'events', 'tech'],
   },
 ]
 
@@ -90,7 +97,7 @@ export const PROJECTS = [
   {
     id: 'ctf', name: 'CTF field notes', role: 'HackTheBox · Root-Me', year: 'ongoing', side: 'break',
     blurb: 'Machines rooted and flags captured across HackTheBox and Root-Me: web exploitation, binary pwn, reverse engineering, forensics. Every solve becomes a reusable playbook in the arsenal.',
-    stack: ['pwntools', 'Ghidra', 'Burp', 'sqlmap'], metric: 'every solve → a playbook', img: 'proj/ctf.jpg', url: '',
+    stack: ['pwntools', 'Ghidra', 'Burp', 'sqlmap'], metric: 'every solve → a playbook', img: 'proj/ctf.jpg', url: 'https://app.hackthebox.com/users/3097294',
   },
 ]
 
