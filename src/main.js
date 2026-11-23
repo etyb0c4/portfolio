@@ -251,6 +251,7 @@ const armZW = () => {
   ZW.forEach((v) => { try { v.preload = 'auto'; v.load() } catch { /* no video, no flash */ } })
   audio.loadGlass(asset('zw/glass.mp3'))
   audio.loadZW(asset('zw/zawarudo.mp3'))
+  audio.loadGirei(asset('aud/girei.mp3')) // the dark dimension sings Pain's theme
 }
 const zwHide = () => ZW.forEach((v) => { try { v.pause() } catch { /* fine */ } v.style.display = 'none' })
 const flash = (i, dur) => {

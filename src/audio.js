@@ -14,8 +14,8 @@ const CUTOFF = { ice: 900, sky: 1500, red: 520, deep: 620, world: 1900, good: 28
 const WETMIX = { good: 0.78, dark: 0.3 }
 
 export function createAudio() {
-  let ctx = null, master, filt, wet, voices = [], scratch, riser, riserGain, act = 'ice'
-  let glassBuf = null, glassUrl = null, zwBuf = null, zwUrl = null, lastSwish = 0
+  let ctx = null, master, filt, wet, padBus, voices = [], scratch, riser, riserGain, act = 'ice'
+  let glassBuf = null, glassUrl = null, zwBuf = null, zwUrl = null, gireiBuf = null, gireiUrl = null, lastSwish = 0
   let on = true
   try { on = localStorage.getItem('sound') !== '0' } catch { /* storage blocked */ }
 
@@ -41,7 +41,8 @@ export function createAudio() {
     wet.connect(verb); verb.connect(master)
 
     filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = CUTOFF.ice; filt.Q.value = 0.6
-    filt.connect(master); filt.connect(wet)
+    padBus = ctx.createGain(); padBus.gain.value = 1
+    filt.connect(padBus); padBus.connect(master); padBus.connect(wet)
     const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.07; lg.gain.value = 180
     lfo.connect(lg); lg.connect(filt.frequency); lfo.start()
 
@@ -64,6 +65,7 @@ export function createAudio() {
     setAct(act)
     if (glassUrl) loadGlass(glassUrl)
     if (zwUrl) loadZW(zwUrl)
+    if (gireiUrl) loadGirei(gireiUrl)
   }
 
   /* ── the two dimensions get real instruments of their own, not a retuned pad ── */
@@ -173,6 +175,25 @@ export function createAudio() {
         pluck(scale[(Math.random() * scale.length) | 0] * (Math.random() < 0.14 ? 2 : 1), 0.045 + Math.random() * 0.04)
       }, 290))
       timers.push(setInterval(() => { if (on && Math.random() < 0.7) bell([523.25, 659.25, 783.99][(Math.random() * 3) | 0], 0.05) }, 4600))
+    } else if (which === 'dark' && gireiBuf) {
+      // Pain's rain: the chant itself loops under the night, and the pad steps aside
+      const t0 = ctx.currentTime
+      padBus.gain.setTargetAtTime(0.18, t0, 1.1)
+      const s = ctx.createBufferSource(); s.buffer = gireiBuf; s.loop = true
+      const g = ctx.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(0.62, t0, 1.6)
+      const w = ctx.createGain(); w.gain.value = 0.18
+      s.connect(g); g.connect(master); g.connect(w); w.connect(wet)
+      s.start()
+      nodes.push({
+        stop() {
+          const t = ctx.currentTime
+          g.gain.setTargetAtTime(0, t, 0.3)
+          padBus.gain.setTargetAtTime(1, t, 0.9)
+          setTimeout(() => { try { s.stop() } catch { /* already stopped */ } }, 1600)
+        },
+        disconnect() { /* delayed with the fade */ },
+      })
+      timers.push(setInterval(() => { if (on) thump(42, 0.2) }, 1750))
     } else if (which === 'dark') {
       // the ember night: a slow double heartbeat, a floor of rumble, metal cooling somewhere
       const rg = noiseBed('lowpass', 130, 0.5, 0.09, 1.6)
@@ -227,6 +248,16 @@ export function createAudio() {
     zwUrl = url
     if (!ctx || zwBuf) return
     fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((d) => { zwBuf = d }).catch(() => { /* synth fallback stays */ })
+  }
+
+  // Pain's theme, four phrases of the chant cut rain-to-rain so the loop breathes
+  const loadGirei = (url) => {
+    gireiUrl = url
+    if (!ctx || gireiBuf) return
+    fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((d) => {
+      gireiBuf = d
+      if (act === 'dark') startLayer('dark') // already in the dark when it lands: swap the layer live
+    }).catch(() => { /* generative fallback stays */ })
   }
 
   const hit = (kind) => {
@@ -307,7 +338,7 @@ export function createAudio() {
   }
 
   return {
-    start, setAct, hit, loadGlass, loadZW,
+    start, setAct, hit, loadGlass, loadZW, loadGirei,
     get on() { return on },
     toggle() {
       on = !on
