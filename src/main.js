@@ -479,3 +479,4 @@ window.__rs = { S, G, GATES, H, TIP, enter, skip, solve, doTouch, autoReach, cho
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)
+requestAnimationFrame(() => window.__bootDone?.())

@@ -14,6 +14,96 @@
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   </head>
   <body data-ink="seal">
+    <!-- boot screen: the Budokai Tenkaichi loading corner — Vegeta counts his push-ups while the ring loads -->
+    <div id="boot" role="status" aria-label="Loading">
+      <style>
+        #boot { position: fixed; inset: 0; z-index: 2000; background: #0c0c0d; color: #e8e6e1;
+          font: 500 10px/1.6 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+          letter-spacing: 0.18em; transition: opacity 0.55s ease; --px: 2; }
+        #boot.boot-out { opacity: 0; pointer-events: none; }
+        .boot-head { position: absolute; top: clamp(14px, 3vh, 26px); left: clamp(16px, 4vw, 48px); color: #6b6965; }
+        .boot-head b { color: #ff4f1a; font-weight: 600; }
+        .boot-tip { position: absolute; left: clamp(16px, 4vw, 48px); bottom: clamp(20px, 5vh, 46px); color: #8a8884; max-width: min(42vw, 40ch); }
+        .boot-corner { position: absolute; right: clamp(16px, 4vw, 48px); bottom: clamp(20px, 5vh, 46px); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .boot-scene { position: relative; width: calc(146px * var(--px)); height: calc(150px * var(--px)); }
+        .boot-scene img { image-rendering: pixelated; position: absolute; }
+        .v { left: 0; bottom: 0; width: calc(91px * var(--px)); height: calc(124px * var(--px)); }
+        .v-a { animation: vA 0.9s steps(1) infinite; }
+        .v-b { animation: vB 0.9s steps(1) infinite; }
+        @keyframes vA { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+        @keyframes vB { 0%, 49% { opacity: 0; } 50%, 100% { opacity: 1; } }
+        .bub { right: 0; top: 0; width: calc(67px * var(--px)); height: calc(62px * var(--px)); }
+        .cnt { position: absolute; right: calc(13px * var(--px)); top: calc(14px * var(--px)); display: flex; }
+        .cnt i { display: block; width: calc(16px * var(--px)); height: calc(20px * var(--px));
+          background: url(./boot/digits.png) no-repeat 0 0; background-size: calc(160px * var(--px)) calc(20px * var(--px));
+          image-rendering: pixelated; }
+        .boot-line { display: flex; align-items: baseline; gap: 1.1em; color: #b9b6b0; }
+        .boot-line em { font-style: normal; color: #ff4f1a; min-width: 4ch; text-align: right; }
+        .boot-dots i { display: inline-block; width: 0.6em; animation: dot 1.2s steps(1) infinite; color: #b9b6b0; font-style: normal; }
+        .boot-dots i:nth-child(2) { animation-delay: 0.2s; }
+        .boot-dots i:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dot { 0%, 20% { opacity: 0; } 30%, 100% { opacity: 1; } }
+        .boot-bar { width: clamp(150px, 18vw, 200px); height: 2px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+        .boot-bar i { display: block; height: 100%; width: 0%; background: #ff4f1a; box-shadow: 0 0 8px rgba(255, 79, 26, 0.7); }
+        @media (max-width: 760px), (max-height: 560px) { #boot { --px: 1.5; } .boot-tip { display: none; } }
+        @media (prefers-reduced-motion: reduce) { .v-a, .v-b, .boot-dots i { animation: none; } .v-b { opacity: 0; } }
+      </style>
+      <div class="boot-head">RING 3 <b>//</b> COLD BOOT</div>
+      <div class="boot-tip" id="boot-tip"></div>
+      <div class="boot-corner">
+        <div class="boot-scene" aria-hidden="true">
+          <img class="v v-a" src="./boot/vegeta1.png" alt="" />
+          <img class="v v-b" src="./boot/vegeta2.png" alt="" />
+          <img class="bub" src="./boot/bubble.png" alt="" />
+          <span class="cnt"><i id="bd-t"></i><i id="bd-u"></i></span>
+        </div>
+        <div class="boot-line"><span>NOW LOADING</span><span class="boot-dots"><i>.</i><i>.</i><i>.</i></span><em id="boot-pct">0%</em></div>
+        <div class="boot-bar"><i id="boot-fill"></i></div>
+      </div>
+      <script>
+        (() => {
+          const t0 = performance.now()
+          const pct = document.getElementById('boot-pct'), fill = document.getElementById('boot-fill'), tipEl = document.getElementById('boot-tip')
+          const bdT = document.getElementById('bd-t'), bdU = document.getElementById('bd-u')
+          const TIPS = [
+            'TIP — trace an S. any S. make it yours.',
+            'TIP — the core cracks if you hold it.',
+            'TIP — sound on. this place hums.',
+            'TIP — ENTER skips the ride. nobody skips.',
+            'TIP — what breaks was built first.',
+          ]
+          let ti = (Math.random() * TIPS.length) | 0
+          tipEl.textContent = TIPS[ti]
+          const tipIv = setInterval(() => { ti = (ti + 1) % TIPS.length; tipEl.textContent = TIPS[ti] }, 2400)
+          const cell = () => parseFloat(getComputedStyle(bdT).width)
+          let p = 0, done = false
+          const finish = () => {
+            clearInterval(tipIv)
+            const b = document.getElementById('boot')
+            if (!b) return
+            b.classList.add('boot-out')
+            setTimeout(() => b.remove(), 750)
+          }
+          const step = () => {
+            const el = (performance.now() - t0) / 1000
+            const target = done ? 101 : Math.min(92, 100 * (1 - Math.exp(-el / 1.4)))
+            p += (target - p) * (done ? 0.22 : 0.055)
+            const v = Math.min(100, Math.floor(p))
+            pct.textContent = v + '%'
+            fill.style.width = Math.min(100, p) + '%'
+            const c = cell(), n = Math.min(99, v)
+            bdT.style.backgroundPosition = -(((n / 10) | 0) * c) + 'px 0'
+            bdU.style.backgroundPosition = -((n % 10) * c) + 'px 0'
+            if (done && p >= 99.4) { pct.textContent = '100%'; fill.style.width = '100%'; finish(); return }
+            requestAnimationFrame(step)
+          }
+          requestAnimationFrame(step)
+          window.__bootDone = () => { setTimeout(() => { done = true }, Math.max(0, 900 - (performance.now() - t0))) }
+          addEventListener('load', () => setTimeout(() => { if (!window.__rs) done = true }, 3000))
+        })()
+      </script>
+    </div>
+
     <canvas id="gl" aria-hidden="true"></canvas>
 
     <!-- The same content, for anyone who cannot or will not play. -->
