@@ -90,14 +90,19 @@ export const PROJECTS = [
     stack: ['C', 'ncurses', 'assembly', 'Makefile'], metric: '4 KB arena · 16 opcodes', img: 'proj/corewar.jpg', url: '',
   },
   {
-    id: 'logdog', name: 'LogDog', role: 'Log forensics CLI', year: '2026', side: 'build',
-    blurb: 'An open-source log analyzer for Linux: it ranks every IP that touched the box, flags which ones actually got in (account, auth method, timestamp) and reads wtmp to surface active sessions. Pure Python standard library, so it runs on any server you land on.',
-    stack: ['Python', 'regex', 'auth.log', 'wtmp'], metric: '0 dependencies', img: 'proj/logdog.jpg', url: 'https://github.com/etyb0c4/LogDog',
+    id: 'dc-access', name: 'DC Access', role: 'Data-center access control', year: '2026', side: 'build',
+    blurb: 'Built with the team during my ISOCEL Telecom internship: the system that decides who gets through a data-center door. Access requests go through approval, each visitor gets a single-use, time-boxed code, and every event lands in a chained audit log. The entry terminal is a Python service that fails closed: no network or a rejected token, and the door stays shut.',
+    stack: ['Symfony', 'PostgreSQL', 'Python', 'REST API', 'pytest', 'Docker'], metric: 'single-use codes · fails closed', img: 'proj/dc-access.jpg', url: '',
   },
   {
     id: 'ctf', name: 'CTF field notes', role: 'HackTheBox · Root-Me', year: 'ongoing', side: 'break',
     blurb: 'Machines rooted and flags captured across HackTheBox and Root-Me: web exploitation, binary pwn, reverse engineering, forensics. Every solve becomes a reusable playbook in the arsenal.',
     stack: ['pwntools', 'Ghidra', 'Burp', 'sqlmap'], metric: 'every solve → a playbook', img: 'proj/ctf.jpg', url: 'https://app.hackthebox.com/users/3097294',
+  },
+  {
+    id: 'logdog', name: 'LogDog', role: 'Log forensics CLI', year: '2026', side: 'break',
+    blurb: 'Incident response on a Linux box: LogDog ranks every IP that touched it, flags which ones actually got in (account, auth method, timestamp) and reads wtmp to surface active sessions. Pure Python standard library, so it runs on any server you land on.',
+    stack: ['Python', 'regex', 'auth.log', 'wtmp'], metric: '0 dependencies', img: 'proj/logdog.jpg', url: 'https://github.com/etyb0c4/LogDog',
   },
 ]
 
