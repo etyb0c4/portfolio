@@ -45,9 +45,9 @@ void main(){
 export const BACK_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uHand, uArc, uBurst, uPtrOn;
+uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uNeg, uTS, uCrackR, uShatter;
 uniform sampler2D uTrail;
-uniform vec2 uPointer, uTip, uReach;
+uniform vec2 uPointer, uCenter;
 ${NOISE}
 
 vec3 sceneSeal(vec2 p, float tr){
@@ -115,37 +115,16 @@ vec3 sceneCurtain(vec2 p){
 }
 
 vec3 sceneDeep(vec2 p){
-  vec2 q = p * 1.1 + vec2(0.0, uTime * 0.01);
-  float f = fbm(q * 1.4 + fbm3(q * 2.0 - uTime * 0.02) * 0.9);
+  // the deep night runs on its own clock (uTS), so time itself can be stopped
+  vec2 q = p * 1.1 + vec2(0.0, uTS * 0.01);
+  float f = fbm(q * 1.4 + fbm3(q * 2.0 - uTS * 0.02) * 0.9);
   vec3 col = vec3(0.014, 0.016, 0.028);
   col += vec3(0.10, 0.045, 0.02) * pow(f, 2.2) * 1.5 * smoothstep(-1.3, 1.1, p.y);
   col += vec3(0.10, 0.13, 0.30) * smoothstep(1.5, 0.0, length(p - vec2(0.15, 1.0))) * 0.5;
   vec2 g = p * 26.0; vec2 id = floor(g); float h = hash21(id);
-  float tw = step(0.985, h) * (0.5 + 0.5 * sin(uTime * 2.0 + h * 80.0));
+  float tw = step(0.985, h) * (0.5 + 0.5 * sin(uTS * 2.0 + h * 80.0));
   col += mix(vec3(0.55, 0.65, 1.0), vec3(1.0, 0.55, 0.25), step(0.5, hash21(id + 7.0))) * tw * smoothstep(0.35, 0.0, length(fract(g) - 0.5)) * 0.5;
   return col;
-}
-
-// the other hand: an ink silhouette reaching out of the night, ember at its edges
-float cap2(vec2 p, vec2 a, vec2 b, float r){
-  vec2 pa = p - a, ba = b - a;
-  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-  return length(pa - ba * h) - r;
-}
-float smin2(float a, float b, float k){
-  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-  return mix(b, a, h) - k * h * (1.0 - h);
-}
-// canonical frame: fingertip at the origin, the index pointing +y
-float sdHand(vec2 q){
-  float d = cap2(q, vec2(0.0, 0.0), vec2(0.02, -0.30), 0.050);
-  d = smin2(d, cap2(q, vec2(0.03, -0.34), vec2(0.14, -0.52), 0.160), 0.05);
-  d = smin2(d, cap2(q, vec2(0.115, -0.30), vec2(0.21, -0.245), 0.055), 0.04);
-  d = smin2(d, cap2(q, vec2(0.16, -0.365), vec2(0.26, -0.315), 0.052), 0.04);
-  d = smin2(d, cap2(q, vec2(0.195, -0.43), vec2(0.285, -0.39), 0.047), 0.04);
-  d = smin2(d, cap2(q, vec2(-0.065, -0.38), vec2(-0.185, -0.27), 0.052), 0.05);
-  d = smin2(d, cap2(q, vec2(0.10, -0.56), vec2(0.35, -1.55), 0.15), 0.07);
-  return d;
 }
 
 void main(){
@@ -160,59 +139,40 @@ void main(){
   if (uCurtain > 0.001) col += (sceneCurtain(pr) + vec3(1.0, 0.45, 0.18) * tr * 0.10) * uCurtain;
   if (uDeep > 0.001) col += (sceneDeep(pr) + vec3(1.0, 0.5, 0.2) * tr * 0.10) * uDeep;
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
-  if (uHand > 0.001 && uDeep > 0.001) {
-    float on = uHand * uDeep;
-    // the hand of the night, index pointing up-left toward you
-    vec2 F = normalize(vec2(-0.55, 0.835));
-    vec2 rel = p - uTip;
-    float hs = 1.15 * mix(0.62, 1.0, smoothstep(0.5, 1.3, uAspect));
-    vec2 q = vec2(dot(rel, vec2(F.y, -F.x)), dot(rel, F)) / hs;
-    float dh = sdHand(q) * hs;
-    dh += (fbm3(q * 6.0 + uTime * 0.12) - 0.5) * 0.022;
-    float body = smoothstep(0.004, -0.006, dh);
-    float rim = smoothstep(0.050, 0.0, abs(dh));
-    float halo = smoothstep(0.42, 0.0, dh);
-    float flick = 0.75 + 0.25 * vnoise(vec2(uTime * 3.0, q.y * 4.0));
-    vec3 ink = vec3(0.004, 0.004, 0.007) + vec3(0.03, 0.012, 0.006) * fbm(q * 5.0 + 2.0);
-    col = mix(col, ink, body * uHand);
-    col += vec3(1.0, 0.72, 0.4) * halo * 0.05 * on;
-    col += mix(vec3(1.0, 0.30, 0.08), vec3(1.0, 0.75, 0.42), rim * rim) * rim * 0.85 * flick * on;
-    // embers lifting off the burnt edge
-    vec2 eg = q * 26.0 + vec2(0.0, -uTime * 0.7);
-    float eh = hash21(floor(eg));
-    float ember = step(0.94, eh) * smoothstep(0.35, 0.0, length(fract(eg) - 0.5)) * smoothstep(0.14, 0.03, abs(dh + 0.03));
-    col += vec3(1.0, 0.5, 0.2) * ember * (0.4 + 0.6 * sin(uTime * 5.0 + eh * 40.0)) * on;
-    // your fingertip of light
-    float pd2 = dot(p - uReach, p - uReach);
-    col += vec3(1.0, 0.86, 0.62) * exp(-pd2 * 160.0) * 0.85 * on * uPtrOn;
-    col += vec3(1.0, 0.55, 0.22) * exp(-pd2 * 24.0) * 0.18 * on * uPtrOn;
-    // the arc in the gap: the void between the two fingers becomes the brightest thing on screen
-    if (uArc > 0.003) {
-      vec2 ba = uReach - uTip;
-      float L = max(length(ba), 1e-4);
-      vec2 dir = ba / L, nrm = vec2(-dir.y, dir.x);
-      float h = clamp(dot(p - uTip, dir) / L, 0.0, 1.0);
-      float env = sin(h * 3.14159);
-      float seed = floor(uTime * 24.0);
-      float arcl = 0.0;
-      for (int k = 0; k < 3; k++) {
-        float fk = float(k);
-        float off = (vnoise(vec2(h * 6.0 + fk * 17.3, seed * 1.7 + fk * 9.1)) - 0.5) * (0.12 + L * 0.5) * env;
-        vec2 bp = uTip + dir * (h * L) + nrm * off;
-        arcl += 0.0011 / max(length(p - bp), 0.0014) * (0.45 + 0.55 * hash21(vec2(fk, seed)));
-      }
-      arcl = min(arcl, 4.0) * uArc * uArc * (0.75 + 0.25 * sin(uTime * 37.0));
-      col += (vec3(1.0, 0.45, 0.15) * 0.6 + vec3(1.0, 0.9, 0.75) * 0.5) * arcl * on;
-      col += vec3(1.0, 0.6, 0.25) * exp(-dot(p - uTip, p - uTip) * 90.0) * uArc * 1.1 * on;
-    }
-  }
-  if (uBurst > 0.001) {
-    // contact: a shockwave of light blows the night open
-    vec2 m = mix(uTip, uReach, 0.5);
-    float r = length(p - m);
-    float wave = smoothstep(0.10, 0.0, abs(r - uBurst * 2.3));
-    col += vec3(1.0, 0.78, 0.5) * wave * (1.0 - uBurst) * 2.2;
-    col += vec3(1.0, 0.6, 0.3) * exp(-r * r * (2.5 - uBurst * 2.0)) * uBurst * (1.0 - uBurst) * 5.0;
+  // za warudo: the world flips to negative, time freezes, glass cracks crawl, then everything shatters
+  if (uNeg > 0.001) col = mix(col, vec3(1.02) - col, uNeg);
+  if (uShatter > 0.001 && uDeep > 0.001) {
+    // the night breaks into plates along the same web it cracked on; paper waits behind
+    vec2 sp = (p - uCenter) * 1.8;
+    vec3 vc = voro(sp + 3.7);
+    float hcell = hash21(floor(sp + vc.yz + 0.5) + 2.0);
+    float fall = uShatter * uShatter * (0.35 + 0.9 * hcell);
+    vec2 drift = vec2((hcell - 0.5) * 1.6, -2.4) * fall;
+    vec3 plate = sceneDeep(p - drift);
+    plate = mix(plate, vec3(1.02) - plate, uNeg);
+    plate *= 1.0 - 0.3 * uShatter * hcell;
+    float gap = 1.0 - smoothstep(0.0, 0.035 + 0.5 * uShatter * uShatter, vc.x);
+    vec3 paper = vec3(0.93, 0.925, 0.908);
+    col = mix(plate, paper, clamp(gap + uShatter * uShatter * 0.5, 0.0, 1.0));
+  } else if (uCrackR > 0.001 && uDeep > 0.001) {
+    vec2 d = p - uCenter;
+    float r = length(d);
+    float jag = fbm3(d * 3.0 + 9.0) * 0.55;
+    float reach = smoothstep(uCrackR, uCrackR * 0.5, r + jag);
+    // the shatter web: coarse plates, plus a finer mesh near the impact
+    vec2 sp = (p - uCenter) * 1.8;
+    vec3 vc = voro(sp + 3.7);
+    float web = smoothstep(0.010, 0.0015, vc.x);
+    vec3 vf = voro((p - uCenter) * 4.2 + 11.0);
+    float fine = smoothstep(0.007, 0.001, vf.x) * smoothstep(uCrackR * 0.55, 0.05, r);
+    // radial spokes, jagged like real glass
+    float ang = atan(d.y, d.x);
+    float sd = abs(sin(ang * 5.5 + jag * 3.2 + 1.3)) ;
+    float spoke = smoothstep(0.994 - 0.02 / (r + 0.25), 1.0, sd) * smoothstep(uCrackR, 0.05, r) * smoothstep(0.02, 0.1, r);
+    float ck = max(max(web, fine * 0.8), spoke * 0.9) * reach;
+    col = mix(col, vec3(0.022, 0.016, 0.02), ck * 0.96);
+    col += vec3(1.0, 0.45, 0.16) * smoothstep(0.004, 0.0, vc.x) * reach * 0.35;
+    col += vec3(1.0, 0.8, 0.55) * smoothstep(0.12, 0.0, r) * reach * 0.3;
   }
   gl_FragColor = vec4(col, 1.0);
 }

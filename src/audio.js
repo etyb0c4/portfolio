@@ -87,16 +87,29 @@ export function createAudio() {
     else if (kind === 'open') { ping(659.25, 0.5, 0.06); ping(987.77, 0.7, 0.045, 0.07) }
     else if (kind === 'close') ping(440, 0.3, 0.04)
     else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
-    else if (kind === 'spark') burst(0.04, 0.02 + Math.random() * 0.03, 3200)
-    else if (kind === 'touch') {
-      burst(0.16, 0.5, 2400)
-      burst(1.3, 0.28, 800)
+    else if (kind === 'stop') {
+      // the time-stop: a reverse swell cut dead, then two heartbeats in the silence
       const t = ctx.currentTime
-      const o = ctx.createOscillator(), g = ctx.createGain()
-      o.type = 'sine'; o.frequency.setValueAtTime(200, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.5)
-      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.7)
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.8)
-      ;[783.99, 1174.66, 1567.98].forEach((f, i) => ping(f, 2.2, 0.045, 0.1 + i * 0.09, 'triangle'))
+      const nb = ctx.createBufferSource(); nb.buffer = noiseBuffer(1.4)
+      const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.Q.value = 2.2
+      nf.frequency.setValueAtTime(380, t); nf.frequency.exponentialRampToValueAtTime(3400, t + 1.0)
+      const ng = ctx.createGain(); ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.42, t + 0.98); ng.gain.setValueAtTime(0.0001, t + 1.06)
+      nb.connect(nf); nf.connect(ng); ng.connect(master); ng.connect(wet); nb.start(t)
+      ;[1.28, 1.72].forEach((d) => {
+        const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'
+        o.frequency.setValueAtTime(54, t + d); o.frequency.exponentialRampToValueAtTime(33, t + d + 0.2)
+        g.gain.setValueAtTime(0.0001, t + d); g.gain.linearRampToValueAtTime(0.55, t + d + 0.018); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.32)
+        o.connect(g); g.connect(master); o.start(t + d); o.stop(t + d + 0.4)
+      })
+    } else if (kind === 'tick') ping(640, 0.045, 0.05, 0, 'square')
+    else if (kind === 'snap') { burst(0.09, 0.32, 1900); ping(2200 + Math.random() * 900, 0.2, 0.04) }
+    else if (kind === 'glass') {
+      burst(1.1, 0.45, 1300)
+      const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
+      o.frequency.setValueAtTime(100, t); o.frequency.exponentialRampToValueAtTime(26, t + 1.0)
+      g.gain.setValueAtTime(0.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2)
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3)
+      for (let i = 0; i < 8; i++) ping(1500 + Math.random() * 3200, 0.4 + Math.random() * 0.8, 0.028, Math.random() * 0.8, 'triangle')
     } else if (kind === 'shatter') {
       burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
@@ -116,6 +129,7 @@ export function createAudio() {
       return on
     },
     draw(speed) { if (ctx) scratch.gain.setTargetAtTime(Math.min(speed, 1) * 0.07, ctx.currentTime, 0.05) },
+    freeze(f) { if (ctx && on) master.gain.setTargetAtTime(f ? 0.1 : 0.5, ctx.currentTime, f ? 0.06 : 0.3) },
     hold(p) {
       if (!ctx) return
       riser.frequency.setTargetAtTime(70 + p * p * 520, ctx.currentTime, 0.05)

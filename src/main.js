@@ -16,7 +16,7 @@ const GATES = [{ at: 9, to: 10.7, dur: 2.4, solved: false }, { at: 32, to: 36, d
 
 // S is where we are; G is what the picture looks like there (driven by the timeline).
 const S = { t: 0, target: 0, entered: false, auto: true, world: false, hold: 0, holding: false, time: 0, idle: 0, flash: 0, exit: 0 }
-const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, hand: 0, arc: 0, burst: 0, ptrOn: 0, grain: 0.05, vig: 0.22 }
+const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, neg: 0, crackR: 0, shatter: 0, slow: 0, cx: 0, cy: 0, grain: 0.05, vig: 0.22 }
 
 const stage = createStage($('#gl'))
 const audio = createAudio()
@@ -44,9 +44,9 @@ T({ camZ: -64 }, 19.5, 12, 'sine.inOut')
 T({ shards: 0 }, 20.6, 1.4)
 tl.set(G, { coreDark: 1 }, 22)
 T({ vig: 0.46, grain: 0.13 }, 30.0, 1.7)
-T({ hand: 1 }, 30.0, 1.9, 'power2.inOut')
+T({ slow: 1 }, 30.0, 1.9, 'power2.inOut')
 T({ white: 1 }, 32.45, 0.5, 'power2.in')
-tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, hand: 0, arc: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
+tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, neg: 0, crackR: 0, shatter: 0, slow: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
 T({ white: 0 }, 33.0, 0.9, 'power2.out')
 T({ open: 0.5 }, 36.5, 2.0, 'sine.inOut')
 T({ open: 0.62 }, 38.5, 0.8, 'none')
@@ -90,7 +90,7 @@ document.querySelectorAll('.st').forEach((st) => {
 
 /* ───────── dom ───────── */
 const el = {
-  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), reach: $('#reach'), hint: $('#hint'), explore: $('#explore'),
+  draw: $('#draw'), gate: $('#gate'), gateFg: $('#gate-fg'), ztw: $('#ztw'), hint: $('#hint'), explore: $('#explore'),
   needle: $('#needle'), ring: $('#ring'), uidN: $('#uid-n'), uidName: $('#uid-name'), sound: $('#sound'),
   dockMain: $('#dock-main'), menu: $('#menu'), menuBtn: $('#menu-btn'), fork: $('#fork'), cross: $('#cross'),
 }
@@ -228,34 +228,49 @@ function solve(gate) {
   gsap.to(S, { t: gate.to, duration: gate.dur, ease: 'none', onComplete: () => { S.target = S.t; S.auto = false } })
 }
 
-/* gate 2: a hand of ink reaches out of the night; you reach back until the gap sparks */
-const isTouchGate = (g) => g === GATES[1]
-const H = { x: 0, y: 0, auto: false } // where your fingertip of light is, in picture space
-const TIP = { x: 0.4, y: -2 } // where the hand's index fingertip is, in picture space
-function doTouch() {
+/* gate 2: the night will not end — so you stop time, and the stopped world shatters */
+const isStopGate = (g) => g === GATES[1]
+const TS = { t: 0 } // the night's own clock; stops dead when time stops
+const FZ = { on: false, last: 0 }
+function doStop(cx, cy) {
   const g = GATES[1]
   if (g.solved || S.auto || !S.entered) return
   g.solved = true
-  S.auto = true; S.holding = false; H.auto = false
-  gsap.killTweensOf(H)
-  audio.hit('touch')
-  gsap.fromTo(G, { burst: 0.001 }, { burst: 1, duration: 1.2, ease: 'power2.out' })
-  gsap.to(S, { t: g.to, duration: 2.4, ease: 'power1.in', delay: 0.1, onComplete: () => { S.target = S.t; S.auto = false } })
-}
-function autoReach() {
-  const g = GATES[1]
-  if (g.solved || S.auto || H.auto || !S.entered) return
-  H.auto = true
+  S.auto = true; S.holding = false
   const a = size.w / size.h
-  H.x = P.stale ? -a * 0.7 : (P.x - 0.5) * 2 * a
-  H.y = P.stale ? 0.55 : (P.y - 0.5) * 2
-  gsap.to(H, { x: TIP.x, y: TIP.y, duration: 1.5, ease: 'power2.inOut', onComplete: doTouch })
+  G.cx = ((cx ?? size.w / 2) / size.w - 0.5) * 2 * a
+  G.cy = 0.5 - (cy ?? size.h / 2) / size.h
+  G.cy *= 2
+  audio.hit('stop')
+  const cv = stage.renderer.domElement
+  const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
+  gsap.timeline()
+    // the swell breaks — the world flickers into negative
+    .to(G, { neg: 1, duration: 0.13, ease: 'power2.in' }, 1.0)
+    .to(G, { neg: 0.15, duration: 0.06 })
+    .to(G, { neg: 1, duration: 0.06 })
+    .to(G, { neg: 0.3, duration: 0.05 })
+    .to(G, { neg: 1, duration: 0.08 })
+    .add(() => { document.body.classList.add('neg'); FZ.on = true; FZ.last = S.time; audio.freeze(true) }) // time stops dead
+    .to(G, { crackR: 2.8, duration: 2.0, ease: 'power2.in' }, 2.0)
+    .add(() => { audio.hit('snap'); jolt(4) }, 2.15)
+    .add(() => { audio.hit('snap'); jolt(-5) }, 2.8)
+    .add(() => { audio.hit('snap'); jolt(6) }, 3.4)
+    .add(() => { audio.hit('snap'); jolt(-7) }, 3.75)
+    .add(() => { FZ.on = false; audio.freeze(false); audio.hit('glass'); jolt(12) }, 4.05)
+    .to(G, { neg: 0, duration: 0.3, ease: 'power1.out' }, 4.05) // colours rush back as the night falls apart
+    .to(G, { shatter: 1, duration: 0.9, ease: 'power2.in' }, 4.05)
+    .add(() => {
+      document.body.classList.remove('neg')
+      gsap.to(S, { t: g.to, duration: 1.3, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
+    }, 4.8)
 }
 
 function skip(then) {
   if (S.world) { then?.(); return }
   GATES.forEach((g) => { g.solved = true })
-  gsap.killTweensOf(S)
+  gsap.killTweensOf(S); gsap.killTweensOf(G)
+  FZ.on = false; audio.freeze(false); document.body.classList.remove('neg')
   S.auto = true; S.holding = false; S.hold = 0
   document.body.classList.add('in')
   el.draw.classList.add('gone')
@@ -304,7 +319,7 @@ canvas.addEventListener('pointerdown', (e) => {
   P.px = P.x; P.py = P.y; P.stale = false
   toggleMenu(false)
   if (!S.entered) { stroke = [{ x: e.clientX, y: e.clientY }]; fading = false; el.draw.classList.add('busy') }
-  else if (atGate() && isTouchGate(atGate())) { /* the loop watches the gap */ }
+  else if (atGate() && isStopGate(atGate())) { /* release decides */ }
   else if (atGate() && nearCentre(e)) S.holding = true
   else if (S.world) document.body.classList.add('grabbing')
 })
@@ -321,6 +336,8 @@ addEventListener('pointermove', (e) => {
 })
 const release = () => {
   if (!P.down) return
+  const g = atGate()
+  if (g && isStopGate(g) && P.moved < 24) doStop(P.lx, P.ly)
   P.down = false; S.holding = false
   document.body.classList.remove('grabbing')
   if (!S.entered) { stroke = []; fading = true; el.draw.classList.remove('busy') }
@@ -335,7 +352,7 @@ addEventListener('wheel', (e) => {
   if (!S.entered || S.auto) return
   if (S.world) { if (dy < -40 && !PATH) leaveFork(); return }
   const g = atGate()
-  if (g && isTouchGate(g) && dy > 30) { autoReach(); return }
+  if (g && isStopGate(g) && dy > 30) { doStop(); return }
   nudge(dy * 0.0024)
 }, { passive: false })
 
@@ -343,7 +360,7 @@ addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (PATH) leaveDim(); else toggleMenu(false); return }
   if (e.target.closest?.('button, a, .panel') && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
   if (!S.entered) { if (e.key === 'Enter') { audio.start(); skip() } return }
-  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); const g = atGate(); if (g && isTouchGate(g)) autoReach(); else if (g) S.holding = true; else nudge(0.9) }
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); audio.start(); const g = atGate(); if (g && isStopGate(g)) doStop(); else if (g) S.holding = true; else nudge(0.9) }
   else if (e.key === 'ArrowDown' || e.key === 'PageDown') nudge(0.9)
   else if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (S.world) leaveFork(); else nudge(-0.9) }
 })
@@ -403,14 +420,14 @@ function frame(now) {
   if (S.entered) tl.time(S.t)
 
   const gate = atGate()
-  if (gate && !isTouchGate(gate)) {
+  if (gate && !isStopGate(gate)) {
     S.hold = clamp(S.hold + (S.holding ? raw / 1.35 : -raw * 1.3), 0, 1)
     if (S.hold >= 1) solve(gate)
   } else if (!S.auto) S.hold = Math.max(0, S.hold - dt * 2)
-  el.gate.classList.toggle('on', !!gate && !isTouchGate(gate))
-  el.reach.classList.toggle('on', !!gate && isTouchGate(gate) && G.arc < 0.45)
+  el.gate.classList.toggle('on', !!gate && !isStopGate(gate))
+  el.ztw.classList.toggle('on', !!gate && isStopGate(gate))
   el.gateFg.style.strokeDashoffset = String(100 - S.hold * 100)
-  audio.hold(gate && isTouchGate(gate) ? G.arc * 0.9 : (gate || S.auto ? S.hold : 0))
+  audio.hold(gate || S.auto ? S.hold : 0)
 
   if (S.entered) setPhase(PHASES.find((p) => S.t < p.until))
   el.needle.style.transform = `translateX(${clamp(S.t / END, 0, 1) * 168 * (size.w < 720 ? 120 / 168 : 1)}px)`
@@ -434,24 +451,14 @@ function frame(now) {
   }
   P.px = P.x; P.py = P.y
 
-  // the hand and the gap
-  const pa = size.w / size.h
-  TIP.x = Math.min(0.40, pa * 0.45) + 0.015 * Math.sin(S.time * 0.5)
-  TIP.y = -0.04 + 0.03 * Math.sin(S.time * 0.77) - (1 - G.hand) * 1.7
-  if (!H.auto) { H.x = (P.x - 0.5) * 2 * pa; H.y = (P.y - 0.5) * 2 }
-  G.ptrOn += (((!P.stale || H.auto) && G.hand > 0.2 ? 1 : 0) - G.ptrOn) * Math.min(1, dt * 5)
-  if (G.hand > 0.001 && gate && isTouchGate(gate)) {
-    const gap = Math.hypot(H.x - TIP.x, H.y - TIP.y)
-    const armed = G.hand > 0.9 && (!P.stale || H.auto)
-    G.arc = armed ? Math.pow(clamp(1 - gap / 0.85, 0, 1), 1.4) : Math.max(0, G.arc - dt * 3)
-    if (armed && G.arc > 0.35 && Math.random() < dt * (2 + G.arc * 9)) audio.hit('spark')
-    if (armed && gap < 0.085) doTouch()
-  } else if (!gate) G.arc = Math.max(0, G.arc - dt * 3)
+  // the night's clock: slows as the gate nears, stops dead when time stops
+  TS.t += dt * (FZ.on ? 0 : 1 - 0.65 * G.slow)
+  if (FZ.on && S.time - FZ.last > 0.72) { FZ.last = S.time; audio.hit('tick') }
 
   // picture
   const b = stage.back, o = stage.over
-  b.uHand.value = G.hand; b.uArc.value = G.arc; b.uBurst.value = G.burst; b.uPtrOn.value = G.ptrOn
-  b.uTip.value.set(TIP.x, TIP.y); b.uReach.value.set(H.x, H.y)
+  b.uNeg.value = G.neg; b.uTS.value = TS.t; b.uCrackR.value = G.crackR; b.uShatter.value = G.shatter
+  b.uCenter.value.set(G.cx, G.cy)
   b.uIce.value = G.ice; b.uMelt.value = G.melt; b.uSky.value = G.sky; b.uSkyRich.value = G.skyRich
   b.uCurtain.value = G.curtain; b.uDeep.value = G.deep; b.uWorld.value = G.worldBg
   o.uCloud.value = G.cloud; o.uOpen.value = G.open; o.uBlack.value = G.black
@@ -475,7 +482,7 @@ function frame(now) {
 }
 
 // handles for scripted walkthroughs and tests
-window.__rs = { S, G, GATES, H, TIP, enter, skip, solve, doTouch, autoReach, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
+window.__rs = { S, G, GATES, TS, FZ, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)
