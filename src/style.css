@@ -73,7 +73,7 @@ body.point #gl { cursor: pointer; }
 /* ───── gate 2: the eclipse ───── */
 /* the command, spoken over everything — difference blend keeps it readable on night, negative and flashes alike */
 #zcap { position: fixed; left: 50%; top: 70%; transform: translate(-50%, -50%); z-index: 920; pointer-events: none; text-align: center;
-  mix-blend-mode: difference; color: #fff; opacity: 0; }
+  color: #fff; text-shadow: 0 2px 22px rgba(10, 6, 20, 0.45); opacity: 0; }
 #zcap.on { opacity: 1; }
 #zcap .zc-big { margin: 0; font: italic 900 clamp(34px, 7vw, 90px)/0.96 var(--display); letter-spacing: -0.02em; text-transform: uppercase; font-stretch: 86%; }
 #zcap .zc-big span { display: inline-block; opacity: 0; }
@@ -188,7 +188,7 @@ body.in .dock { opacity: 1; transform: translate(-50%, 0); pointer-events: auto;
   .explore { font-size: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .draw__ring, .draw__dot, .gate__bg, .hint i { animation: none; }
+  .gate__bg { animation: none; }
 }
 
 

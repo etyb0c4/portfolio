@@ -277,8 +277,8 @@ function doStop(cx, cy) {
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches
   const jolt = (px) => { if (!calm) gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' }) }
   const word = (sel, at, s0 = 1.7) => ZTL.fromTo(sel, { autoAlpha: 0, scale: s0, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.26, ease: 'power3.out' }, at)
-  // the time of first light, fixed so the countdown and the burst agree
-  const LIGHT = 5.7
+  // the moment of detonation, fixed so the countdown and the blast agree
+  const BOOM = 4.35
   ZTL = gsap.timeline()
   ZTL
     // the sentence finishes writing itself and gets read; 32.3 stays short of
@@ -292,30 +292,30 @@ function doStop(cx, cy) {
     .to(G, { blue: 1, duration: 0.7, ease: 'power2.out' }, 0.8)
     // read, then the words step aside and the two are named
     .to('#story', { autoAlpha: 0, duration: 0.35 }, 1.9)
-    .add(() => { el.zcap.classList.add('on'); CNT.run = true; CNT.end = S.time + LIGHT - 2.0 }, 2.0)
+    .add(() => { el.zcap.classList.add('on'); CNT.run = true; CNT.end = S.time + BOOM - 2.0 }, 2.0)
     .add(() => audio.hit('converge'), 2.0)
     .to(G, { mix: 1, duration: 1.4, ease: 'power2.in' }, 2.0)
   word('#zc-1', 2.0)
   word('#zc-2', 2.35)
   ZTL
-    // they collide: purple, and the purple is the sun
+    // they collide: an unstable purple core
     .add(() => { audio.hit('collide'); jolt(10) }, 3.4)
     .fromTo(S, { flash: 0.8 }, { flash: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 3.4)
     .set(G, { purple: 1 }, 3.4)
-    .to(G, { sun: 1, duration: 0.3, ease: 'power3.out' }, 3.4)
+    .to(G, { sun: 1.25, duration: 0.55, ease: 'power3.out' }, 3.4)
+    .to(G, { dark: 1, duration: 0.6, ease: 'power2.out' }, 3.45)
   word('#zc-3', 3.4, 2.3)
   ZTL
-    // the dark answers: a disc slides across the new light
-    .to(G, { moon: 1, duration: 1.05, ease: 'power2.inOut' }, 3.55)
-    .add(() => audio.hit('stop'), 3.6) // the swell cuts dead exactly at totality
-    .to(G, { dark: 1, duration: 0.75, ease: 'power2.in' }, 3.85)
-    .add(() => { audio.freeze(true); jolt(3) }, 4.6) // totality: one long breath of night
-    .to(G, { dark: 1, duration: LIGHT - 4.6 }, 4.6) // hold — the corona breathes violet fire
-    // 00:00.000 — first light pierces the rim and the dawn wins
-    .add(() => { audio.freeze(false); audio.hit('dawn'); jolt(9) }, LIGHT)
-    .to(G, { burst: 1, duration: 1.0, ease: 'power2.in' }, LIGHT)
-    .to(G, { dark: 0, duration: 0.5, ease: 'power1.out' }, LIGHT + 0.1)
-    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.3, ease: 'power2.in' }, LIGHT)
+    // it draws in on itself, the sound drops out: one breath of vacuum
+    .to(G, { sun: 0.55, duration: 0.3, ease: 'power3.in' }, BOOM - 0.3)
+    .add(() => { audio.freeze(true); jolt(3) }, BOOM - 0.22)
+    // detonation: the blast and the light win
+    .add(() => { audio.freeze(false); audio.hit('dawn'); jolt(14) }, BOOM)
+    .fromTo(S, { flash: 1 }, { flash: 0, duration: 0.7, ease: 'power2.out', immediateRender: false }, BOOM)
+    .set(G, { sun: 1.4 }, BOOM)
+    .to(G, { burst: 1, duration: 1.15, ease: 'power2.out' }, BOOM)
+    .to(G, { dark: 0, duration: 0.5, ease: 'power1.out' }, BOOM + 0.1)
+    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.35, ease: 'power2.in' }, BOOM + 0.45)
     .add(() => {
       CNT.run = false
       el.zcap.classList.remove('on')
@@ -326,7 +326,7 @@ function doStop(cx, cy) {
       gsap.timeline()
         .to(S, { t: 33.0, duration: 0.55, ease: 'power1.in' })
         .to(S, { t: g.to, duration: 2.9, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
-    }, LIGHT + 1.15)
+    }, BOOM + 1.2)
 }
 
 function skip(then) {
@@ -553,7 +553,7 @@ function frame(now) {
 }
 
 // handles for scripted walkthroughs and tests
-window.__rs = { S, G, GATES, TS, CNT, audio, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
+window.__rs = { gsap, S, G, GATES, TS, CNT, audio, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
 requestAnimationFrame(frame)
 requestAnimationFrame(() => window.__bootDone?.())

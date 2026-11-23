@@ -163,42 +163,37 @@ void main(){
     col += orb(p, uCenter - dir * rr + bob, vec3(1.0, 0.16, 0.1), uRed) * fade;
     col += orb(p, uCenter + dir * rr - bob, vec3(0.18, 0.42, 1.0), uBlue) * fade;
   }
-  // the eclipse: a sun built by hand, the dark that swallows it, the dawn that wins
+  // the collision: an unstable purple core, a breath of implosion, then the blast floods everything with light
   if (uSun > 0.001 && uDeep > 0.001) {
     vec2 d = p - uCenter;
     float r = length(d);
     float ang = atan(d.y, d.x);
-    float sunR = 0.085 + 0.075 * uSun;
-    // the night steps back while the light is born, then dies at totality
-    col *= 1.0 - uDark * 0.94;
-    // the dark answers: a disc slides down from the upper left
-    vec2 mc = uCenter + vec2(-1.5, 0.55) * (1.0 - uMoon);
-    float mr = length(p - mc);
-    // the disc only takes body as it closes in — the dark coalescing, not arriving
-    float moon = smoothstep(sunR * 1.015, sunR * 0.965, mr) * smoothstep(0.2, 0.65, uMoon);
-    // the sun: a blazing disc and a breathing halo, eaten by the disc
-    float disc = smoothstep(sunR, sunR * 0.86, r);
-    float halo = (sunR * 0.5) / max(r, sunR * 0.55);
-    halo *= halo * (0.82 + 0.18 * sin(uTime * 3.1));
-    float open = clamp(disc - moon, 0.0, 1.0);
-    vec3 violet = vec3(0.72, 0.34, 1.0);
-    vec3 hot = mix(vec3(1.0, 0.96, 0.88), vec3(1.0, 0.94, 1.0), uPurple), warm = mix(vec3(1.0, 0.62, 0.28), violet, uPurple);
-    col += warm * halo * uSun * (1.0 - uMoon * 0.9) * (1.0 - uDark * 0.7);
-    col += hot * open * uSun * (1.4 - 0.4 * uMoon);
-    // totality: the corona breathes fire around the black disc
-    float cor = exp(-abs(mr - sunR) * (22.0 - 8.0 * uDark));
-    float flame = 0.55 + 0.45 * fbm(vec2(ang * 2.4, uTime * 0.5) + 3.0);
-    col += mix(vec3(1.0, 0.5, 0.2), vec3(0.7, 0.3, 1.0), uPurple) * cor * flame * smoothstep(0.78, 1.0, uMoon) * uSun * (1.0 - uBurst);
-    col = mix(col, vec3(0.004, 0.003, 0.006), moon * uSun * (1.0 - uBurst * 0.85));
-    // the diamond ring: first light pierces at the rim, rays sweep, the night burns to paper
+    vec3 violet = vec3(0.72, 0.34, 1.0), hot = vec3(1.0, 0.95, 1.0);
+    // everything else holds its breath around the core
+    col *= 1.0 - uDark * 0.88;
+    // the core: never quite round, it boils
+    float wob = 0.8 + 0.2 * fbm(vec2(ang * 3.0, uTime * 2.6));
+    float coreR = (0.04 + 0.1 * uSun) * wob;
+    float core = smoothstep(coreR, coreR * 0.45, r);
+    float glow = coreR * 0.65 / max(r, coreR * 0.4);
+    glow *= glow * (0.85 + 0.15 * sin(uTime * 23.0));
+    col += violet * glow * uSun * 1.3 + hot * core * uSun * 1.7;
+    // arcs of energy crawl around it until it gives
+    float fil = pow(abs(sin(ang * 5.0 + 4.0 * fbm(vec2(r * 7.0, uTime * 3.2)))), 22.0) * exp(-r * 4.5) * uSun * (1.0 - uBurst);
+    col += mix(violet, hot, 0.45) * fil * 1.8;
     if (uBurst > 0.001) {
-      vec2 bp = uCenter + vec2(cos(2.35), sin(2.35)) * sunR;
-      float br = length(p - bp);
-      float dia = (0.012 + 0.06 * uBurst) / max(br, 2e-3);
-      float rays = pow(abs(sin(ang * 4.0 + 0.6 + uTime * 0.22)), 7.0) * exp(-r * 1.05) * uBurst;
-      col += hot * min(dia * dia, 6.0) * uBurst;
-      col += mix(vec3(1.0, 0.83, 0.6), vec3(0.86, 0.72, 1.0), uPurple) * rays * 1.5;
-      col = mix(col, vec3(0.985, 0.975, 0.955), uBurst * uBurst * clamp(1.7 - r * 0.55, 0.0, 1.0));
+      // the shockwave races out, split into the two colours it was made of
+      float R = uBurst * 3.4;
+      float w = 16.0 - 10.0 * uBurst;
+      float sr = exp(-abs(r - R * 1.035) * w), sv = exp(-abs(r - R) * w), sb = exp(-abs(r - R * 0.965) * w);
+      col += (vec3(1.0, 0.2, 0.12) * sr + violet * sv * 1.4 + vec3(0.2, 0.45, 1.0) * sb) * 1.7 * (1.0 - uBurst * 0.5);
+      // rays of light behind the front
+      float rays = pow(abs(sin(ang * 7.0 + 2.0 * fbm(vec2(ang * 2.0, uTime)))), 9.0) * smoothstep(R, 0.0, r) * uBurst;
+      col += mix(violet, hot, 0.6) * rays * 2.0;
+      // dazzle: a blinding centre, then the whole frame burns to paper
+      col += hot * (0.06 / max(r, 0.02)) * uBurst * (1.0 - uBurst);
+      float inside = smoothstep(R, R * 0.35, r);
+      col = mix(col, vec3(0.985, 0.975, 0.955), clamp(inside * uBurst * 1.5, 0.0, 1.0));
     }
   }
   gl_FragColor = vec4(col, 1.0);
