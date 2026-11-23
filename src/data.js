@@ -9,7 +9,7 @@ export const IDENTITY = {
   line: 'I take black boxes apart, then I build better ones.',
   base: 'Cotonou, Bénin',
   school: 'Epitech · class of 2029',
-  status: 'Open to internships',
+  status: 'Open to experience',
   avatar: 'avatar.jpg',
 }
 
