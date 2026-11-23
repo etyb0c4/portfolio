@@ -152,7 +152,7 @@ export function createShards(labels) {
     let home
     if (hero) {
       const side = i % 2 ? 1 : -1
-      home = new THREE.Vector3(side * 1.6, i % 2 ? 0.25 : 0.75, -10 - i * 7.4)
+      home = new THREE.Vector3(side * 1.6, i % 2 ? 0.25 : 0.75, -10 - i * (23 / Math.max(1, labels.length - 1)))
       mesh.rotation.set(0.04, -side * 0.34, side * 0.07)
       const { tex, draw } = labelTexture(labels[i])
       redraw.push(draw)

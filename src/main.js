@@ -155,8 +155,8 @@ document.querySelectorAll('.foot').forEach((f) => { f.innerHTML = `<span>${IDENT
 console.log(`%c${IDENTITY.unit}%c you opened the box the right way. ${FLAGS.console}`, 'background:#ff4f1a;color:#0c0c0d;padding:2px 6px;font-weight:700', 'color:inherit')
 
 $('#menu-list').innerHTML = `
-  <li><button type="button" data-id="good"><i>A</i>Good path<span>the one that builds</span></button></li>
-  <li><button type="button" data-id="dark"><i>B</i>Dark path<span>the one that breaks</span></button></li>`
+  <li><button type="button" data-id="good"><i>A</i>Good path<span>he who builds</span></button></li>
+  <li><button type="button" data-id="dark"><i>B</i>Dark path<span>he who breaks</span></button></li>`
 
 /* ── the dimensions ── */
 let PATH = null

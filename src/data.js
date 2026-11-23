@@ -79,6 +79,7 @@ export const FLAGS = {
 
 /* what the shattering leaves behind: one shard per discipline (drawn as canvas labels) */
 export const SHARD_LABELS = [
+  { sw: 'O', a: 'SINT', b: 'recon', c: 'Maltego · SpiderFoot · Shodan' },
   { sw: 'W', a: 'eb', b: 'exploitation', c: 'Burp Suite · sqlmap · ZAP' },
   { sw: 'B', a: 'inary', b: 'pwn', c: 'pwntools · GDB · Metasploit' },
   { sw: 'R', a: 'everse', b: 'engineering', c: 'Ghidra · jadx' },

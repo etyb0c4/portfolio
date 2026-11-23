@@ -47,6 +47,7 @@ body.point #gl { cursor: pointer; }
 .ln.xl { font-size: 1.42em; }
 .ln.xxl { font-size: 2em; }
 .ln.ind { padding-left: 1.5em; margin-top: -0.06em; }
+.airy .ln { word-spacing: 0.16em; }
 .ln.mono { font-family: var(--mono); font-size: clamp(10px, 0.115em, 13px); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 2.2em; opacity: 0.8; line-height: 1.6; }
 .wd { display: inline-block; white-space: nowrap; }
 .ch { display: inline-block; will-change: transform, opacity; }
