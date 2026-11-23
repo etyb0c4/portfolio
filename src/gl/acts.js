@@ -171,17 +171,21 @@ export function createShards(labels) {
   }
   document.fonts?.ready.then(() => redraw.forEach((d) => d()))
 
-  const update = (time, dt, explode, vis, camZ) => {
+  const update = (time, dt, explode, vis, camZ, aspect = 1.6) => {
     mat.uniforms.uVis.value = vis
     group.visible = vis > 0.002
     if (!group.visible) return
     const e = 1 - Math.pow(1 - explode, 3)
+    // portrait screens are narrow: titled shards come in toward the centre and shrink a little
+    const kx = THREE.MathUtils.clamp(aspect / 1.2, 0.38, 1)
     for (const it of items) {
       const m = it.mesh
       if (it.burst) m.position.copy(it.home).multiplyScalar(e)
       else m.position.copy(it.home)
       m.position.y += Math.sin(time * 0.5 + it.ph) * 0.12
       if (it.hero) {
+        m.position.x *= kx
+        m.scale.setScalar(Math.min(1, 0.3 + kx))
         m.rotation.x = 0.04 + Math.sin(time * 0.4 + it.ph) * 0.05
         const d = camZ - m.position.z
         m.userData.label.material.opacity = vis * THREE.MathUtils.smoothstep(d, 1.6, 4.0) * (1 - THREE.MathUtils.smoothstep(d, 15, 24))

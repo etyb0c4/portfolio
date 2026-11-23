@@ -546,7 +546,7 @@ function frame(now) {
   core.u.uCrack.value = firstGate ? S.hold : 0
   core.u.uGlow.value = 0.35 + S.hold * 1.4
   core.update(S.time, dt, S.hold)
-  shards.update(S.time, dt, G.explode, G.shards, G.camZ)
+  shards.update(S.time, dt, G.explode, G.shards, G.camZ, stage.aspect)
   depths.update(S.time, dt, G.depths, stage.renderer.getPixelRatio() * size.h / 900)
   stage.render(S.time, actScene, actCam)
   requestAnimationFrame(frame)

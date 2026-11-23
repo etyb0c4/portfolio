@@ -153,7 +153,8 @@ void main(){
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
   // red and blue: two orbs spiral in and collide; what they make is the sun
   if (uRed + uBlue > 0.001 && uDeep > 0.001) {
-    float rr = 0.95 * pow(1.0 - uMix, 1.25);
+    // in portrait the screen is narrow: start the orbs closer so both stay in frame
+    float rr = min(0.95, uAspect * 0.72) * pow(1.0 - uMix, 1.25);
     float th = uMix * uMix * 3.8;
     vec2 dir = vec2(cos(th), sin(th));
     vec2 bob = vec2(0.0, 0.025 * sin(uTime * 1.7)) * (1.0 - uMix);
