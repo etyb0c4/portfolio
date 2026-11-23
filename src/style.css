@@ -71,9 +71,6 @@ body.point #gl { cursor: pointer; }
 /* ───── gate 2: time stops ───── */
 body.neg #story { color: #17181c; --ink-glow: rgba(20, 20, 24, 0.25); }
 body.neg #story .ln { text-shadow: none; }
-/* stolen frames: the real scene, burnt into ink and ember */
-#zwf video { position: fixed; inset: 0; width: 100vw; height: 100vh; object-fit: cover; display: none; z-index: 900; background: #000;
-  filter: grayscale(1) contrast(1.5) brightness(0.88) sepia(1) saturate(2.9) hue-rotate(-28deg); }
 /* the command, spoken over everything — difference blend keeps it readable on night, negative and flashes alike */
 #zcap { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 920; pointer-events: none; text-align: center;
   mix-blend-mode: difference; color: #fff; opacity: 0; }
