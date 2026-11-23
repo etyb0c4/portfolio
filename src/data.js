@@ -8,7 +8,7 @@ export const IDENTITY = {
   role: 'Full-stack developer & security researcher',
   line: 'I take black boxes apart, then I build better ones.',
   base: 'Cotonou, Bénin',
-  school: 'Epitech · class of 2029',
+  school: 'Epitech · class of 2030',
   status: 'Open to experience',
   avatar: 'avatar.jpg',
 }
@@ -17,6 +17,36 @@ export const LINKS = [
   { label: 'Mail', text: 'ryansama.tech@gmail.com', url: 'mailto:ryansama.tech@gmail.com' },
   { label: 'GitHub', text: 'etyb0c4', url: 'https://github.com/etyb0c4' },
   { label: 'LinkedIn', text: 'rayan-sama', url: 'https://linkedin.com/in/rayan-sama' },
+  { label: 'CV', text: 'Download (PDF)', url: 'cv/rayan-sama-cv.pdf', download: 'rayan-sama-cv.pdf' },
+]
+
+/* Where I have worked. Newest first. */
+export const EXPERIENCE = [
+  {
+    org: 'ISOCEL', full: "ISOCEL · Ici C'est La Fibre", role: 'SysAdmin, Security & Software Development assistant',
+    kind: 'Internship', place: 'Cotonou, Bénin · on-site', from: '2026-08', to: '2026-11', length: '4', unit: 'mo',
+    points: [
+      'Co-built a data-center access control system with the team: access requests and approvals, single-use door codes, a chained audit log, and a Python entry terminal that talks to its REST API, covered by automated tests.',
+      'Ran vulnerability assessments on web apps and systems (OWASP): found CSRF and SQL injection, documented each with remediation steps.',
+      'Configured and maintained Linux servers, handled Windows system updates.',
+      'Wrote Python and Bash scripts to automate routine system tasks and operational workflows.',
+      'Diagnosed and upgraded hardware: disks, RAM, internal components.',
+    ],
+    stack: ['Linux', 'Windows', 'Python', 'Bash', 'Symfony', 'PostgreSQL', 'REST API', 'OWASP'],
+  },
+]
+
+/* Certificates. Newest first.   id: credential id   url: optional public verification link */
+export const CERTS = [
+  {
+    title: 'AI Fluency: Framework & Foundations', issuer: 'Anthropic', mark: 'A', date: '2026-10',
+    id: 'k8bjpfwwyta4', skills: ['Critical thinking', 'Prompt engineering', 'Delegation', 'Discernment'], url: '',
+  },
+  {
+    title: "CS50's Introduction to Programming with Python", issuer: 'HarvardX · CS50', mark: 'H', date: '2026-10',
+    id: '18a60afa-04c1-412c-b272-41791f9fe175', skills: ['Python', 'pytest', 'unit testing'],
+    url: 'https://certificates.cs50.io/18a60afa-04c1-412c-b272-41791f9fe175.pdf',
+  },
 ]
 
 /* Results, rankings, certifications. Newest first.
@@ -66,7 +96,7 @@ export const PORTS = [
   { id: 'p2', title: '443/tcp', note: 'https · open' },
 ]
 
-export const STACK = ['C', 'Python', 'JavaScript', 'Rust', 'React', 'Three.js', 'Vite', 'Docker', 'Linux', 'Git']
+export const STACK = ['C', 'Python', 'JavaScript', 'Rust', 'React', 'Three.js', 'Vite', 'Docker', 'Linux', 'Git', 'GitHub']
 
 /* Write-ups, research, CVEs, reviews of events. The section stays hidden while this list is empty.
    { title, date: '2026-11', category: 'CTF review' | 'Research' | 'CVE' | …, summary, tags: [], url } */

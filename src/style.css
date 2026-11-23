@@ -130,6 +130,22 @@ body.in .skip { opacity: 0; pointer-events: none; }
 body.in .dock { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 .dock__note { font-family: var(--mono); font-size: 11px; color: var(--paper); background: rgba(12, 12, 13, 0.5); border: 1px solid rgba(233, 231, 226, 0.18); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 4px 4px 4px 12px; display: flex; align-items: center; gap: 8px; }
 .dock__note button { background: var(--orange); color: var(--black); font-family: var(--mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 5px 10px; }
+.dock__cv { color: var(--paper); border: 1px solid rgba(233, 231, 226, 0.4); font-family: var(--mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 9px; text-decoration: none; transition: background 0.25s, color 0.25s; }
+.dock__cv:hover { background: var(--paper); color: var(--black); }
+/* experience rows reuse the record grid; the bullets sit under the role */
+.xp-list .rank small { font-size: 0.3em; font-stretch: 80%; margin-left: 0.08em; letter-spacing: 0.02em; }
+.xp-list .what > span { line-height: 1.35; }
+.xp-list .what ul { margin: 14px 0 0; padding: 0; list-style: none; max-width: 62ch; }
+.xp-list .what li { position: relative; padding: 0 0 8px 18px; font-size: 0.95rem; line-height: 1.45; }
+.xp-list .what li::before { content: ''; position: absolute; left: 0; top: 0.62em; width: 8px; height: 2px; background: var(--orange); }
+.xp-list .row { align-items: start; }
+.xp-list, .xp-list > li { list-style: none; padding-left: 0; }
+/* certificates reuse the arsenal grid */
+.certs .kit p { align-items: flex-start; line-height: 1.15; }
+.certs .meta { margin: 10px 0 12px 38px; font: 400 11px/1.5 var(--mono); color: var(--mute); word-break: break-all; }
+.certs .meta a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.certs .meta a:hover { color: var(--orange); }
+.certs .tagsline { margin-left: 38px; }
 .dock__row { width: 100%; display: flex; align-items: center; gap: 8px; }
 .dock__badge { flex: none; width: 40px; height: 40px; display: grid; place-items: center; background: var(--black); border: 1px solid rgba(233, 231, 226, 0.3); box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6); }
 .dock__badge svg { width: 18px; height: 24px; fill: none; stroke: var(--orange); stroke-width: 9; stroke-linecap: round; }

@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { createStage } from './gl/stage.js'
 import { createCore, createShards, createDepths } from './gl/acts.js'
 import { createAudio } from './audio.js'
-import { IDENTITY, LINKS, RECORD, PROJECTS, PARTS, STACK, NOTES, FLAGS, SHARD_LABELS } from './data.js'
+import { IDENTITY, LINKS, RECORD, PROJECTS, PARTS, STACK, NOTES, FLAGS, SHARD_LABELS, EXPERIENCE, CERTS } from './data.js'
 
 const $ = (s, r = document) => r.querySelector(s)
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
@@ -123,6 +123,20 @@ $('#record-list').innerHTML = RECORD.map((r) => {
     <dl><div><dt>type</dt><dd>${r.kind}</dd></div><div><dt>date</dt><dd>${when(r.date)}</dd></div>${r.as ? `<div><dt>as</dt><dd>${r.as}</dd></div>` : ''}</dl>`
   return `<li>${r.url ? `<a class="row" href="${r.url}"${ext(r.url)}>${body}</a>` : `<div class="row">${body}</div>`}</li>`
 }).join('')
+const xpHTML = EXPERIENCE.map((x) => `
+  <li><div class="row">
+    <span class="rank">${x.length}<small>${x.unit}</small></span>
+    <div class="what"><strong>${x.org}</strong><span>${x.role} · ${x.kind}</span>
+      <ul>${x.points.map((pt) => `<li>${pt}</li>`).join('')}</ul>
+      <div class="tagsline">${chips(x.stack)}</div></div>
+    <dl><div><dt>type</dt><dd>${x.kind}</dd></div><div><dt>from</dt><dd>${when(x.from)}</dd></div><div><dt>to</dt><dd>${when(x.to)}</dd></div><div><dt>where</dt><dd>${x.place}</dd></div></dl>
+  </div></li>`).join('')
+document.querySelectorAll('.xp-list').forEach((u) => { u.innerHTML = xpHTML })
+const certHTML = CERTS.map((c) => `
+  <div class="kit"><p><b>${c.mark}</b>${c.title}</p>
+    <p class="meta">${c.issuer} · issued ${when(c.date)}<br>id ${c.url ? `<a href="${c.url}"${ext(c.url)}>${c.id} ↗</a>` : c.id}</p>
+    <div class="tagsline">${chips(c.skills)}</div></div>`).join('')
+document.querySelectorAll('.cert-list').forEach((d) => { d.innerHTML = certHTML })
 $('#arsenal-list').innerHTML = PARTS.map((p) => `<div class="kit"><p><b>${p.key}</b>${p.title}</p><div class="tagsline">${chips(p.tools)}</div></div>`).join('')
 if (NOTES.length) {
   $('#notes').hidden = false
@@ -146,7 +160,9 @@ document.querySelectorAll('.id-card').forEach((idc) => {
       <div><dt>school</dt><dd>${IDENTITY.school}</dd></div>
       <div><dt>status</dt><dd>${IDENTITY.status}</dd></div>
     </dl>
-    <div class="links">${LINKS.map((l) => `<a href="${l.url}"${ext(l.url)}><i>${l.label}</i>${l.text}<b>↗</b></a>`).join('')}</div>
+    <div class="links">${LINKS.map((l) => l.download
+      ? `<a href="${asset(l.url)}" download="${l.download}"><i>${l.label}</i>${l.text}<b>↓</b></a>`
+      : `<a href="${l.url}"${ext(l.url)}><i>${l.label}</i>${l.text}<b>↗</b></a>`).join('')}</div>
   </div>`
   const av = idc.querySelector('.avatar img')
   av.addEventListener('error', () => av.parentElement.classList.add('none'))
