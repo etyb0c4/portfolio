@@ -316,6 +316,8 @@ dt { color: var(--mute); width: 5.2em; flex: none; text-transform: uppercase; le
 .gate-card:hover::after { opacity: 1; }
 .gc-k { font: 600 11px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
 .gate-card.dark .gc-k { color: rgba(233, 231, 226, 0.55); }
+.gc-k .who { display: block; margin-top: 10px; font: italic 800 clamp(22px, 2.6vw, 34px)/1 var(--display); font-stretch: 80%; letter-spacing: 0; text-transform: uppercase; color: #17181c; }
+.gate-card.dark .gc-k .who { color: #e9e7e2; }
 .gc-t { font: 800 clamp(3rem, 7.5vw, 7.5rem)/0.82 var(--display); font-stretch: 62%; text-transform: uppercase; letter-spacing: -0.01em; }
 .gate-card:hover .gc-t { animation: flinch 0.5s steps(2) 1; }
 .gc-s { font: 500 12px/1.5 var(--mono); color: var(--mute); max-width: 30ch; }
@@ -347,6 +349,7 @@ body.jumping main, body.jumping #tags { animation: dimjump 0.55s steps(3) 1; }
 .dim-in { max-width: 1060px; margin: 0 auto; padding: 86px var(--pad) 90px; display: flex; flex-direction: column; gap: 11vh; }
 .dim-h { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; font: 600 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); padding: 16px 0 12px; background: inherit; }
 .dim-h b { background: var(--orange); color: var(--ink); padding: 6px 8px; font-weight: 600; }
+.dim-h .who { font: italic 800 clamp(18px, 2vw, 26px)/1 var(--display); font-stretch: 80%; letter-spacing: 0; color: var(--fg); }
 .dim-x { margin-left: auto; width: 34px; height: 34px; border: 1px solid var(--line); background: none; color: var(--fg); font-size: 17px; line-height: 1; cursor: pointer; }
 .dim-x:hover { border-color: var(--orange); color: var(--orange); }
 .tagsline.big span { font-size: 13px; padding: 10px 12px; }
