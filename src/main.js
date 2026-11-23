@@ -273,7 +273,9 @@ function doStop(cx, cy) {
   G.cy = 0.5 - (cy ?? size.h / 2) / size.h
   G.cy *= 2
   const cv = stage.renderer.domElement
-  const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
+  // many phones report reduced motion through battery savers: the piece still plays, only the shakes go
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const jolt = (px) => { if (!calm) gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' }) }
   const word = (sel, at, s0 = 1.7) => ZTL.fromTo(sel, { autoAlpha: 0, scale: s0, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.26, ease: 'power3.out' }, at)
   // the time of first light, fixed so the countdown and the burst agree
   const LIGHT = 5.7
@@ -553,6 +555,5 @@ function frame(now) {
 // handles for scripted walkthroughs and tests
 window.__rs = { S, G, GATES, TS, CNT, audio, enter, skip, solve, doStop, choose, leaveDim, leaveFork, isS: () => isS(), strokeLen: () => stroke.length }
 
-if (matchMedia('(prefers-reduced-motion: reduce)').matches) { S.flash = 1; skip() }
 requestAnimationFrame(frame)
 requestAnimationFrame(() => window.__bootDone?.())
