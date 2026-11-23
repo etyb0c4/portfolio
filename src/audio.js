@@ -15,7 +15,7 @@ const WETMIX = { good: 0.78, dark: 0.3 }
 
 export function createAudio() {
   let ctx = null, master, filt, wet, voices = [], scratch, riser, riserGain, act = 'ice'
-  let glassBuf = null, glassUrl = null, lastSwish = 0
+  let glassBuf = null, glassUrl = null, zwBuf = null, zwUrl = null, lastSwish = 0
   let on = true
   try { on = localStorage.getItem('sound') !== '0' } catch { /* storage blocked */ }
 
@@ -63,6 +63,7 @@ export function createAudio() {
     riser.connect(riserGain); riserGain.connect(master); riserGain.connect(wet); riser.start()
     setAct(act)
     if (glassUrl) loadGlass(glassUrl)
+    if (zwUrl) loadZW(zwUrl)
   }
 
   /* ── the two dimensions get real instruments of their own, not a retuned pad ── */
@@ -221,6 +222,13 @@ export function createAudio() {
     fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((d) => { glassBuf = d }).catch(() => { /* synth fallback stays */ })
   }
 
+  // the cry itself, lifted from the scene; the freeze duck cuts its tail dead
+  const loadZW = (url) => {
+    zwUrl = url
+    if (!ctx || zwBuf) return
+    fetch(url).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((d) => { zwBuf = d }).catch(() => { /* synth fallback stays */ })
+  }
+
   const hit = (kind) => {
     if (!ctx || !on) return
     if (kind === 'tick') ping(1400, 0.06, 0.03)
@@ -228,14 +236,29 @@ export function createAudio() {
     else if (kind === 'close') ping(440, 0.3, 0.04)
     else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
     else if (kind === 'stop') {
-      // the time-stop: a reverse swell cut dead, then two heartbeats in the silence
       const t = ctx.currentTime
-      const nb = ctx.createBufferSource(); nb.buffer = noiseBuffer(1.4)
+      if (zwBuf) {
+        // the real cry: the shout, the warp, the dying whir — the freeze duck guillotines the rest
+        const s = ctx.createBufferSource(); s.buffer = zwBuf
+        const g = ctx.createGain(); g.gain.value = 0.9
+        s.connect(g); g.connect(master)
+        const w = ctx.createGain(); w.gain.value = 0.25; g.connect(w); w.connect(wet)
+        s.start(t)
+        ;[2.5, 3.05].forEach((d) => {
+          const o = ctx.createOscillator(), hg = ctx.createGain(); o.type = 'sine'
+          o.frequency.setValueAtTime(54, t + d); o.frequency.exponentialRampToValueAtTime(33, t + d + 0.2)
+          hg.gain.setValueAtTime(0.0001, t + d); hg.gain.linearRampToValueAtTime(0.5, t + d + 0.018); hg.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.32)
+          o.connect(hg); hg.connect(master); o.start(t + d); o.stop(t + d + 0.4)
+        })
+        return
+      }
+      // fallback: a reverse swell cut dead, then two heartbeats in the silence
+      const nb = ctx.createBufferSource(); nb.buffer = noiseBuffer(2.6)
       const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.Q.value = 2.2
-      nf.frequency.setValueAtTime(380, t); nf.frequency.exponentialRampToValueAtTime(3400, t + 1.0)
-      const ng = ctx.createGain(); ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.42, t + 0.98); ng.gain.setValueAtTime(0.0001, t + 1.06)
+      nf.frequency.setValueAtTime(380, t); nf.frequency.exponentialRampToValueAtTime(3400, t + 2.3)
+      const ng = ctx.createGain(); ng.gain.setValueAtTime(0.0001, t); ng.gain.exponentialRampToValueAtTime(0.42, t + 2.3); ng.gain.setValueAtTime(0.0001, t + 2.4)
       nb.connect(nf); nf.connect(ng); ng.connect(master); ng.connect(wet); nb.start(t)
-      ;[1.28, 1.72].forEach((d) => {
+      ;[2.7, 3.15].forEach((d) => {
         const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'
         o.frequency.setValueAtTime(54, t + d); o.frequency.exponentialRampToValueAtTime(33, t + d + 0.2)
         g.gain.setValueAtTime(0.0001, t + d); g.gain.linearRampToValueAtTime(0.55, t + d + 0.018); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.32)
@@ -284,7 +307,7 @@ export function createAudio() {
   }
 
   return {
-    start, setAct, hit, loadGlass,
+    start, setAct, hit, loadGlass, loadZW,
     get on() { return on },
     toggle() {
       on = !on

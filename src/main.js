@@ -250,6 +250,7 @@ const armZW = () => {
   zwArmed = true
   ZW.forEach((v) => { try { v.preload = 'auto'; v.load() } catch { /* no video, no flash */ } })
   audio.loadGlass(asset('zw/glass.mp3'))
+  audio.loadZW(asset('zw/zawarudo.mp3'))
 }
 const zwHide = () => ZW.forEach((v) => { try { v.pause() } catch { /* fine */ } v.style.display = 'none' })
 const flash = (i, dur) => {
@@ -272,32 +273,36 @@ function doStop(cx, cy) {
   audio.hit('stop')
   const cv = stage.renderer.domElement
   const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
+  // D leaves room for the cry itself before anything visual answers it: the shout
+  // lands on an untouched night, TIME, slams in on the warp hit, the freeze falls
+  // where the sound dies
+  const D = 1.4
   ZTL = gsap.timeline()
   ZTL
     // the words own the screen: everything else steps back
     .to('#story', { autoAlpha: 0, duration: 0.3 }, 0.1)
     .to('#hud', { autoAlpha: 0.15, duration: 0.5 }, 0.1)
     .add(() => { el.zcap.classList.add('on'); CAP.run = true; CAP.t0 = S.time; CAP.ms = 0 }, 0.15)
-    .fromTo('#zc-1', { autoAlpha: 0, scale: 1.7, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'power3.out' }, 0.2)
+    .fromTo('#zc-1', { autoAlpha: 0, scale: 1.7, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'power3.out' }, D + 0.1)
     // the swell breaks — stolen frames of the real scene strobe with the negative
-    .add(() => { flash(0, 0.2); audio.hit('snap') }, 0.92)
-    .to(G, { neg: 1, duration: 0.1, ease: 'power2.in' }, 1.16)
-    .to(G, { neg: 0.2, duration: 0.05 }, 1.3)
-    .add(() => { flash(1, 0.16); audio.hit('snap') }, 1.34)
-    .to(G, { neg: 1, duration: 0.06 }, 1.52)
-    .add(() => { flash(2, 0.2); audio.hit('snap') }, 1.62)
-    .add(() => { flash(3, 0.26); audio.hit('tick') }, 1.86)
-    .add(() => { document.body.classList.add('neg'); FZ.on = true; FZ.last = S.time; audio.freeze(true) }, 2.14) // time stops dead
-    .fromTo('#zc-2', { autoAlpha: 0, scale: 2.1, filter: 'blur(14px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.22, ease: 'power4.out' }, 2.14)
-    .to(G, { crackR: 2.8, duration: 1.8, ease: 'power2.in' }, 2.75)
-    .add(() => { audio.hit('snap'); jolt(4) }, 2.9)
-    .add(() => { audio.hit('snap'); jolt(-5) }, 3.5)
-    .add(() => { audio.hit('snap'); jolt(6) }, 4.05)
-    .add(() => { audio.hit('snap'); jolt(-7) }, 4.35)
-    .add(() => { FZ.on = false; CAP.t0 = S.time - CAP.ms; audio.freeze(false); audio.hit('glass'); jolt(12) }, 4.65)
-    .to(G, { neg: 0, duration: 0.3, ease: 'power1.out' }, 4.65) // colours rush back as the night falls apart
-    .to(G, { shatter: 1, duration: 0.9, ease: 'power2.in' }, 4.65)
-    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.45, ease: 'power2.in' }, 5.0)
+    .add(() => { flash(0, 0.2); audio.hit('snap') }, D + 0.92)
+    .to(G, { neg: 1, duration: 0.1, ease: 'power2.in' }, D + 1.16)
+    .to(G, { neg: 0.2, duration: 0.05 }, D + 1.3)
+    .add(() => { flash(1, 0.16); audio.hit('snap') }, D + 1.34)
+    .to(G, { neg: 1, duration: 0.06 }, D + 1.52)
+    .add(() => { flash(2, 0.2); audio.hit('snap') }, D + 1.62)
+    .add(() => { flash(3, 0.26); audio.hit('tick') }, D + 1.86)
+    .add(() => { document.body.classList.add('neg'); FZ.on = true; FZ.last = S.time; audio.freeze(true) }, D + 2.14) // time stops dead
+    .fromTo('#zc-2', { autoAlpha: 0, scale: 2.1, filter: 'blur(14px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.22, ease: 'power4.out' }, D + 2.14)
+    .to(G, { crackR: 2.8, duration: 1.8, ease: 'power2.in' }, D + 2.75)
+    .add(() => { audio.hit('snap'); jolt(4) }, D + 2.9)
+    .add(() => { audio.hit('snap'); jolt(-5) }, D + 3.5)
+    .add(() => { audio.hit('snap'); jolt(6) }, D + 4.05)
+    .add(() => { audio.hit('snap'); jolt(-7) }, D + 4.35)
+    .add(() => { FZ.on = false; CAP.t0 = S.time - CAP.ms; audio.freeze(false); audio.hit('glass'); jolt(12) }, D + 4.65)
+    .to(G, { neg: 0, duration: 0.3, ease: 'power1.out' }, D + 4.65) // colours rush back as the night falls apart
+    .to(G, { shatter: 1, duration: 0.9, ease: 'power2.in' }, D + 4.65)
+    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.45, ease: 'power2.in' }, D + 5.0)
     .add(() => {
       document.body.classList.remove('neg')
       CAP.run = false
@@ -309,7 +314,7 @@ function doStop(cx, cy) {
       gsap.timeline()
         .to(S, { t: 33.0, duration: 0.55, ease: 'power1.in' })
         .to(S, { t: g.to, duration: 2.9, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
-    }, 5.4)
+    }, D + 5.4)
 }
 
 function skip(then) {
