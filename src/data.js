@@ -36,13 +36,13 @@ export const EXPERIENCE = [
     stack: ['Linux', 'Windows', 'Python', 'Bash', 'Symfony', 'PostgreSQL', 'REST API', 'OWASP'],
   },
   {
-    org: 'Epihack', full: 'Epihack · Epitech Bénin', role: "Administration team member, Epitech Bénin's cybersecurity association",
+    org: 'Epihack', logo: 'logos/epihack.png', full: 'Epihack · Epitech Bénin', role: "Administration team member, Epitech Bénin's cybersecurity association",
     kind: 'Association', place: 'Epitech Bénin · Cotonou', length: 'ADM', unit: '', only: 'break',
     points: [],
     stack: ['CTF', 'cybersecurity'],
   },
   {
-    org: 'BDE Epitech Bénin', full: 'BDE · Epitech Bénin', role: 'Sports team member, also working with the events and tech teams',
+    org: 'BDE Epitech Bénin', logo: 'logos/bde.png', full: 'BDE · Epitech Bénin', role: 'Sports team member, also working with the events and tech teams',
     kind: 'Student union', place: 'Epitech Bénin · Cotonou', length: 'BDE', unit: '', only: 'build',
     points: [],
     stack: ['sports', 'events', 'tech'],
