@@ -262,7 +262,9 @@ function doStop(cx, cy) {
     .to(G, { shatter: 1, duration: 0.9, ease: 'power2.in' }, 4.05)
     .add(() => {
       document.body.classList.remove('neg')
-      gsap.to(S, { t: g.to, duration: 1.3, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
+      gsap.timeline()
+        .to(S, { t: 33.0, duration: 0.55, ease: 'power1.in' })
+        .to(S, { t: g.to, duration: 2.9, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
     }, 4.8)
 }
 
