@@ -35,14 +35,14 @@ export const PROJECTS = [
     stack: ['Bash', 'nmap', 'ffuf', 'netexec', 'impacket'], metric: '1 command → full recon', img: 'proj/b2r-kit.jpg', url: '',
   },
   {
-    id: 'chess3d', name: 'chess3d', role: 'Three.js chess engine', year: '2025', side: 'build',
-    blurb: 'A full 3D chess game in the browser: legal-move validation with castling, promotion and en passant, a minimax + alpha-beta AI, and a cinematic render pipeline with bloom, afterimage trails and an orbit camera.',
-    stack: ['Three.js', 'EffectComposer', 'minimax', 'WebGL'], metric: 'minimax depth 3 · bloom', img: 'proj/chess3d.jpg', url: '',
+    id: 'corewar', name: 'Corewar', role: 'Virtual machine in C', year: '2026', side: 'build',
+    blurb: 'A virtual machine where compiled champions fight for a shared, circular 4 KB memory arena. Every process runs on its own registers, program counter and carry; the VM schedules them cycle by cycle, kills the silent ones, and crowns the last to call live. Ships with a live ncurses view of the arena.',
+    stack: ['C', 'ncurses', 'assembly', 'Makefile'], metric: '4 KB arena · 16 opcodes', img: 'proj/corewar.jpg', url: '',
   },
   {
-    id: 'jarvis-hud', name: 'Jarvis HUD', role: 'Reactive interface', year: '2026', side: 'build',
-    blurb: 'A voice-assistant HUD built on React-Three-Fiber and drei: a reactive core that breathes with audio input, wrapped in framer-motion transitions. An experiment in making an interface feel alive.',
-    stack: ['React', 'R3F', 'drei', 'framer-motion'], metric: 'audio-reactive core', img: 'proj/jarvis-hud.jpg', url: '',
+    id: 'logdog', name: 'LogDog', role: 'Log forensics CLI', year: '2026', side: 'build',
+    blurb: 'An open-source log analyzer for Linux: it ranks every IP that touched the box, flags which ones actually got in (account, auth method, timestamp) and reads wtmp to surface active sessions. Pure Python standard library, so it runs on any server you land on.',
+    stack: ['Python', 'regex', 'auth.log', 'wtmp'], metric: '0 dependencies', img: 'proj/logdog.jpg', url: 'https://github.com/etyb0c4/LogDog',
   },
   {
     id: 'ctf', name: 'CTF field notes', role: 'HackTheBox · Root-Me', year: 'ongoing', side: 'break',

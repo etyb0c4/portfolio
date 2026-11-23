@@ -45,7 +45,7 @@ void main(){
 export const BACK_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uTS, uSun, uMoon, uDark, uBurst;
+uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uTS, uSun, uMoon, uDark, uBurst, uRed, uBlue, uMix, uPurple;
 uniform sampler2D uTrail;
 uniform vec2 uPointer, uCenter;
 ${NOISE}
@@ -127,6 +127,18 @@ vec3 sceneDeep(vec2 p){
   return col;
 }
 
+// one charged orb: white-hot core, tinted halo, an energy ring that churns
+vec3 orb(vec2 p, vec2 c, vec3 tint, float k){
+  vec2 d = p - c; float r = length(d);
+  float R = 0.05 + 0.035 * k;
+  float a = atan(d.y, d.x);
+  float swirl = fbm(vec2(a * 1.6 + uTime * 2.2, r * 9.0 - uTime * 3.0));
+  float core = smoothstep(R, R * 0.5, r);
+  float halo = (R * 0.9) / max(r, R * 0.6); halo *= halo;
+  float ring = exp(-abs(r - R * 1.7 - 0.03 * swirl) * 38.0) * (0.4 + swirl);
+  return (vec3(1.0) * core * 0.85 + tint * (halo * 1.25 + ring * 0.9 + core * 0.5)) * k;
+}
+
 void main(){
   vec2 p = (vUv - 0.5) * 2.0; p.x *= uAspect;
   float tr = texture2D(uTrail, vUv).r;
@@ -139,6 +151,17 @@ void main(){
   if (uCurtain > 0.001) col += (sceneCurtain(pr) + vec3(1.0, 0.45, 0.18) * tr * 0.10) * uCurtain;
   if (uDeep > 0.001) col += (sceneDeep(pr) + vec3(1.0, 0.5, 0.2) * tr * 0.10) * uDeep;
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
+  // red and blue: two orbs spiral in and collide; what they make is the sun
+  if (uRed + uBlue > 0.001 && uDeep > 0.001) {
+    float rr = 0.95 * pow(1.0 - uMix, 1.25);
+    float th = uMix * uMix * 3.8;
+    vec2 dir = vec2(cos(th), sin(th));
+    vec2 bob = vec2(0.0, 0.025 * sin(uTime * 1.7)) * (1.0 - uMix);
+    float fade = 1.0 - smoothstep(0.88, 1.0, uMix);
+    col *= 1.0 - 0.3 * max(uRed, uBlue) * fade;
+    col += orb(p, uCenter - dir * rr + bob, vec3(1.0, 0.16, 0.1), uRed) * fade;
+    col += orb(p, uCenter + dir * rr - bob, vec3(0.18, 0.42, 1.0), uBlue) * fade;
+  }
   // the eclipse: a sun built by hand, the dark that swallows it, the dawn that wins
   if (uSun > 0.001 && uDeep > 0.001) {
     vec2 d = p - uCenter;
@@ -157,13 +180,14 @@ void main(){
     float halo = (sunR * 0.5) / max(r, sunR * 0.55);
     halo *= halo * (0.82 + 0.18 * sin(uTime * 3.1));
     float open = clamp(disc - moon, 0.0, 1.0);
-    vec3 hot = vec3(1.0, 0.96, 0.88), warm = vec3(1.0, 0.62, 0.28);
+    vec3 violet = vec3(0.72, 0.34, 1.0);
+    vec3 hot = mix(vec3(1.0, 0.96, 0.88), vec3(1.0, 0.94, 1.0), uPurple), warm = mix(vec3(1.0, 0.62, 0.28), violet, uPurple);
     col += warm * halo * uSun * (1.0 - uMoon * 0.9) * (1.0 - uDark * 0.7);
     col += hot * open * uSun * (1.4 - 0.4 * uMoon);
     // totality: the corona breathes fire around the black disc
     float cor = exp(-abs(mr - sunR) * (22.0 - 8.0 * uDark));
     float flame = 0.55 + 0.45 * fbm(vec2(ang * 2.4, uTime * 0.5) + 3.0);
-    col += vec3(1.0, 0.5, 0.2) * cor * flame * smoothstep(0.78, 1.0, uMoon) * uSun * (1.0 - uBurst);
+    col += mix(vec3(1.0, 0.5, 0.2), vec3(0.7, 0.3, 1.0), uPurple) * cor * flame * smoothstep(0.78, 1.0, uMoon) * uSun * (1.0 - uBurst);
     col = mix(col, vec3(0.004, 0.003, 0.006), moon * uSun * (1.0 - uBurst * 0.85));
     // the diamond ring: first light pierces at the rim, rays sweep, the night burns to paper
     if (uBurst > 0.001) {
@@ -172,7 +196,7 @@ void main(){
       float dia = (0.012 + 0.06 * uBurst) / max(br, 2e-3);
       float rays = pow(abs(sin(ang * 4.0 + 0.6 + uTime * 0.22)), 7.0) * exp(-r * 1.05) * uBurst;
       col += hot * min(dia * dia, 6.0) * uBurst;
-      col += vec3(1.0, 0.83, 0.6) * rays * 1.5;
+      col += mix(vec3(1.0, 0.83, 0.6), vec3(0.86, 0.72, 1.0), uPurple) * rays * 1.5;
       col = mix(col, vec3(0.985, 0.975, 0.955), uBurst * uBurst * clamp(1.7 - r * 0.55, 0.0, 1.0));
     }
   }

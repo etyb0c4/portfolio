@@ -306,6 +306,42 @@ export function createAudio() {
       const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8)
       s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
       ;[880, 1318.5, 1760].forEach((fr, i) => ping(fr, 1.2, 0.03, 0.5 + i * 0.3, 'triangle'))
+    } else if (kind === 'orbR' || kind === 'orbB') {
+      // red hums low and rough, blue rings high and clean; both hold until they meet
+      const t = ctx.currentTime, red = kind === 'orbR'
+      const base = red ? 73.42 : 293.66
+      const o = ctx.createOscillator(), o2 = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain()
+      o.type = red ? 'sawtooth' : 'triangle'; o2.type = 'sine'
+      o.frequency.value = base; o2.frequency.value = base * (red ? 2.01 : 3.0)
+      f.type = 'lowpass'; f.Q.value = red ? 2.5 : 0.8
+      f.frequency.setValueAtTime(red ? 180 : 700, t); f.frequency.exponentialRampToValueAtTime(red ? 1100 : 3600, t + 0.45); f.frequency.exponentialRampToValueAtTime(red ? 420 : 1500, t + 2.6)
+      const end = red ? 3.1 : 2.6
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(red ? 0.16 : 0.09, t + 0.3); g.gain.setTargetAtTime(0.0001, t + end - 0.25, 0.08)
+      o.connect(f); o2.connect(f); f.connect(g); g.connect(master); g.connect(wet)
+      o.start(t); o2.start(t); o.stop(t + end + 0.3); o2.stop(t + end + 0.3)
+    } else if (kind === 'converge') {
+      // the two pitches spiral into one note while the air tears upward
+      const t = ctx.currentTime, D = 1.4
+      ;[[73.42, 'sawtooth', 0.09], [587.33, 'triangle', 0.06]].forEach(([f0, type, gv]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type
+        o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(233.08, t + D)
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gv, t + D * 0.9); g.gain.setValueAtTime(0.0001, t + D)
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + D + 0.05)
+      })
+      const s = ctx.createBufferSource(); s.buffer = noiseBuffer(D)
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.8
+      f.frequency.setValueAtTime(220, t); f.frequency.exponentialRampToValueAtTime(5200, t + D)
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + D * 0.97); g.gain.setValueAtTime(0.0001, t + D)
+      s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
+    } else if (kind === 'collide') {
+      // the impact, then a purple chord blooming out of it
+      const t = ctx.currentTime
+      const o = ctx.createOscillator(), og = ctx.createGain(); o.type = 'sine'
+      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(26, t + 1.0)
+      og.gain.setValueAtTime(0.75, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 1.2)
+      o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.3)
+      burst(0.9, 0.45, 700)
+      ;[233.08, 349.23, 466.16, 554.37, 698.46].forEach((fr, i) => ping(fr, 2.2, 0.045, 0.04 + i * 0.05, 'triangle'))
     } else if (kind === 'dawn') {
       // first light wins: a floor-shaking boom, then the sky opens in major
       const t = ctx.currentTime

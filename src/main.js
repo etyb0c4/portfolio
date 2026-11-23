@@ -16,7 +16,7 @@ const GATES = [{ at: 9, to: 10.7, dur: 2.4, solved: false }, { at: 32, to: 36, d
 
 // S is where we are; G is what the picture looks like there (driven by the timeline).
 const S = { t: 0, target: 0, entered: false, auto: true, world: false, hold: 0, holding: false, time: 0, idle: 0, flash: 0, exit: 0, beat: -2 }
-const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, sun: 0, moon: 0, dark: 0, burst: 0, slow: 0, cx: 0, cy: 0, grain: 0.05, vig: 0.22 }
+const G = { ice: 1, melt: 0, sky: 0, skyRich: 0, curtain: 0, deep: 0, worldBg: 0, black: 0, white: 0, cloud: 0, open: 0, camZ: 8, coreS: 0, coreY: -3.4, coreDark: 0, explode: 0, shards: 0, depths: 0, world: 0, sun: 0, moon: 0, dark: 0, burst: 0, red: 0, blue: 0, mix: 0, purple: 0, slow: 0, cx: 0, cy: 0, grain: 0.05, vig: 0.22 }
 
 const stage = createStage($('#gl'))
 const audio = createAudio()
@@ -46,7 +46,7 @@ tl.set(G, { coreDark: 1 }, 22)
 T({ vig: 0.46, grain: 0.13 }, 30.0, 1.7)
 T({ slow: 1 }, 30.0, 1.9, 'power2.inOut')
 T({ white: 1 }, 32.45, 0.5, 'power2.in')
-tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, sun: 0, moon: 0, dark: 0, burst: 0, slow: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
+tl.set(G, { deep: 0, worldBg: 1, coreS: 0, depths: 0, sun: 0, moon: 0, dark: 0, burst: 0, red: 0, blue: 0, mix: 0, purple: 0, slow: 0, cloud: 1, world: 1, grain: 0.035, vig: 0 }, 32.6)
 T({ white: 0 }, 33.0, 0.9, 'power2.out')
 T({ open: 0.5 }, 36.5, 2.0, 'sine.inOut')
 T({ open: 0.62 }, 38.5, 0.8, 'none')
@@ -256,42 +256,59 @@ function doStop(cx, cy) {
   G.cx = ((cx ?? size.w / 2) / size.w - 0.5) * 2 * a
   G.cy = 0.5 - (cy ?? size.h / 2) / size.h
   G.cy *= 2
-  audio.hit('stop')
   const cv = stage.renderer.domElement
   const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
+  const word = (sel, at, s0 = 1.7) => ZTL.fromTo(sel, { autoAlpha: 0, scale: s0, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.26, ease: 'power3.out' }, at)
+  // the time of first light, fixed so the countdown and the burst agree
+  const LIGHT = 5.7
   ZTL = gsap.timeline()
   ZTL
-    // the words own the screen: everything else steps back
-    .to('#story', { autoAlpha: 0, duration: 0.3 }, 0.1)
+    // the sentence finishes writing itself and gets read; 32.3 stays short of
+    // the beat's exit (32.35) and the whiteout (32.45)
+    .to(S, { t: 32.3, duration: 0.9, ease: 'power1.out' }, 0)
     .to('#hud', { autoAlpha: 0.15, duration: 0.5 }, 0.1)
-    .add(() => { el.zcap.classList.add('on'); CNT.run = true; CNT.end = S.time + 4.2 }, 0.15)
-    // a sun, built by hand, ignites where you touched the night
-    .add(() => audio.hit('ignite'), 0.2)
-    .fromTo('#zc-1', { autoAlpha: 0, scale: 1.7, filter: 'blur(10px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'power3.out' }, 0.2)
-    .to(G, { sun: 1, duration: 1.3, ease: 'power2.inOut' }, 0.2)
+    // offense and defense charge on either side of the touch
+    .add(() => audio.hit('orbR'), 0.3)
+    .to(G, { red: 1, duration: 0.7, ease: 'power2.out' }, 0.3)
+    .add(() => audio.hit('orbB'), 0.8)
+    .to(G, { blue: 1, duration: 0.7, ease: 'power2.out' }, 0.8)
+    // read, then the words step aside and the two are named
+    .to('#story', { autoAlpha: 0, duration: 0.35 }, 1.9)
+    .add(() => { el.zcap.classList.add('on'); CNT.run = true; CNT.end = S.time + LIGHT - 2.0 }, 2.0)
+    .add(() => audio.hit('converge'), 2.0)
+    .to(G, { mix: 1, duration: 1.4, ease: 'power2.in' }, 2.0)
+  word('#zc-1', 2.0)
+  word('#zc-2', 2.35)
+  ZTL
+    // they collide: purple, and the purple is the sun
+    .add(() => { audio.hit('collide'); jolt(10) }, 3.4)
+    .fromTo(S, { flash: 0.8 }, { flash: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, 3.4)
+    .set(G, { purple: 1 }, 3.4)
+    .to(G, { sun: 1, duration: 0.3, ease: 'power3.out' }, 3.4)
+  word('#zc-3', 3.4, 2.3)
+  ZTL
     // the dark answers: a disc slides across the new light
-    .to(G, { moon: 1, duration: 1.35, ease: 'power2.inOut' }, 1.7)
-    .add(() => audio.hit('stop'), 2.05) // the swell cuts dead exactly at totality
-    .to(G, { dark: 1, duration: 0.75, ease: 'power2.in' }, 2.3)
-    .add(() => { audio.freeze(true); jolt(3) }, 3.05) // totality: one long breath of night
-    .to(G, { dark: 1, duration: 1.3 }, 3.05) // hold — the corona breathes fire
+    .to(G, { moon: 1, duration: 1.05, ease: 'power2.inOut' }, 3.55)
+    .add(() => audio.hit('stop'), 3.6) // the swell cuts dead exactly at totality
+    .to(G, { dark: 1, duration: 0.75, ease: 'power2.in' }, 3.85)
+    .add(() => { audio.freeze(true); jolt(3) }, 4.6) // totality: one long breath of night
+    .to(G, { dark: 1, duration: LIGHT - 4.6 }, 4.6) // hold — the corona breathes violet fire
     // 00:00.000 — first light pierces the rim and the dawn wins
-    .add(() => { audio.freeze(false); audio.hit('dawn'); jolt(9) }, 4.35)
-    .fromTo('#zc-2', { autoAlpha: 0, scale: 2.1, filter: 'blur(14px)' }, { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.22, ease: 'power4.out' }, 4.35)
-    .to(G, { burst: 1, duration: 1.0, ease: 'power2.in' }, 4.35)
-    .to(G, { dark: 0, duration: 0.5, ease: 'power1.out' }, 4.45)
-    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.45, ease: 'power2.in' }, 5.1)
+    .add(() => { audio.freeze(false); audio.hit('dawn'); jolt(9) }, LIGHT)
+    .to(G, { burst: 1, duration: 1.0, ease: 'power2.in' }, LIGHT)
+    .to(G, { dark: 0, duration: 0.5, ease: 'power1.out' }, LIGHT + 0.1)
+    .to('#zcap', { autoAlpha: 0, scale: 1.08, duration: 0.3, ease: 'power2.in' }, LIGHT)
     .add(() => {
       CNT.run = false
       el.zcap.classList.remove('on')
       gsap.set('#zcap', { clearProps: 'all' })
-      gsap.set(['#zc-1', '#zc-2'], { autoAlpha: 0 })
+      gsap.set(['#zc-1', '#zc-2', '#zc-3'], { autoAlpha: 0 })
       gsap.to('#story', { autoAlpha: 1, duration: 0.6 })
       gsap.to('#hud', { autoAlpha: 1, duration: 0.8 })
       gsap.timeline()
         .to(S, { t: 33.0, duration: 0.55, ease: 'power1.in' })
         .to(S, { t: g.to, duration: 2.9, ease: 'power1.inOut', onComplete: () => { S.target = S.t; S.auto = false } })
-    }, 5.5)
+    }, LIGHT + 1.15)
 }
 
 function skip(then) {
@@ -299,7 +316,7 @@ function skip(then) {
   GATES.forEach((g) => { g.solved = true })
   gsap.killTweensOf(S)
   ZTL?.kill(); ZTL = null
-  G.sun = 0; G.moon = 0; G.dark = 0; G.burst = 0
+  G.sun = 0; G.moon = 0; G.dark = 0; G.burst = 0; G.red = 0; G.blue = 0; G.mix = 0; G.purple = 0
   audio.freeze(false)
   CNT.run = false; el.zcap.classList.remove('on')
   gsap.set(['#story', '#hud'], { clearProps: 'opacity,visibility' })
@@ -493,7 +510,7 @@ function frame(now) {
 
   // picture
   const b = stage.back, o = stage.over
-  b.uTS.value = TS.t; b.uSun.value = G.sun; b.uMoon.value = G.moon; b.uDark.value = G.dark; b.uBurst.value = G.burst
+  b.uTS.value = TS.t; b.uSun.value = G.sun; b.uMoon.value = G.moon; b.uDark.value = G.dark; b.uBurst.value = G.burst; b.uRed.value = G.red; b.uBlue.value = G.blue; b.uMix.value = G.mix; b.uPurple.value = G.purple
   b.uCenter.value.set(G.cx, G.cy)
   b.uIce.value = G.ice; b.uMelt.value = G.melt; b.uSky.value = G.sky; b.uSkyRich.value = G.skyRich
   b.uCurtain.value = G.curtain; b.uDeep.value = G.deep; b.uWorld.value = G.worldBg

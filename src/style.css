@@ -71,11 +71,14 @@ body.point #gl { cursor: pointer; }
 
 /* ───── gate 2: the eclipse ───── */
 /* the command, spoken over everything — difference blend keeps it readable on night, negative and flashes alike */
-#zcap { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 920; pointer-events: none; text-align: center;
+#zcap { position: fixed; left: 50%; top: 70%; transform: translate(-50%, -50%); z-index: 920; pointer-events: none; text-align: center;
   mix-blend-mode: difference; color: #fff; opacity: 0; }
 #zcap.on { opacity: 1; }
-#zcap .zc-big { margin: 0; font: italic 900 clamp(44px, 9vw, 116px)/0.96 var(--display); letter-spacing: -0.02em; text-transform: uppercase; font-stretch: 86%; }
+#zcap .zc-big { margin: 0; font: italic 900 clamp(34px, 7vw, 90px)/0.96 var(--display); letter-spacing: -0.02em; text-transform: uppercase; font-stretch: 86%; }
 #zcap .zc-big span { display: inline-block; opacity: 0; }
+#zcap #zc-1 { color: #ff3b2f; }
+#zcap #zc-2 { color: #3d7bff; }
+#zcap #zc-3 { display: block; color: #b366ff; font-size: 1.32em; margin-top: 0.04em; }
 #zcap .zc-clock { margin: 1.1em 0 0; font: 500 clamp(11px, 1.2vw, 14px)/1 var(--mono); letter-spacing: 0.34em; opacity: 0.85; }
 .ztw { position: fixed; left: 50%; top: 62%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0; transition: opacity 0.6s; color: var(--ink); }
 .ztw.on { opacity: 1; }
