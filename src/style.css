@@ -68,9 +68,7 @@ body.point #gl { cursor: pointer; }
 .draw.busy svg { opacity: 0; }
 .draw.gone { opacity: 0; }
 
-/* ───── gate 2: time stops ───── */
-body.neg #story { color: #17181c; --ink-glow: rgba(20, 20, 24, 0.25); }
-body.neg #story .ln { text-shadow: none; }
+/* ───── gate 2: the eclipse ───── */
 /* the command, spoken over everything — difference blend keeps it readable on night, negative and flashes alike */
 #zcap { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 920; pointer-events: none; text-align: center;
   mix-blend-mode: difference; color: #fff; opacity: 0; }

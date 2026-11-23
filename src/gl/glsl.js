@@ -45,7 +45,7 @@ void main(){
 export const BACK_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uNeg, uTS, uCrackR, uShatter;
+uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uTS, uSun, uMoon, uDark, uBurst;
 uniform sampler2D uTrail;
 uniform vec2 uPointer, uCenter;
 ${NOISE}
@@ -139,61 +139,42 @@ void main(){
   if (uCurtain > 0.001) col += (sceneCurtain(pr) + vec3(1.0, 0.45, 0.18) * tr * 0.10) * uCurtain;
   if (uDeep > 0.001) col += (sceneDeep(pr) + vec3(1.0, 0.5, 0.2) * tr * 0.10) * uDeep;
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
-  // za warudo: the world flips to negative, time freezes, glass cracks crawl, then everything shatters
-  if (uNeg > 0.001) col = mix(col, vec3(1.02) - col, uNeg);
-  if (uShatter > 0.001 && uDeep > 0.001) {
-    // the night breaks into glass plates along the same web it cracked on; paper waits behind
-    vec2 sp = (p - uCenter) * 1.8;
-    vec3 vc = voro(sp + 3.7);
-    float hcell = hash21(floor(sp + vc.yz + 0.5) + 2.0);
-    float h2 = hash21(floor(sp + vc.yz + 0.5) + 9.0);
-    float fall = uShatter * uShatter * (0.35 + 0.9 * hcell);
-    vec2 drift = vec2((hcell - 0.5) * 1.6, -2.4) * fall;
-    // each plate tumbles around its own centre as it falls
-    vec2 cc = uCenter + (sp + vc.yz) / 1.8;
-    float rot = (h2 - 0.5) * 2.2 * fall;
-    mat2 RM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
-    vec3 plate = sceneDeep(cc + RM * (p - cc) * (1.0 + 0.18 * fall) - drift);
-    plate = mix(plate, vec3(1.02) - plate, uNeg);
-    // tilt shading: one face catches the paper light, the other sinks into ink
-    vec2 toC = normalize(vc.yz + 1e-4);
-    float tilt = dot(toC, normalize(vec2(0.4, 0.9)));
-    plate *= 1.0 + tilt * (0.35 + 0.45 * fall) * (h2 - 0.3);
-    // glass glint sweeping the plate as it turns
-    float glint = pow(clamp(sin(hcell * 31.0 + uShatter * (5.0 + h2 * 6.0)), 0.0, 1.0), 18.0);
-    plate += vec3(1.0, 0.95, 0.85) * glint * 0.55 * uShatter;
-    // bevelled edge: a bright sliver along the lit rim of each shard
-    float rough = (fbm3(sp * 7.0) - 0.5) * 0.013;
-    float gw = 0.035 + 0.5 * uShatter * uShatter + rough;
-    float bevel = smoothstep(gw, gw + 0.022, vc.x) * (1.0 - smoothstep(gw + 0.022, gw + 0.08, vc.x));
-    plate += vec3(1.0, 0.9, 0.75) * bevel * (0.3 + 0.5 * clamp(tilt, 0.0, 1.0)) * uShatter;
-    float gap = 1.0 - smoothstep(0.0, gw, vc.x);
-    vec3 paper = vec3(0.93, 0.925, 0.908);
-    // the plates cast soft shadows down onto the paper behind
-    vec2 shp = (p - vec2(0.05, 0.07) - uCenter) * 1.8;
-    vec3 vsh = voro(shp + 3.7);
-    float shadow = smoothstep(0.0, gw, vsh.x) * gap;
-    vec3 ground = paper * (1.0 - 0.33 * shadow * (1.0 - uShatter * 0.6));
-    col = mix(plate, ground, clamp(gap + uShatter * uShatter * 0.5, 0.0, 1.0));
-  } else if (uCrackR > 0.001 && uDeep > 0.001) {
+  // the eclipse: a sun built by hand, the dark that swallows it, the dawn that wins
+  if (uSun > 0.001 && uDeep > 0.001) {
     vec2 d = p - uCenter;
     float r = length(d);
-    float jag = fbm3(d * 3.0 + 9.0) * 0.55;
-    float reach = smoothstep(uCrackR, uCrackR * 0.5, r + jag);
-    // the shatter web: coarse plates, plus a finer mesh near the impact
-    vec2 sp = (p - uCenter) * 1.8;
-    vec3 vc = voro(sp + 3.7);
-    float web = smoothstep(0.010, 0.0015, vc.x);
-    vec3 vf = voro((p - uCenter) * 4.2 + 11.0);
-    float fine = smoothstep(0.007, 0.001, vf.x) * smoothstep(uCrackR * 0.55, 0.05, r);
-    // radial spokes, jagged like real glass
     float ang = atan(d.y, d.x);
-    float sd = abs(sin(ang * 5.5 + jag * 3.2 + 1.3)) ;
-    float spoke = smoothstep(0.994 - 0.02 / (r + 0.25), 1.0, sd) * smoothstep(uCrackR, 0.05, r) * smoothstep(0.02, 0.1, r);
-    float ck = max(max(web, fine * 0.8), spoke * 0.9) * reach;
-    col = mix(col, vec3(0.022, 0.016, 0.02), ck * 0.96);
-    col += vec3(1.0, 0.45, 0.16) * smoothstep(0.004, 0.0, vc.x) * reach * 0.35;
-    col += vec3(1.0, 0.8, 0.55) * smoothstep(0.12, 0.0, r) * reach * 0.3;
+    float sunR = 0.085 + 0.075 * uSun;
+    // the night steps back while the light is born, then dies at totality
+    col *= 1.0 - uDark * 0.94;
+    // the dark answers: a disc slides down from the upper left
+    vec2 mc = uCenter + vec2(-1.5, 0.55) * (1.0 - uMoon);
+    float mr = length(p - mc);
+    // the disc only takes body as it closes in — the dark coalescing, not arriving
+    float moon = smoothstep(sunR * 1.015, sunR * 0.965, mr) * smoothstep(0.2, 0.65, uMoon);
+    // the sun: a blazing disc and a breathing halo, eaten by the disc
+    float disc = smoothstep(sunR, sunR * 0.86, r);
+    float halo = (sunR * 0.5) / max(r, sunR * 0.55);
+    halo *= halo * (0.82 + 0.18 * sin(uTime * 3.1));
+    float open = clamp(disc - moon, 0.0, 1.0);
+    vec3 hot = vec3(1.0, 0.96, 0.88), warm = vec3(1.0, 0.62, 0.28);
+    col += warm * halo * uSun * (1.0 - uMoon * 0.9) * (1.0 - uDark * 0.7);
+    col += hot * open * uSun * (1.4 - 0.4 * uMoon);
+    // totality: the corona breathes fire around the black disc
+    float cor = exp(-abs(mr - sunR) * (22.0 - 8.0 * uDark));
+    float flame = 0.55 + 0.45 * fbm(vec2(ang * 2.4, uTime * 0.5) + 3.0);
+    col += vec3(1.0, 0.5, 0.2) * cor * flame * smoothstep(0.78, 1.0, uMoon) * uSun * (1.0 - uBurst);
+    col = mix(col, vec3(0.004, 0.003, 0.006), moon * uSun * (1.0 - uBurst * 0.85));
+    // the diamond ring: first light pierces at the rim, rays sweep, the night burns to paper
+    if (uBurst > 0.001) {
+      vec2 bp = uCenter + vec2(cos(2.35), sin(2.35)) * sunR;
+      float br = length(p - bp);
+      float dia = (0.012 + 0.06 * uBurst) / max(br, 2e-3);
+      float rays = pow(abs(sin(ang * 4.0 + 0.6 + uTime * 0.22)), 7.0) * exp(-r * 1.05) * uBurst;
+      col += hot * min(dia * dia, 6.0) * uBurst;
+      col += vec3(1.0, 0.83, 0.6) * rays * 1.5;
+      col = mix(col, vec3(0.985, 0.975, 0.955), uBurst * uBurst * clamp(1.7 - r * 0.55, 0.0, 1.0));
+    }
   }
   gl_FragColor = vec4(col, 1.0);
 }

@@ -293,6 +293,29 @@ export function createAudio() {
         o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.3)
         for (let i = 0; i < 8; i++) ping(1500 + Math.random() * 3200, 0.4 + Math.random() * 0.8, 0.028, Math.random() * 0.8, 'triangle')
       }
+    } else if (kind === 'ignite') {
+      // a sun being built: a rumble from below and a shimmer climbing above it
+      const t = ctx.currentTime
+      const o = ctx.createOscillator(), og = ctx.createGain(); o.type = 'sine'
+      o.frequency.setValueAtTime(38, t); o.frequency.exponentialRampToValueAtTime(92, t + 1.3)
+      og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(0.4, t + 1.2); og.gain.exponentialRampToValueAtTime(0.12, t + 1.8)
+      o.connect(og); og.connect(master); o.start(t); o.stop(t + 2.0)
+      const s = ctx.createBufferSource(); s.buffer = noiseBuffer(1.8)
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.6
+      f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(3800, t + 1.4)
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 1.2); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8)
+      s.connect(f); f.connect(g); g.connect(master); g.connect(wet); s.start(t)
+      ;[880, 1318.5, 1760].forEach((fr, i) => ping(fr, 1.2, 0.03, 0.5 + i * 0.3, 'triangle'))
+    } else if (kind === 'dawn') {
+      // first light wins: a floor-shaking boom, then the sky opens in major
+      const t = ctx.currentTime
+      const o = ctx.createOscillator(), og = ctx.createGain(); o.type = 'sine'
+      o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.1)
+      og.gain.setValueAtTime(0.65, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 1.3)
+      o.connect(og); og.connect(master); o.start(t); o.stop(t + 1.4)
+      burst(1.0, 0.4, 900)
+      ;[392, 587.33, 739.99, 987.77, 1479.98].forEach((fr, i) => ping(fr, 3.0, 0.05, 0.1 + i * 0.11, 'triangle'))
+      bell(1046.5, 0.05)
     } else if (kind === 'swish') {
       // a breath of air between two beats of the story; tuned to the act
       const t = ctx.currentTime

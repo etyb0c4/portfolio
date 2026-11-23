@@ -33,7 +33,7 @@ export function createStage(canvas) {
   const back = fullscreen(BACK_FRAG, {
     uTime: { value: 0 }, uAspect: { value: 1 }, uTrail: { value: null }, uPointer: { value: new THREE.Vector2(0.5, 0.5) },
     uIce: { value: 1 }, uSky: { value: 0 }, uSkyRich: { value: 0 }, uCurtain: { value: 0 }, uDeep: { value: 0 }, uWorld: { value: 0 }, uMelt: { value: 0 },
-    uNeg: { value: 0 }, uTS: { value: 0 }, uCrackR: { value: 0 }, uShatter: { value: 0 }, uCenter: { value: new THREE.Vector2(0, 0) },
+    uTS: { value: 0 }, uSun: { value: 0 }, uMoon: { value: 0 }, uDark: { value: 0 }, uBurst: { value: 0 }, uCenter: { value: new THREE.Vector2(0, 0) },
   })
 
   const over = fullscreen(OVER_FRAG, {
