@@ -87,24 +87,17 @@ export function createAudio() {
     else if (kind === 'open') { ping(659.25, 0.5, 0.06); ping(987.77, 0.7, 0.045, 0.07) }
     else if (kind === 'close') ping(440, 0.3, 0.04)
     else if (kind === 'crack') { burst(0.5, 0.22, 2200); ping(880, 0.9, 0.05); ping(1318.5, 1.2, 0.04, 0.08); ping(1760, 1.6, 0.03, 0.16) }
-    else if (kind === 'dive') {
+    else if (kind === 'spark') burst(0.04, 0.02 + Math.random() * 0.03, 3200)
+    else if (kind === 'touch') {
+      burst(0.16, 0.5, 2400)
+      burst(1.3, 0.28, 800)
       const t = ctx.currentTime
-      const nb = ctx.createBufferSource(); nb.buffer = noiseBuffer(5); nb.loop = false
-      const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.Q.value = 1.1
-      nf.frequency.setValueAtTime(260, t); nf.frequency.exponentialRampToValueAtTime(2800, t + 4.2)
-      const ng = ctx.createGain(); ng.gain.setValueAtTime(0.004, t); ng.gain.exponentialRampToValueAtTime(0.5, t + 3.9); ng.gain.exponentialRampToValueAtTime(0.0001, t + 5.2)
-      nb.connect(nf); nf.connect(ng); ng.connect(master); ng.connect(wet); nb.start(t)
       const o = ctx.createOscillator(), g = ctx.createGain()
-      o.type = 'sine'; o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(28, t + 4.4)
-      g.gain.setValueAtTime(0.28, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 4.7)
-      o.connect(g); g.connect(master); o.start(t); o.stop(t + 4.8)
-      for (let i = 0; i < 3; i++) {
-        const r = ctx.createOscillator(), rg = ctx.createGain(); r.type = 'sawtooth'
-        r.frequency.setValueAtTime(70 * Math.pow(2, i), t); r.frequency.exponentialRampToValueAtTime(70 * Math.pow(2, i + 2.3), t + 4.3)
-        rg.gain.setValueAtTime(0.0001, t); rg.gain.exponentialRampToValueAtTime(0.045, t + 2.6); rg.gain.exponentialRampToValueAtTime(0.0001, t + 4.6)
-        r.connect(rg); rg.connect(filt); r.start(t); r.stop(t + 4.7)
-      }
-        } else if (kind === 'shatter') {
+      o.type = 'sine'; o.frequency.setValueAtTime(200, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.5)
+      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.7)
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.8)
+      ;[783.99, 1174.66, 1567.98].forEach((f, i) => ping(f, 2.2, 0.045, 0.1 + i * 0.09, 'triangle'))
+    } else if (kind === 'shatter') {
       burst(1.1, 0.4, 1400)
       const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain()
       o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.9)

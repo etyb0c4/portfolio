@@ -45,9 +45,9 @@ void main(){
 export const BACK_FRAG = /* glsl */ `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uRift, uDive, uDiveT;
+uniform float uTime, uAspect, uIce, uSky, uSkyRich, uCurtain, uDeep, uWorld, uMelt, uHand, uArc, uBurst, uPtrOn;
 uniform sampler2D uTrail;
-uniform vec2 uPointer;
+uniform vec2 uPointer, uTip, uReach;
 ${NOISE}
 
 vec3 sceneSeal(vec2 p, float tr){
@@ -126,33 +126,26 @@ vec3 sceneDeep(vec2 p){
   return col;
 }
 
-// the way out: an infinite volumetric fold, flown through at speed
-vec3 tunnel(vec2 p, float T){
-  float ro = T * 0.1;
-  mat2 R = mat2(cos(ro), -sin(ro), sin(ro), cos(ro));
-  vec3 dir = normalize(vec3(p, 1.15));
-  dir.xy = R * dir.xy;
-  vec3 from = vec3(0.6 + T * 0.11, 0.42 + T * 0.07, T * 0.62);
-  float s = 0.12, fade = 1.0;
-  vec3 acc = vec3(0.0);
-  for (int r = 0; r < 13; r++) {
-    vec3 q = from + s * dir;
-    q = abs(vec3(0.82) - mod(q, vec3(1.64)));
-    float pa = 0.0, a = 0.0;
-    for (int i = 0; i < 10; i++) { q = abs(q) / dot(q, q) - 0.60; a += abs(length(q) - pa); pa = length(q); }
-    a *= a * a;
-    acc += (vec3(s, s * s, s * s * s * s) * a * 0.0009 + 0.0005) * fade;
-    fade *= 0.72;
-    s += 0.11;
-  }
-  float A = dot(acc, vec3(0.42, 0.6, 0.25));
-  float B = pow(clamp(1.0 - A * 0.46, 0.0, 1.0), 1.7) * 2.3;
-  vec3 col = vec3(0.010, 0.012, 0.028);
-  col += vec3(pow(B, 1.05) * 1.2, pow(B, 1.9) * 0.58, pow(B, 3.1) * 0.4);
-  col += vec3(0.3, 0.42, 1.0) * pow(clamp(1.0 - A * 0.4, 0.0, 1.0), 7.0) * 0.5;
-  col = 1.0 - exp(-col * 0.9);
-  col *= 1.0 - 0.45 * smoothstep(0.8, 2.0, length(p));
-  return col;
+// the other hand: an ink silhouette reaching out of the night, ember at its edges
+float cap2(vec2 p, vec2 a, vec2 b, float r){
+  vec2 pa = p - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h) - r;
+}
+float smin2(float a, float b, float k){
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+// canonical frame: fingertip at the origin, the index pointing +y
+float sdHand(vec2 q){
+  float d = cap2(q, vec2(0.0, 0.0), vec2(0.02, -0.30), 0.050);
+  d = smin2(d, cap2(q, vec2(0.03, -0.34), vec2(0.14, -0.52), 0.160), 0.05);
+  d = smin2(d, cap2(q, vec2(0.115, -0.30), vec2(0.21, -0.245), 0.055), 0.04);
+  d = smin2(d, cap2(q, vec2(0.16, -0.365), vec2(0.26, -0.315), 0.052), 0.04);
+  d = smin2(d, cap2(q, vec2(0.195, -0.43), vec2(0.285, -0.39), 0.047), 0.04);
+  d = smin2(d, cap2(q, vec2(-0.065, -0.38), vec2(-0.185, -0.27), 0.052), 0.05);
+  d = smin2(d, cap2(q, vec2(0.10, -0.56), vec2(0.35, -1.55), 0.15), 0.07);
+  return d;
 }
 
 void main(){
@@ -167,18 +160,60 @@ void main(){
   if (uCurtain > 0.001) col += (sceneCurtain(pr) + vec3(1.0, 0.45, 0.18) * tr * 0.10) * uCurtain;
   if (uDeep > 0.001) col += (sceneDeep(pr) + vec3(1.0, 0.5, 0.2) * tr * 0.10) * uDeep;
   if (uWorld > 0.001) col += mix(vec3(0.03, 0.035, 0.055), vec3(0.085, 0.09, 0.12), smoothstep(-0.6, 1.0, p.y)) * uWorld;
-  if (uRift > 0.001 && uDeep > 0.001) {
-    float ex = (fbm3(vec2(p.y * 2.6 + 9.0, uTime * 0.5)) - 0.5) * 0.14;
-    float h = 0.16 + 0.9 * uRift;
-    float along = smoothstep(h, h * 0.35, abs(p.y));
-    float w = (0.008 + 0.055 * uRift) * (0.4 + 0.6 * along);
-    float d = abs(p.x - ex * clamp(1.0 - uRift * 0.5, 0.3, 1.0));
-    float slit = smoothstep(w, 0.0, d) * along;
-    float glow = smoothstep(w * 7.0, 0.0, d) * along;
-    vec3 rc = mix(vec3(1.0, 0.38, 0.11), vec3(1.0, 0.93, 0.82), slit * slit);
-    col += (rc * slit * 1.35 + vec3(1.0, 0.4, 0.12) * glow * 0.3) * uRift * (0.9 + 0.18 * sin(uTime * 6.0)) * uDeep;
+  if (uHand > 0.001 && uDeep > 0.001) {
+    float on = uHand * uDeep;
+    // the hand of the night, index pointing up-left toward you
+    vec2 F = normalize(vec2(-0.55, 0.835));
+    vec2 rel = p - uTip;
+    float hs = 1.15 * mix(0.62, 1.0, smoothstep(0.5, 1.3, uAspect));
+    vec2 q = vec2(dot(rel, vec2(F.y, -F.x)), dot(rel, F)) / hs;
+    float dh = sdHand(q) * hs;
+    dh += (fbm3(q * 6.0 + uTime * 0.12) - 0.5) * 0.022;
+    float body = smoothstep(0.004, -0.006, dh);
+    float rim = smoothstep(0.050, 0.0, abs(dh));
+    float halo = smoothstep(0.42, 0.0, dh);
+    float flick = 0.75 + 0.25 * vnoise(vec2(uTime * 3.0, q.y * 4.0));
+    vec3 ink = vec3(0.004, 0.004, 0.007) + vec3(0.03, 0.012, 0.006) * fbm(q * 5.0 + 2.0);
+    col = mix(col, ink, body * uHand);
+    col += vec3(1.0, 0.72, 0.4) * halo * 0.05 * on;
+    col += mix(vec3(1.0, 0.30, 0.08), vec3(1.0, 0.75, 0.42), rim * rim) * rim * 0.85 * flick * on;
+    // embers lifting off the burnt edge
+    vec2 eg = q * 26.0 + vec2(0.0, -uTime * 0.7);
+    float eh = hash21(floor(eg));
+    float ember = step(0.94, eh) * smoothstep(0.35, 0.0, length(fract(eg) - 0.5)) * smoothstep(0.14, 0.03, abs(dh + 0.03));
+    col += vec3(1.0, 0.5, 0.2) * ember * (0.4 + 0.6 * sin(uTime * 5.0 + eh * 40.0)) * on;
+    // your fingertip of light
+    float pd2 = dot(p - uReach, p - uReach);
+    col += vec3(1.0, 0.86, 0.62) * exp(-pd2 * 160.0) * 0.85 * on * uPtrOn;
+    col += vec3(1.0, 0.55, 0.22) * exp(-pd2 * 24.0) * 0.18 * on * uPtrOn;
+    // the arc in the gap: the void between the two fingers becomes the brightest thing on screen
+    if (uArc > 0.003) {
+      vec2 ba = uReach - uTip;
+      float L = max(length(ba), 1e-4);
+      vec2 dir = ba / L, nrm = vec2(-dir.y, dir.x);
+      float h = clamp(dot(p - uTip, dir) / L, 0.0, 1.0);
+      float env = sin(h * 3.14159);
+      float seed = floor(uTime * 24.0);
+      float arcl = 0.0;
+      for (int k = 0; k < 3; k++) {
+        float fk = float(k);
+        float off = (vnoise(vec2(h * 6.0 + fk * 17.3, seed * 1.7 + fk * 9.1)) - 0.5) * (0.12 + L * 0.5) * env;
+        vec2 bp = uTip + dir * (h * L) + nrm * off;
+        arcl += 0.0011 / max(length(p - bp), 0.0014) * (0.45 + 0.55 * hash21(vec2(fk, seed)));
+      }
+      arcl = min(arcl, 4.0) * uArc * uArc * (0.75 + 0.25 * sin(uTime * 37.0));
+      col += (vec3(1.0, 0.45, 0.15) * 0.6 + vec3(1.0, 0.9, 0.75) * 0.5) * arcl * on;
+      col += vec3(1.0, 0.6, 0.25) * exp(-dot(p - uTip, p - uTip) * 90.0) * uArc * 1.1 * on;
+    }
   }
-  if (uDive > 0.001) col = mix(col, tunnel(p, uDiveT), uDive);
+  if (uBurst > 0.001) {
+    // contact: a shockwave of light blows the night open
+    vec2 m = mix(uTip, uReach, 0.5);
+    float r = length(p - m);
+    float wave = smoothstep(0.10, 0.0, abs(r - uBurst * 2.3));
+    col += vec3(1.0, 0.78, 0.5) * wave * (1.0 - uBurst) * 2.2;
+    col += vec3(1.0, 0.6, 0.3) * exp(-r * r * (2.5 - uBurst * 2.0)) * uBurst * (1.0 - uBurst) * 5.0;
+  }
   gl_FragColor = vec4(col, 1.0);
 }
 `
@@ -190,34 +225,6 @@ varying vec2 vUv;
 uniform float uTime, uAspect, uCloud, uOpen, uBlack, uWhite, uGrain, uVig;
 ${NOISE}
 void over(inout vec4 acc, vec3 c, float a){ acc = vec4(c * a + acc.rgb * (1.0 - a), a + acc.a * (1.0 - a)); }
-// the way out: an infinite volumetric fold, flown through at speed
-vec3 tunnel(vec2 p, float T){
-  float ro = T * 0.1;
-  mat2 R = mat2(cos(ro), -sin(ro), sin(ro), cos(ro));
-  vec3 dir = normalize(vec3(p, 1.15));
-  dir.xy = R * dir.xy;
-  vec3 from = vec3(0.6 + T * 0.11, 0.42 + T * 0.07, T * 0.62);
-  float s = 0.12, fade = 1.0;
-  vec3 acc = vec3(0.0);
-  for (int r = 0; r < 13; r++) {
-    vec3 q = from + s * dir;
-    q = abs(vec3(0.82) - mod(q, vec3(1.64)));
-    float pa = 0.0, a = 0.0;
-    for (int i = 0; i < 10; i++) { q = abs(q) / dot(q, q) - 0.60; a += abs(length(q) - pa); pa = length(q); }
-    a *= a * a;
-    acc += (vec3(s, s * s, s * s * s * s) * a * 0.0009 + 0.0005) * fade;
-    fade *= 0.72;
-    s += 0.11;
-  }
-  float A = dot(acc, vec3(0.42, 0.6, 0.25));
-  float B = pow(clamp(1.0 - A * 0.46, 0.0, 1.0), 1.7) * 2.3;
-  vec3 col = vec3(0.010, 0.012, 0.028);
-  col += vec3(pow(B, 1.05) * 1.2, pow(B, 1.9) * 0.58, pow(B, 3.1) * 0.4);
-  col += vec3(0.3, 0.42, 1.0) * pow(clamp(1.0 - A * 0.4, 0.0, 1.0), 7.0) * 0.5;
-  col = 1.0 - exp(-col * 0.9);
-  col *= 1.0 - 0.45 * smoothstep(0.8, 2.0, length(p));
-  return col;
-}
 
 void main(){
   vec2 p = (vUv - 0.5) * 2.0; p.x *= uAspect;
