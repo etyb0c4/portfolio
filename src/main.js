@@ -237,6 +237,7 @@ const isStopGate = (g) => g === GATES[1]
 const TS = { t: 0 } // the night's own clock; stops dead when time stops
 const FZ = { on: false, last: 0 }
 const CAP = { run: false, t0: 0, ms: 0 } // the spoken command and its stopwatch
+let ZTL = null // the live time-stop sequence, so skip can kill it without touching the main timeline
 const fmtClock = (s) => {
   const m = Math.floor(s / 60), sec = Math.floor(s % 60), ms = Math.floor((s % 1) * 1000)
   return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(ms).padStart(3, '0')}`
@@ -271,7 +272,8 @@ function doStop(cx, cy) {
   audio.hit('stop')
   const cv = stage.renderer.domElement
   const jolt = (px) => gsap.fromTo(cv, { x: px, y: -px * 0.6 }, { x: 0, y: 0, duration: 0.35, ease: 'elastic.out(1, 0.3)' })
-  gsap.timeline()
+  ZTL = gsap.timeline()
+  ZTL
     // the words own the screen: everything else steps back
     .to('#story', { autoAlpha: 0, duration: 0.3 }, 0.1)
     .to('#hud', { autoAlpha: 0.15, duration: 0.5 }, 0.1)
@@ -313,7 +315,9 @@ function doStop(cx, cy) {
 function skip(then) {
   if (S.world) { then?.(); return }
   GATES.forEach((g) => { g.solved = true })
-  gsap.killTweensOf(S); gsap.killTweensOf(G)
+  gsap.killTweensOf(S)
+  ZTL?.kill(); ZTL = null
+  G.neg = 0; G.crackR = 0; G.shatter = 0
   FZ.on = false; audio.freeze(false); document.body.classList.remove('neg'); zwHide()
   CAP.run = false; el.zcap.classList.remove('on')
   gsap.set(['#story', '#hud'], { clearProps: 'opacity,visibility' })
